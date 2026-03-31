@@ -338,7 +338,28 @@
 
     // --- Main Application ---
 
+    const PUNS = [
+      "CIDR? I hardly know her!",
+      "There's no place like 127.0.0.1",
+      "Splitting /24s like a digital divorce lawyer",
+      "Your /32 is in another castle",
+      "Making 2^n subnets and taking names",
+      "I void warranties and aggregate routes",
+      "Broadcast domain therapy session",
+      "RFC 1918 was an inside job",
+      "Supernetting: the art of giving up",
+      "I’d tell you a UDP joke, but I don't care if you get it.",
+      "I have a great IPv6 joke, but it's too long.",
+      "ARP you glad we routed this?"
+    ];
+
     export default function App() {
+      const [pun] = useState(() => PUNS[Math.floor(Math.random() * PUNS.length)]);
+
+      useEffect(() => {
+        document.title = `Visual Subnet Calculator - ${pun}`;
+      }, [pun]);
+
       // Form State
       const [networkInput, setNetworkInput] = useState('10.128.160.0');
       const [cidrInput, setCidrInput] = useState('25');
@@ -615,9 +636,9 @@
           <nav className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shrink-0 z-20">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-sm">C</div>
-              <div className="flex flex-col justify-center">
+              <div className="flex flex-col justify-center max-w-[200px] sm:max-w-md">
                 <span className="font-bold tracking-tight text-sm leading-tight">Subnet<span className="text-blue-600">Visualizer</span></span>
-                <span className="text-[10px] text-gray-500 font-medium truncate">Visual IPv4 Subnet Calculator</span>
+                <span className="text-[10px] text-gray-500 font-medium truncate" title={pun}>{pun}</span>
               </div>
             </div>
             <div className="flex items-center gap-4">

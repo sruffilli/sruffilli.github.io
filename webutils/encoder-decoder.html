@@ -53,6 +53,8 @@
 
   <!-- Babel Standalone for In-Browser Transpilation -->
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <!-- CryptoJS for Hashing Algorithms -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 
 <body class="bg-gray-50 h-screen flex flex-col overflow-hidden text-gray-800">
@@ -129,15 +131,20 @@
     const uuEncode = (str) => {
       if (!str) return "";
       let out = "begin 644 string.txt\n";
+      const toChar = (val) => {
+        const c = val + 32;
+        return c === 32 ? '`' : String.fromCharCode(c);
+      };
+      
       for (let i = 0; i < str.length; i += 45) {
         let chunk = str.slice(i, i + 45);
-        out += String.fromCharCode(chunk.length + 32);
+        out += toChar(chunk.length);
         for (let j = 0; j < chunk.length; j += 3) {
           let n = (chunk.charCodeAt(j) << 16) | ((chunk.charCodeAt(j + 1) || 0) << 8) | (chunk.charCodeAt(j + 2) || 0);
-          out += String.fromCharCode(((n >> 18) & 63) + 32) +
-            String.fromCharCode(((n >> 12) & 63) + 32) +
-            String.fromCharCode(((n >> 6) & 63) + 32) +
-            String.fromCharCode((n & 63) + 32);
+          out += toChar((n >> 18) & 63) +
+                 toChar((n >> 12) & 63) +
+                 toChar((n >> 6) & 63) +
+                 toChar(n & 63);
         }
         out += "\n";
       }
@@ -149,19 +156,28 @@
       let lines = str.split("\n");
       let out = "";
       let valid = false;
+      
+      const fromChar = (c) => {
+        let val = c.charCodeAt(0);
+        return (val === 96 ? 0 : val - 32) & 63;
+      };
+
       for (let line of lines) {
         line = line.trimEnd();
         if (line.startsWith("begin") || line.startsWith("end") || line === "\`" || line === "") {
           if (line.startsWith("end")) valid = true;
           continue;
         }
-        let len = line.charCodeAt(0) - 32;
+        let lenChar = line.charCodeAt(0);
+        let len = (lenChar === 96 ? 0 : lenChar - 32);
         if (len <= 0) break;
+        
         for (let i = 1; i < line.length; i += 4) {
-          let c1 = (line.charCodeAt(i) - 32) & 63;
-          let c2 = (line.charCodeAt(i + 1) - 32) & 63;
-          let c3 = (line.charCodeAt(i + 2) - 32) & 63;
-          let c4 = (line.charCodeAt(i + 3) - 32) & 63;
+          let c1 = fromChar(line[i] || ' ');
+          let c2 = fromChar(line[i + 1] || ' ');
+          let c3 = fromChar(line[i + 2] || ' ');
+          let c4 = fromChar(line[i + 3] || ' ');
+          
           let n = (c1 << 18) | (c2 << 12) | (c3 << 6) | c4;
           out += String.fromCharCode((n >> 16) & 255);
           if (--len > 0) out += String.fromCharCode((n >> 8) & 255);
@@ -173,66 +189,231 @@
       return out;
     };
 
+    // --- Additional Conversions ---
+    const hexEncode = (str) => {
+      return Array.from(str).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
+    };
+    const hexDecode = (str) => {
+      str = str.replace(/[^0-9A-Fa-f]/g, '');
+      if (str.length % 2 !== 0) throw new Error("Invalid Hex string length.");
+      let res = '';
+      for (let i = 0; i < str.length; i += 2) {
+        res += String.fromCharCode(parseInt(str.substring(i, i + 2), 16));
+      }
+      return res;
+    };
+
+    const binEncode = (str) => {
+      return Array.from(str).map(c => c.charCodeAt(0).toString(2).padStart(8, '0')).join(' ');
+    };
+    const binDecode = (str) => {
+      str = str.replace(/[^01]/g, '');
+      if (str.length % 8 !== 0) throw new Error("Invalid Binary string length.");
+      let res = '';
+      for (let i = 0; i < str.length; i += 8) {
+        res += String.fromCharCode(parseInt(str.substring(i, i + 8), 2));
+      }
+      return res;
+    };
+
+    const BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+    const base32Encode = (str) => {
+      let result = "";
+      let bits = 0;
+      let value = 0;
+      for (let i = 0; i < str.length; i++) {
+        value = (value << 8) | str.charCodeAt(i);
+        bits += 8;
+        while (bits >= 5) {
+          result += BASE32_ALPHABET[(value >>> (bits - 5)) & 31];
+          bits -= 5;
+        }
+      }
+      if (bits > 0) result += BASE32_ALPHABET[(value << (5 - bits)) & 31];
+      while (result.length % 8 !== 0) result += "=";
+      return result;
+    };
+    const base32Decode = (str) => {
+      str = str.replace(/=+$/, "").toUpperCase();
+      let result = "";
+      let bits = 0;
+      let value = 0;
+      for (let i = 0; i < str.length; i++) {
+        let val = BASE32_ALPHABET.indexOf(str[i]);
+        if (val === -1) throw new Error("Invalid Base32 character.");
+        value = (value << 5) | val;
+        bits += 5;
+        if (bits >= 8) {
+          result += String.fromCharCode((value >>> (bits - 8)) & 255);
+          bits -= 8;
+        }
+      }
+      return result;
+    };
+
+    const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+    const base58Encode = (str) => {
+      if (!str.length) return '';
+      const bytes = Array.from(str).map(c => c.charCodeAt(0));
+      const digits = [0];
+      for (let i = 0; i < bytes.length; i++) {
+        for (let j = 0; j < digits.length; j++) digits[j] <<= 8;
+        digits[0] += bytes[i];
+        let carry = 0;
+        for (let j = 0; j < digits.length; ++j) {
+          digits[j] += carry;
+          carry = (digits[j] / 58) | 0;
+          digits[j] %= 58;
+        }
+        while (carry) {
+          digits.push(carry % 58);
+          carry = (carry / 58) | 0;
+        }
+      }
+      for (let i = 0; str[i] === '\x00' && i < str.length - 1; i++) digits.push(0);
+      return digits.reverse().map(digit => BASE58_ALPHABET[digit]).join('');
+    };
+    const base58Decode = (str) => {
+      if (!str.length) return '';
+      const bytes = [0];
+      for (let i = 0; i < str.length; i++) {
+        const c = str[i];
+        if (!(c in Object.fromEntries([...BASE58_ALPHABET].map((c, i) => [c, i])))) throw new Error('Invalid Base58 character');
+        for (let j = 0; j < bytes.length; j++) bytes[j] *= 58;
+        bytes[0] += BASE58_ALPHABET.indexOf(c);
+        let carry = 0;
+        for (let j = 0; j < bytes.length; ++j) {
+          bytes[j] += carry;
+          carry = bytes[j] >> 8;
+          bytes[j] &= 0xff;
+        }
+        while (carry) {
+          bytes.push(carry & 0xff);
+          carry >>= 8;
+        }
+      }
+      for (let i = 0; str[i] === '1' && i < str.length - 1; i++) bytes.push(0);
+      return bytes.reverse().map(byte => String.fromCharCode(byte)).join('');
+    };
+
     const autoDecode = (str) => {
-      if (!str.trim()) return "";
+      if (!str.trim()) return { decoded: "", format: "Auto" };
 
-      // 1. Try UUEncode
       if (str.includes("begin ") && str.includes("end")) {
-        try { return uuDecode(str); } catch (e) { }
+        try { return { decoded: uuDecode(str), format: "UUEncode" }; } catch (e) { }
       }
 
-      // 2. Try URL Decode
-      if (str.includes("%")) {
-        try { return uriDecode(str); } catch (e) { }
+      if (/^[01\s]+$/.test(str.trim()) && str.replace(/[^01]/g, '').length > 0 && str.replace(/[^01]/g, '').length % 8 === 0) {
+        try { return { decoded: binDecode(str), format: "Binary" }; } catch (e) { }
       }
 
-      // 3. Try Base64
+      if (/^[0-9a-fA-F]+$/.test(str.trim()) && str.trim().length % 2 === 0) {
+        try {
+          const decoded = hexDecode(str.trim());
+          if (/^[\x20-\x7E\s]*$/.test(decoded) && decoded !== '') return { decoded, format: "Hexadecimal" };
+        } catch (e) { }
+      }
+
       const b64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:(?:[A-Za-z0-9+/]{3}=)|(?:[A-Za-z0-9+/]{2}==))?$/;
       if (b64Regex.test(str.trim()) && str.trim().length > 0 && !str.includes(' ')) {
         try {
           const decoded = base64Decode(str);
-          if (/^[\x20-\x7E\s\w\W]*$/.test(decoded)) {
-            return decoded;
-          }
+          if (/^[\x20-\x7E\s\w\W]*$/.test(decoded)) return { decoded, format: "Base64" };
         } catch (e) { }
       }
 
-      // 4. Default to ROT13
-      return rot13(str);
+      const b32Regex = /^[A-Z2-7]+=*$/i;
+      if (b32Regex.test(str.trim())) {
+        try { return { decoded: base32Decode(str.trim()), format: "Base32" }; } catch (e) { }
+      }
+
+      try {
+        const decoded = base58Decode(str.trim());
+        if (/^[\x20-\x7E\s\w\W]*$/.test(decoded)) return { decoded, format: "Base58" };
+      } catch (e) { }
+
+      if (str.includes("%")) {
+        try { return { decoded: uriDecode(str), format: "URL Encoding" }; } catch (e) { }
+      }
+
+      return { decoded: rot13(str), format: "ROT13" };
     };
 
     // --- Main App Component ---
 
+    const PUNS = [
+      "ROT26: Military-grade plaintext.",
+      "Base64: Security through obscurity's lazy cousin.",
+      "%20is%20my%20favorite%20space%20bar.",
+      "I know Base64, but what about the other 63?",
+      "UUEncode: Tell me you're from the 90s without telling me.",
+      "Encoding: giving your strings a fake ID.",
+      "My safe word is SGVscCE=",
+      "Caesar didn't die for ROT13 to be used like this.",
+      "URL encoding: %57%68%79.",
+      "If you think Base64 is encryption, we need to talk.",
+      "SGVsbG8gV29ybGQ= (trust me bro)",
+      "ROT13 twice: innovation",
+      "Making gibberish slightly more professional",
+      "It's not obfuscation, it's *vibes*"
+    ];
+
     function App() {
-      const [input, setInput] = useState('');
+      const initParams = new URLSearchParams(window.location.search);
+
+      const [pun] = useState(() => PUNS[Math.floor(Math.random() * PUNS.length)]);
+      const [input, setInput] = useState(initParams.get('text') || '');
       const [output, setOutput] = useState('');
-      const [mode, setMode] = useState('encode'); // 'encode' | 'decode'
-      const [encoding, setEncoding] = useState('Base64');
+      const [mode, setMode] = useState(initParams.get('mode') || 'encode'); // 'encode' | 'decode' | 'hash'
+      const [encoding, setEncoding] = useState(initParams.get('algo') || 'Base64');
       const [error, setError] = useState('');
       const [copiedLink, setCopiedLink] = useState(false);
       const [copiedOutput, setCopiedOutput] = useState(false);
+      const [toastMessage, setToastMessage] = useState('');
+      const [detectedFormat, setDetectedFormat] = useState('');
 
       const handleUpdate = () => {
         if (!input) {
           setOutput('');
           setError('');
+          setDetectedFormat('');
           return;
         }
 
         try {
           setError('');
           let res = '';
+          setDetectedFormat('');
           if (mode === 'encode') {
             if (encoding === 'Base64') res = base64Encode(input);
+            else if (encoding === 'Base32') res = base32Encode(input);
+            else if (encoding === 'Base58') res = base58Encode(input);
+            else if (encoding === 'Hexadecimal') res = hexEncode(input);
+            else if (encoding === 'Binary') res = binEncode(input);
             else if (encoding === 'UUEncode') res = uuEncode(input);
             else if (encoding === 'ROT13') res = rot13(input);
+            else if (encoding === 'ROT26') res = input; // ROT26 is just the input
             else if (encoding === 'URL') res = uriEncode(input);
-          } else {
-            if (encoding === 'Auto') res = autoDecode(input);
+          } else if (mode === 'decode') {
+            if (encoding === 'Auto') {
+              const auto = autoDecode(input);
+              res = auto.decoded;
+              setDetectedFormat(auto.format);
+            }
             else if (encoding === 'Base64') res = base64Decode(input);
+            else if (encoding === 'Base32') res = base32Decode(input);
+            else if (encoding === 'Base58') res = base58Decode(input);
+            else if (encoding === 'Hexadecimal') res = hexDecode(input);
+            else if (encoding === 'Binary') res = binDecode(input);
             else if (encoding === 'UUEncode') res = uuDecode(input);
             else if (encoding === 'ROT13') res = rot13(input);
+            else if (encoding === 'ROT26') res = input; // ROT26 is just the input
             else if (encoding === 'URL') res = uriDecode(input);
+          } else if (mode === 'hash') {
+            if (encoding === 'MD5') res = CryptoJS.MD5(input).toString(CryptoJS.enc.Hex);
+            else if (encoding === 'SHA-1') res = CryptoJS.SHA1(input).toString(CryptoJS.enc.Hex);
+            else if (encoding === 'SHA-256') res = CryptoJS.SHA256(input).toString(CryptoJS.enc.Hex);
+            else if (encoding === 'SHA-512') res = CryptoJS.SHA512(input).toString(CryptoJS.enc.Hex);
           }
           setOutput(res);
         } catch (e) {
@@ -246,14 +427,36 @@
         handleUpdate();
       }, [input, mode, encoding]);
 
+      useEffect(() => {
+        document.title = `StringCodec - ${pun}`;
+      }, [pun]);
+
+      useEffect(() => {
+        if (encoding === 'ROT26') {
+          setToastMessage("I don't know what you expected...");
+          const timer = setTimeout(() => setToastMessage(''), 3000);
+          return () => clearTimeout(timer);
+        }
+      }, [encoding]);
+
       const copyLink = () => {
         try {
+          const urlObj = new URL(window.location.href);
+          urlObj.searchParams.set('mode', mode);
+          urlObj.searchParams.set('algo', encoding);
+          if (input) urlObj.searchParams.set('text', input);
+          else urlObj.searchParams.delete('text');
+          
+          const newUrl = urlObj.toString();
+
           const textArea = document.createElement("textarea");
-          textArea.value = window.location.href;
+          textArea.value = newUrl;
           document.body.appendChild(textArea);
           textArea.select();
           document.execCommand("copy");
           document.body.removeChild(textArea);
+
+          try { window.history.replaceState({}, '', newUrl); } catch(e) { }
 
           setCopiedLink(true);
           setTimeout(() => setCopiedLink(false), 2000);
@@ -275,6 +478,7 @@
       };
 
       const handleSwitchMode = () => {
+        if (mode === 'hash') return;
         const newMode = mode === 'encode' ? 'decode' : 'encode';
         setMode(newMode);
         if (newMode === 'encode' && encoding === 'Auto') {
@@ -293,9 +497,9 @@
           <nav className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shrink-0 z-20">
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-sm">S</div>
-              <div className="flex flex-col justify-center">
+              <div className="flex flex-col justify-center max-w-[200px] sm:max-w-md">
                 <span className="font-bold tracking-tight text-sm leading-tight">String<span className="text-blue-600">Codec</span></span>
-                <span className="text-[10px] text-gray-500 font-medium truncate">Universal local text encoder</span>
+                <span className="text-[10px] text-gray-500 font-medium truncate" title={pun}>{pun}</span>
               </div>
             </div>
             <div className="flex items-center gap-4">
@@ -325,16 +529,22 @@
                   </div>
                   <div className="flex p-1 bg-gray-100 rounded-lg">
                     <button
-                      className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-all ${mode === 'encode' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
-                      onClick={() => { setMode('encode'); if (encoding === 'Auto') setEncoding('Base64'); }}
+                      className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] font-bold rounded-md transition-all ${mode === 'encode' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
+                      onClick={() => { setMode('encode'); if (['MD5', 'SHA-1', 'SHA-256', 'SHA-512'].includes(encoding) || encoding === 'Auto') setEncoding('Base64'); }}
                     >
                       Encode
                     </button>
                     <button
-                      className={`flex-1 flex items-center justify-center gap-1.5 px-3 py-2 text-sm font-bold rounded-md transition-all ${mode === 'decode' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
-                      onClick={() => setMode('decode')}
+                      className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] font-bold rounded-md transition-all ${mode === 'decode' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
+                      onClick={() => { setMode('decode'); if (['MD5', 'SHA-1', 'SHA-256', 'SHA-512'].includes(encoding)) setEncoding('Auto'); }}
                     >
                       Decode
+                    </button>
+                    <button
+                      className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] font-bold rounded-md transition-all ${mode === 'hash' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
+                      onClick={() => { setMode('hash'); if (!['MD5', 'SHA-1', 'SHA-256', 'SHA-512'].includes(encoding)) setEncoding('SHA-256'); }}
+                    >
+                      Hash
                     </button>
                   </div>
                 </div>
@@ -351,10 +561,27 @@
                       className="w-full bg-white border border-gray-300 text-gray-900 font-semibold text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block px-3 py-2.5 outline-none appearance-none cursor-pointer hover:bg-gray-50"
                     >
                       {mode === 'decode' && <option value="Auto">Auto-detect ✨</option>}
-                      <option value="Base64">Base64</option>
-                      <option value="ROT13">ROT13</option>
-                      <option value="URL">URL Encoding</option>
-                      <option value="UUEncode">UUEncode</option>
+                      {mode !== 'hash' && (
+                        <>
+                          <option value="Base64">Base64</option>
+                          <option value="Base32">Base32</option>
+                          <option value="Base58">Base58</option>
+                          <option value="Binary">Binary</option>
+                          <option value="Hexadecimal">Hexadecimal</option>
+                          <option value="ROT13">ROT13</option>
+                          <option value="ROT26">ROT26</option>
+                          <option value="URL">URL Encoding</option>
+                          <option value="UUEncode">UUEncode</option>
+                        </>
+                      )}
+                      {mode === 'hash' && (
+                        <>
+                          <option value="MD5">MD5</option>
+                          <option value="SHA-1">SHA-1</option>
+                          <option value="SHA-256">SHA-256</option>
+                          <option value="SHA-512">SHA-512</option>
+                        </>
+                      )}
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
                       <svg className="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z" /></svg>
@@ -373,7 +600,8 @@
                     <button
                       type="button"
                       onClick={handleSwitchMode}
-                      className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm shadow-sm transition-all flex items-center justify-center gap-1.5"
+                      disabled={mode === 'hash'}
+                      className={`px-3 py-2 font-medium rounded-lg text-sm shadow-sm transition-all flex items-center justify-center gap-1.5 ${mode === 'hash' ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-100' : 'bg-blue-600 hover:bg-blue-700 text-white border border-transparent'}`}
                     >
                       <Icon name="RefreshCw" className="w-4 h-4" />
                       Swap
@@ -423,7 +651,7 @@
                 <div className="flex-1 flex flex-col bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden relative">
                   <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 rounded-t-xl shrink-0 flex justify-between items-center">
                     <div className="text-xs font-bold tracking-wider uppercase text-gray-500 flex items-center gap-2">
-                      {mode === 'encode' ? 'Encoded Output' : 'Decoded Output'}
+                      {mode === 'encode' ? 'Encoded Output' : mode === 'decode' ? (encoding === 'Auto' && detectedFormat && detectedFormat !== 'Auto' ? `Decoded Output (${detectedFormat})` : 'Decoded Output') : 'Hashed Output'}
                     </div>
                     {output && !error && (
                       <button
@@ -452,6 +680,15 @@
 
             </main>
           </div>
+
+          {/* Toast Message */}
+          {toastMessage && (
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium z-50 flex items-center gap-2">
+              <span className="text-xl">🤷‍♂️</span>
+              <span>{toastMessage}</span>
+            </div>
+          )}
+
         </div>
       );
     }
