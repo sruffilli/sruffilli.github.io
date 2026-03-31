@@ -1,12 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visual Subnet Calculator</title>
-    
-    <!-- Import Map for Bare Module Resolution -->
-    <script type="importmap">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Visual Subnet Calculator</title>
+
+  <!-- Import Map for Bare Module Resolution -->
+  <script type="importmap">
     {
       "imports": {
         "react": "https://esm.sh/react@19",
@@ -16,801 +17,843 @@
     }
     </script>
 
-    <!-- Tailwind CSS -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: { mono: ['"JetBrains Mono"', 'monospace'] },
-                    colors: { 
-                        brand: { 500: '#3b82f6', 600: '#2563eb' }
-                    }
-                }
-            }
-        }
-    </script>
-    <style>
-        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap');
-        body { font-family: 'Inter', sans-serif; }
-        .mono { font-family: 'JetBrains Mono', monospace; }
-        .bg-grid {
-            background-size: 20px 20px;
-            background-image:
-                linear-gradient(to right, #f1f5f9 1px, transparent 1px),
-                linear-gradient(to bottom, #f1f5f9 1px, transparent 1px);
-        }
-    </style>
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
 
-    <!-- Babel Standalone for In-Browser Transpilation -->
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { mono: ['"JetBrains Mono"', 'monospace'] },
+          colors: {
+            brand: { 500: '#3b82f6', 600: '#2563eb' }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap');
+
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .mono {
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .bg-grid {
+      background-size: 20px 20px;
+      background-image:
+        linear-gradient(to right, #f1f5f9 1px, transparent 1px),
+        linear-gradient(to bottom, #f1f5f9 1px, transparent 1px);
+    }
+  </style>
+
+  <!-- Babel Standalone for In-Browser Transpilation -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
+
 <body class="bg-gray-50 h-screen flex flex-col overflow-hidden text-gray-800">
-    <div id="root" class="h-full flex flex-col"></div>
+  <div id="root" class="h-full flex flex-col"></div>
 
-    <!-- The React App -->
-    <script type="text/babel" data-type="module">
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+  <!-- The React App -->
+  <script type="text/babel" data-type="module">
+    import React, { useState, useEffect, useMemo, useCallback } from 'react';
 
-// --- Icons Fallback (Inline SVGs to prevent import/sandbox issues) ---
-const Icon = ({ name, className }) => {
-  const icons = {
-    Network: (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <rect x="16" y="16" width="6" height="6" rx="1" /><rect x="2" y="16" width="6" height="6" rx="1" /><rect x="9" y="2" width="6" height="6" rx="1" />
-        <path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" /><path d="M12 12V8" />
-      </svg>
-    ),
-    Split: (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M16 3h5v5" /><path d="M8 3H3v5" /><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3" /><path d="m15 9 6-6" />
-      </svg>
-    ),
-    Merge: (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="m8 6 4-4 4 4" /><path d="M12 2v10.3a4 4 0 0 1-1.172 2.872L3 22" /><path d="m20 22-5-5" />
-      </svg>
-    ),
-    RotateCcw: (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" />
-      </svg>
-    ),
-    Settings2: (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M20 7h-9" /><path d="M14 17H5" /><circle cx="17" cy="7" r="3" /><circle cx="7" cy="17" r="3" />
-      </svg>
-    ),
-    LinkIcon: (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-      </svg>
-    ),
-    Check: (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <polyline points="20 6 9 17 4 12" />
-      </svg>
-    ),
-    ChevronRight: (
-      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
-        <path d="m9 18 6-6-6-6" />
-      </svg>
-    )
-  };
-  return icons[name] || null;
-};
+    // --- Icons Fallback (Inline SVGs to prevent import/sandbox issues) ---
+    const Icon = ({ name, className }) => {
+      const icons = {
+        Network: (
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <rect x="16" y="16" width="6" height="6" rx="1" /><rect x="2" y="16" width="6" height="6" rx="1" /><rect x="9" y="2" width="6" height="6" rx="1" />
+            <path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" /><path d="M12 12V8" />
+          </svg>
+        ),
+        Split: (
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M16 3h5v5" /><path d="M8 3H3v5" /><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3" /><path d="m15 9 6-6" />
+          </svg>
+        ),
+        Merge: (
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="m8 6 4-4 4 4" /><path d="M12 2v10.3a4 4 0 0 1-1.172 2.872L3 22" /><path d="m20 22-5-5" />
+          </svg>
+        ),
+        RotateCcw: (
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" />
+          </svg>
+        ),
+        Settings2: (
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M20 7h-9" /><path d="M14 17H5" /><circle cx="17" cy="7" r="3" /><circle cx="7" cy="17" r="3" />
+          </svg>
+        ),
+        LinkIcon: (
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
+          </svg>
+        ),
+        Check: (
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <polyline points="20 6 9 17 4 12" />
+          </svg>
+        ),
+        ChevronRight: (
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <path d="m9 18 6-6-6-6" />
+          </svg>
+        )
+      };
+      return icons[name] || null;
+    };
 
-// --- IP Math Utilities ---
+    // --- IP Math Utilities ---
 
-const ip2long = (ip) => {
-  return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0;
-};
+    const ip2long = (ip) => {
+      return ip.split('.').reduce((acc, octet) => (acc << 8) + parseInt(octet, 10), 0) >>> 0;
+    };
 
-const long2ip = (long) => {
-  return [
-    (long >>> 24) & 255,
-    (long >>> 16) & 255,
-    (long >>> 8) & 255,
-    long & 255
-  ].join('.');
-};
+    const long2ip = (long) => {
+      return [
+        (long >>> 24) & 255,
+        (long >>> 16) & 255,
+        (long >>> 8) & 255,
+        long & 255
+      ].join('.');
+    };
 
-const getSubnetDetails = (ipInt, cidr) => {
-  // Handle JS bitwise quirk for shift by 32
-  const mask = cidr === 0 ? 0 : (0xFFFFFFFF << (32 - cidr)) >>> 0;
-  const network = (ipInt & mask) >>> 0;
-  const broadcast = cidr === 32 ? network : (network | ~mask) >>> 0;
+    const getSubnetDetails = (ipInt, cidr) => {
+      // Handle JS bitwise quirk for shift by 32
+      const mask = cidr === 0 ? 0 : (0xFFFFFFFF << (32 - cidr)) >>> 0;
+      const network = (ipInt & mask) >>> 0;
+      const broadcast = cidr === 32 ? network : (network | ~mask) >>> 0;
 
-  let useableStart = network + 1;
-  let useableEnd = broadcast - 1;
-  let numHosts = 0;
+      let useableStart = network + 1;
+      let useableEnd = broadcast - 1;
+      let numHosts = 0;
 
-  if (cidr === 32) {
-    useableStart = network;
-    useableEnd = network;
-    numHosts = 1;
-  } else if (cidr === 31) {
-    useableStart = network;
-    useableEnd = broadcast;
-    numHosts = 2;
-  } else {
-    // Math.pow is safer than bitwise for 2^32
-    numHosts = Math.pow(2, 32 - cidr) - 2;
-  }
+      if (cidr === 32) {
+        useableStart = network;
+        useableEnd = network;
+        numHosts = 1;
+      } else if (cidr === 31) {
+        useableStart = network;
+        useableEnd = broadcast;
+        numHosts = 2;
+      } else {
+        // Math.pow is safer than bitwise for 2^32
+        numHosts = Math.pow(2, 32 - cidr) - 2;
+      }
 
-  return {
-    networkInt: network,
-    broadcastInt: broadcast,
-    networkStr: long2ip(network),
-    netmaskStr: long2ip(mask),
-    broadcastStr: long2ip(broadcast),
-    rangeStr: `${long2ip(network)} - ${long2ip(broadcast)}`,
-    useableStr: `${long2ip(useableStart)} - ${long2ip(useableEnd)}`,
-    hosts: numHosts
-  };
-};
+      return {
+        networkInt: network,
+        broadcastInt: broadcast,
+        networkStr: long2ip(network),
+        netmaskStr: long2ip(mask),
+        broadcastStr: long2ip(broadcast),
+        rangeStr: `${long2ip(network)} - ${long2ip(broadcast)}`,
+        useableStr: `${long2ip(useableStart)} - ${long2ip(useableEnd)}`,
+        hosts: numHosts
+      };
+    };
 
 
-// --- UI Components ---
+    // --- UI Components ---
 
-const Toggle = ({ checked, onChange, label }) => (
-  <label className="flex items-center space-x-2 cursor-pointer group">
-    <div className="relative flex items-center">
-      <input
-        type="checkbox"
-        className="sr-only"
-        checked={checked}
-        onChange={(e) => onChange(e.target.checked)}
-      />
-      <div className={`w-8 h-4 rounded-full transition-colors ${checked ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
-      <div className={`absolute left-0.5 top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${checked ? 'translate-x-4' : 'translate-x-0'}`}></div>
-    </div>
-    <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">{label}</span>
-  </label>
-);
-
-// --- Recursive Subnet Row Component ---
-
-const SubnetNode = ({ ip, cidr, splitNodes, visibleCols, onDivide, onJoin, gridTemplate }) => {
-  const id = `${long2ip(ip)}/${cidr}`;
-  const isSplit = splitNodes.has(id);
-  const details = useMemo(() => getSubnetDetails(ip, cidr), [ip, cidr]);
-
-  if (isSplit) {
-    const leftIp = ip;
-    const rightIp = ip + Math.pow(2, 32 - (cidr + 1));
-
-    return (
-      <div className="flex w-full group/join">
-        <div className="flex-1 flex flex-col min-w-0">
-          <SubnetNode
-            ip={leftIp} cidr={cidr + 1}
-            splitNodes={splitNodes} visibleCols={visibleCols}
-            onDivide={onDivide} onJoin={onJoin} gridTemplate={gridTemplate}
+    const Toggle = ({ checked, onChange, label }) => (
+      <label className="flex items-center space-x-2 cursor-pointer group">
+        <div className="relative flex items-center">
+          <input
+            type="checkbox"
+            className="sr-only"
+            checked={checked}
+            onChange={(e) => onChange(e.target.checked)}
           />
-          <SubnetNode
-            ip={rightIp} cidr={cidr + 1}
-            splitNodes={splitNodes} visibleCols={visibleCols}
-            onDivide={onDivide} onJoin={onJoin} gridTemplate={gridTemplate}
-          />
+          <div className={`w-8 h-4 rounded-full transition-colors ${checked ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
+          <div className={`absolute left-0.5 top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${checked ? 'translate-x-4' : 'translate-x-0'}`}></div>
         </div>
-        {visibleCols.join && (
+        <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">{label}</span>
+      </label>
+    );
+
+    // --- Recursive Subnet Row Component ---
+
+    const SubnetNode = ({ ip, cidr, splitNodes, visibleCols, onDivide, onJoin, gridTemplate }) => {
+      const id = `${long2ip(ip)}/${cidr}`;
+      const isSplit = splitNodes.has(id);
+      const details = useMemo(() => getSubnetDetails(ip, cidr), [ip, cidr]);
+
+      if (isSplit) {
+        const leftIp = ip;
+        const rightIp = ip + Math.pow(2, 32 - (cidr + 1));
+
+        return (
+          <div className="flex w-full group/join">
+            <div className="flex-1 flex flex-col min-w-0">
+              <SubnetNode
+                ip={leftIp} cidr={cidr + 1}
+                splitNodes={splitNodes} visibleCols={visibleCols}
+                onDivide={onDivide} onJoin={onJoin} gridTemplate={gridTemplate}
+              />
+              <SubnetNode
+                ip={rightIp} cidr={cidr + 1}
+                splitNodes={splitNodes} visibleCols={visibleCols}
+                onDivide={onDivide} onJoin={onJoin} gridTemplate={gridTemplate}
+              />
+            </div>
+            {visibleCols.join && (
+              <div
+                onClick={() => onJoin(id)}
+                className="w-12 border-b border-l border-gray-200 bg-gray-50 hover:bg-blue-50 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group-hover/join:border-blue-500/50 relative overflow-hidden"
+                title={`Join subnets back to /${cidr}`}
+              >
+                <Icon name="Merge" className="w-4 h-4 text-gray-400 group-hover/join:text-blue-500 mb-2 rotate-90" />
+                <span className="text-xs font-mono font-bold text-gray-400 group-hover/join:text-blue-600 -rotate-90 whitespace-nowrap tracking-widest">
+                  /{cidr}
+                </span>
+              </div>
+            )}
+          </div>
+        );
+      }
+
+      return (
+        <div className="flex w-full border-b border-gray-200 hover:bg-gray-50 transition-colors">
           <div
-            onClick={() => onJoin(id)}
-            className="w-12 border-b border-l border-gray-200 bg-gray-50 hover:bg-blue-50 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group-hover/join:border-blue-500/50 relative overflow-hidden"
-            title={`Join subnets back to /${cidr}`}
+            className="grid flex-1 items-stretch text-xs font-mono text-gray-700"
+            style={{ gridTemplateColumns: gridTemplate }}
           >
-            <Icon name="Merge" className="w-4 h-4 text-gray-400 group-hover/join:text-blue-500 mb-2 rotate-90" />
-            <span className="text-xs font-mono font-bold text-gray-400 group-hover/join:text-blue-600 -rotate-90 whitespace-nowrap tracking-widest">
-              /{cidr}
-            </span>
-          </div>
-        )}
-      </div>
-    );
-  }
-
-  return (
-    <div className="flex w-full border-b border-gray-200 hover:bg-gray-50 transition-colors">
-      <div
-        className="grid flex-1 items-stretch text-sm font-mono text-gray-700"
-        style={{ gridTemplateColumns: gridTemplate }}
-      >
-        {visibleCols.subnet && (
-          <div className="p-3 truncate flex items-center border-r border-gray-200">
-            <span className="text-gray-900 font-semibold">{details.networkStr}</span>
-            <span className="text-blue-600 ml-1">/{cidr}</span>
-          </div>
-        )}
-        {visibleCols.netmask && (
-          <div className="p-3 truncate flex items-center border-r border-gray-200 text-gray-500">
-            {details.netmaskStr}
-          </div>
-        )}
-        {visibleCols.range && (
-          <div className="p-3 truncate flex items-center border-r border-gray-200 text-emerald-600">
-            {details.rangeStr}
-          </div>
-        )}
-        {visibleCols.useable && (
-          <div className="p-3 truncate flex items-center border-r border-gray-200 text-blue-600">
-            {details.useableStr}
-          </div>
-        )}
-        {visibleCols.hosts && (
-          <div className="p-3 truncate flex items-center border-r border-gray-200 justify-end font-semibold text-gray-800">
-            {details.hosts.toLocaleString()}
-          </div>
-        )}
-        {visibleCols.divide && (
-          <div className="p-2 flex items-center justify-center">
-            {cidr < 32 ? (
-              <button
-                onClick={() => onDivide(id)}
-                className="flex items-center justify-center px-2 py-1.5 w-full bg-gray-100 hover:bg-blue-600 text-gray-700 hover:text-white rounded border border-gray-200 transition-all group"
-                title="Split into two smaller subnets"
-              >
-                <Icon name="Split" className="w-4 h-4 sm:mr-1.5 group-hover:scale-110 transition-transform" />
-                <span className="hidden sm:inline text-xs font-bold uppercase tracking-wider">Divide</span>
-              </button>
-            ) : (
-              <span className="text-xs text-gray-400 uppercase font-bold">Max</span>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-};
-
-
-// --- Export Utils ---
-
-const getLeafCount = (ip, cidr, splitNodes) => {
-  const id = `${long2ip(ip)}/${cidr}`;
-  if (splitNodes.has(id)) {
-    const leftIp = ip;
-    const rightIp = ip + Math.pow(2, 32 - (cidr + 1));
-    return getLeafCount(leftIp, cidr + 1, splitNodes) + getLeafCount(rightIp, cidr + 1, splitNodes);
-  }
-  return 1;
-};
-
-const getMaxDepth = (ip, cidr, splitNodes, currentDepth = 0) => {
-  const id = `${long2ip(ip)}/${cidr}`;
-  if (splitNodes.has(id)) {
-    const leftIp = ip;
-    const rightIp = ip + Math.pow(2, 32 - (cidr + 1));
-    return Math.max(
-      getMaxDepth(leftIp, cidr + 1, splitNodes, currentDepth + 1),
-      getMaxDepth(rightIp, cidr + 1, splitNodes, currentDepth + 1)
-    );
-  }
-  return currentDepth;
-};
-
-const fillGrid = (grid, ip, cidr, splitNodes, rowIndex, colIndex) => {
-  const id = `${long2ip(ip)}/${cidr}`;
-  const isSplit = splitNodes.has(id);
-  const details = getSubnetDetails(ip, cidr);
-  
-  if (isSplit) {
-    const leftIp = ip;
-    const rightIp = ip + Math.pow(2, 32 - (cidr + 1));
-    
-    const leafCountLeft = getLeafCount(leftIp, cidr + 1, splitNodes);
-    const leafCountRight = getLeafCount(rightIp, cidr + 1, splitNodes);
-    
-    grid[rowIndex][colIndex] = {
-      content: `${details.networkStr}/${cidr}`,
-      rowspan: leafCountLeft + leafCountRight
-    };
-    
-    fillGrid(grid, leftIp, cidr + 1, splitNodes, rowIndex, colIndex + 1);
-    fillGrid(grid, rightIp, cidr + 1, splitNodes, rowIndex + leafCountLeft, colIndex + 1);
-  } else {
-    // Leaf cell
-    grid[rowIndex][colIndex] = {
-      content: `${details.networkStr}/${cidr}`,
-      rowspan: 1
-    };
-    
-    // Details cells at the end of row
-    const detailsColStart = grid[0].length - 5;
-    grid[rowIndex][detailsColStart] = { content: `${details.networkStr}/${cidr}`, rowspan: 1 };
-    grid[rowIndex][detailsColStart + 1] = { content: details.netmaskStr, rowspan: 1 };
-    grid[rowIndex][detailsColStart + 2] = { content: details.rangeStr, rowspan: 1 };
-    grid[rowIndex][detailsColStart + 3] = { content: details.useableStr, rowspan: 1 };
-    grid[rowIndex][detailsColStart + 4] = { content: details.hosts.toLocaleString(), rowspan: 1 };
-  }
-};
-
-
-// --- Main Application ---
-
-export default function App() {
-  // Form State
-  const [networkInput, setNetworkInput] = useState('169.254.128.120');
-  const [cidrInput, setCidrInput] = useState('29');
-  const [error, setError] = useState('');
-
-  // App State
-  const [baseIp, setBaseIp] = useState(ip2long('169.254.128.120'));
-  const [baseCidr, setBaseCidr] = useState(29);
-  const [splitNodes, setSplitNodes] = useState(new Set());
-  const [copiedLink, setCopiedLink] = useState(false);
-  const [copiedCSV, setCopiedCSV] = useState(false);
-  const [copiedSpreadsheet, setCopiedSpreadsheet] = useState(false);
-
-  // Column Visibility State
-  const [visibleCols, setVisibleCols] = useState({
-    subnet: true,
-    netmask: false,
-    range: true,
-    useable: true,
-    hosts: true,
-    divide: true,
-    join: true,
-  });
-
-  // Calculate Grid Template based on visible columns
-  const gridTemplate = useMemo(() => {
-    const cols = [];
-    if (visibleCols.subnet) cols.push('minmax(140px, 2fr)');
-    if (visibleCols.netmask) cols.push('minmax(120px, 1.5fr)');
-    if (visibleCols.range) cols.push('minmax(220px, 3fr)');
-    if (visibleCols.useable) cols.push('minmax(220px, 3fr)');
-    if (visibleCols.hosts) cols.push('minmax(80px, 1fr)');
-    if (visibleCols.divide) cols.push('minmax(90px, 1fr)');
-    return cols.join(' ');
-  }, [visibleCols]);
-
-  // Load from URL on mount
-  useEffect(() => {
-    try {
-      const params = new URLSearchParams(window.location.search);
-      const ipParam = params.get('ip');
-      const cidrParam = params.get('cidr');
-      const splitParam = params.get('split');
-
-      if (ipParam && cidrParam) {
-        setNetworkInput(ipParam);
-        setCidrInput(cidrParam);
-        setBaseIp(ip2long(ipParam));
-        setBaseCidr(parseInt(cidrParam, 10));
-      }
-      if (splitParam) {
-        setSplitNodes(new Set(splitParam.split(',').filter(Boolean)));
-      }
-    } catch (e) {
-      console.warn('Failed to parse URL parameters:', e);
-    }
-  }, []);
-
-  // Sync to URL when state changes
-  useEffect(() => {
-    const params = new URLSearchParams();
-    params.set('ip', long2ip(baseIp));
-    params.set('cidr', baseCidr.toString());
-    const splits = Array.from(splitNodes);
-    if (splits.length > 0) {
-      params.set('split', splits.join(','));
-    }
-    const newUrl = `${window.location.pathname}?${params.toString()}`;
-
-    // Safely update URL history (avoids sandboxed iframe crashes)
-    try {
-      window.history.replaceState(null, '', newUrl);
-    } catch (e) {
-      console.debug('History update blocked by sandbox environment.');
-    }
-  }, [baseIp, baseCidr, splitNodes]);
-
-  const handleUpdate = () => {
-    setError(''); // Clear any previous errors
-
-    // Trim to prevent trailing spaces from breaking the regex
-    const trimmedIp = networkInput.trim();
-    const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-
-    if (!ipRegex.test(trimmedIp)) {
-      setError("Please enter a valid IPv4 address (e.g. 192.168.1.0).");
-      return;
-    }
-
-    const cidr = parseInt(cidrInput, 10);
-    if (isNaN(cidr) || cidr < 0 || cidr > 32) {
-      setError("CIDR must be between 0 and 32.");
-      return;
-    }
-
-    // Auto-correct IP to network address
-    const ipInt = ip2long(trimmedIp);
-    const { networkInt } = getSubnetDetails(ipInt, cidr);
-
-    setBaseIp(networkInt);
-    setNetworkInput(long2ip(networkInt)); // Update input to show network address
-    setBaseCidr(cidr);
-    setSplitNodes(new Set()); // Reset splits on new network
-  };
-
-  const handleKeyDown = (e) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleUpdate();
-    }
-  };
-
-  const handleReset = () => {
-    setSplitNodes(new Set());
-  };
-
-  const handleDivide = useCallback((id) => {
-    setSplitNodes(prev => {
-      const next = new Set(prev);
-      next.add(id);
-      return next;
-    });
-  }, []);
-
-  const handleJoin = useCallback((id) => {
-    setSplitNodes(prev => {
-      const next = new Set(prev);
-      // Remove the split at this node
-      next.delete(id);
-      // Clean up any nested splits under this node
-      const [ipStr, cidrStr] = id.split('/');
-      const ipInt = ip2long(ipStr);
-      const cidr = parseInt(cidrStr, 10);
-      const { networkInt, broadcastInt } = getSubnetDetails(ipInt, cidr);
-
-      for (const splitId of next) {
-        const [sIpStr, sCidrStr] = splitId.split('/');
-        const sIpInt = ip2long(sIpStr);
-        const sCidr = parseInt(sCidrStr, 10);
-
-        // A node is a child if its IP falls within the parent range 
-        // AND its CIDR prefix is strictly greater than the parent's CIDR
-        if (sIpInt >= networkInt && sIpInt <= broadcastInt && sCidr > cidr) {
-          next.delete(splitId);
-        }
-      }
-      return next;
-    });
-  }, []);
-
-  const toggleCol = (key, value) => {
-    setVisibleCols(prev => ({ ...prev, [key]: value }));
-  };
-
-  const copyLink = () => {
-    try {
-      // Using execCommand as clipboard API might be blocked in sandboxed iframes
-      const textArea = document.createElement("textarea");
-      textArea.value = window.location.href;
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-
-      setCopiedLink(true);
-      setTimeout(() => setCopiedLink(false), 2000);
-    } catch (err) {
-      console.warn("Failed to copy link:", err);
-    }
-  };
-
-  const handleCopySpreadsheet = () => {
-    const leafCount = getLeafCount(baseIp, baseCidr, splitNodes);
-    const maxDepth = getMaxDepth(baseIp, baseCidr, splitNodes);
-    const totalCols = (maxDepth + 1) + 5; // Levels + Details
-    
-    const grid = Array.from({ length: leafCount }, () => Array(totalCols).fill(null));
-    fillGrid(grid, baseIp, baseCidr, splitNodes, 0, 0);
-    
-    let html = '<table border="1"><thead><tr>';
-    for(let i=1; i<=maxDepth+1; i++) html += `<th>Level ${i}</th>`;
-    html += '<th>Subnet</th><th>Netmask</th><th>Range</th><th>Useable IPs</th><th>Hosts</th></tr></thead><tbody>';
-
-    for (let r = 0; r < leafCount; r++) {
-      html += '<tr>';
-      for (let c = 0; c < totalCols; c++) {
-        const cell = grid[r][c];
-        if (cell) {
-          html += `<td rowspan="${cell.rowspan}" valign="top">${cell.content}</td>`;
-        } else {
-          let covered = false;
-          for (let prevR = 0; prevR < r; prevR++) {
-            const prevCell = grid[prevR][c];
-            if (prevCell && prevCell.rowspan > (r - prevR)) {
-              covered = true;
-              break;
-            }
-          }
-          if (!covered) {
-            html += '<td></td>';
-          }
-        }
-      }
-      html += '</tr>';
-    }
-    html += '</tbody></table>';
-    
-    const blob = new Blob([html], { type: 'text/html' });
-    try {
-      const data = [new ClipboardItem({ 'text/html': blob })];
-      navigator.clipboard.write(data).then(() => {
-        setCopiedSpreadsheet(true);
-        setTimeout(() => setCopiedSpreadsheet(false), 2000);
-      });
-    } catch (e) {
-      // Fallback for sandboxed iframes or blocking environments: render temporary textarea
-      const textArea = document.createElement("textarea");
-      textArea.value = html; // This is raw HTML string, not rich text, but a fallback is better than crash
-      document.body.appendChild(textArea);
-      textArea.select();
-      document.execCommand("copy");
-      document.body.removeChild(textArea);
-      setCopiedSpreadsheet(true);
-      setTimeout(() => setCopiedSpreadsheet(false), 2000);
-    }
-  };
-
-  const handleCopyCSV = () => {
-    const leafCount = getLeafCount(baseIp, baseCidr, splitNodes);
-    const maxDepth = getMaxDepth(baseIp, baseCidr, splitNodes);
-    const totalCols = (maxDepth + 1) + 5;
-    
-    const grid = Array.from({ length: leafCount }, () => Array(totalCols).fill(null));
-    fillGrid(grid, baseIp, baseCidr, splitNodes, 0, 0);
-    
-    let csv = '';
-    // Header
-    const headerCols = [];
-    for(let i=1; i<=maxDepth+1; i++) headerCols.push(`"Level ${i}"`);
-    headerCols.push('"Subnet"','"Netmask"','"Range"','"Useable IPs"','"Hosts"');
-    csv += headerCols.join(',') + '\n';
-
-    for (let r = 0; r < leafCount; r++) {
-      const rowData = [];
-      for (let c = 0; c < totalCols; c++) {
-        const cell = grid[r][c];
-        if (cell) {
-          rowData.push(`"${cell.content}"`);
-        } else {
-          let val = '';
-          for (let prevR = 0; prevR < r; prevR++) {
-            const prevCell = grid[prevR][c];
-            if (prevCell && prevCell.rowspan > (r - prevR)) {
-              val = prevCell.content;
-              break;
-            }
-          }
-          rowData.push(`"${val}"`); // Repeats parent value in unmerged columns
-        }
-      }
-      csv += rowData.join(',') + '\n';
-    }
-    
-    navigator.clipboard.writeText(csv).then(() => {
-      setCopiedCSV(true);
-      setTimeout(() => setCopiedCSV(false), 2000);
-    });
-  };
-
-  return (
-    <div className="h-screen flex flex-col font-sans text-gray-800 bg-gray-50">
-      
-      {/* Navbar */}
-      <nav className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shrink-0 z-20">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-sm">C</div>
-          <div className="flex flex-col justify-center">
-            <span className="font-bold tracking-tight text-sm leading-tight">Subnet<span className="text-blue-600">Visualizer</span></span>
-            <span className="text-[10px] text-gray-500 font-medium truncate">Visual IPv4 Subnet Calculator</span>
-          </div>
-        </div>
-        <div className="flex items-center gap-4">
-          <button
-            onClick={copyLink}
-            className="text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 px-2.5 py-1.5 rounded border border-gray-200 flex items-center gap-1.5 transition-colors"
-          >
-            {copiedLink ? <Icon name="Check" className="w-4 h-4 text-emerald-600" /> : <Icon name="LinkIcon" className="w-4 h-4" />}
-            {copiedLink ? <span className="text-emerald-600">Copied!</span> : <span>Share Link</span>}
-          </button>
-          <a href="https://github.com/sruffilli/sruffilli.github.io/blob/main/webutils/subnet-calculator.html" target="_blank" className="text-gray-400 hover:text-gray-900 transition-colors">
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.05-.015-2.055-3.33 0-4.035-1.44-4.29-1.875-.15-.36-.75-1.44-1.29-1.725-.435-.24-1.065-.825-.015-.84 1.14-.015 1.95 1.05 2.22 1.485 1.05 1.785 2.76 1.275 3.45.975.105-.75.405-1.275.735-1.575-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.225 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405 1.02 0 2.04.135 3 .405 2.28-1.545 3.285-1.23 3.285-1.23.66 1.695.24 2.925.12 3.225.765.84 1.23 1.92 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.42.36.78 1.095.78 2.205 0 1.59-.015 2.865-.015 3.255 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
-          </a>
-        </div>
-      </nav>
-
-      <div className="flex flex-1 overflow-hidden">
-        
-        {/* Sidebar */}
-        <aside className="w-80 bg-white border-r border-gray-200 flex flex-col shrink-0 z-10 shadow-sm">
-          <div className="flex-1 overflow-y-auto p-5 space-y-6">
-            
-            {/* Network Address and Mask Bits Inputs */}
-            <div className="grid grid-cols-3 gap-2">
-              <div className="col-span-2 space-y-2">
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  Network Address
-                </label>
-                <input
-                  type="text"
-                  value={networkInput}
-                  onChange={(e) => setNetworkInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  className="w-full bg-white border border-gray-300 text-gray-900 rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono transition-all"
-                  placeholder="192.168.1.0"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">
-                  Mask Bits
-                </label>
-                <div className="relative flex items-center">
-                  <span className="absolute left-2.5 text-gray-500 font-mono text-sm">/</span>
-                  <input
-                    type="number"
-                    min="0"
-                    max="32"
-                    value={cidrInput}
-                    onChange={(e) => setCidrInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    className="w-full bg-white border border-gray-300 text-gray-900 rounded-lg pl-6 pr-1 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono transition-all"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Actions */}
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={handleUpdate}
-                className="px-3 py-2 bg-blue-600 hover:bg-blue-600 text-white font-medium rounded-lg text-sm shadow-sm transition-all flex items-center justify-center gap-1.5"
-              >
-                <Icon name="RotateCcw" className="w-4 h-4" />
-                Update
-              </button>
-              <button
-                type="button"
-                onClick={handleReset}
-                className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium rounded-lg text-sm border border-gray-200 transition-all"
-              >
-                Reset
-              </button>
-            </div>
-
-            {error && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-600 text-xs">
-                <span className="font-semibold">Error:</span> {error}
+            {visibleCols.subnet && (
+              <div className="px-2.5 py-1.5 truncate flex items-center border-r border-gray-200">
+                <span className="text-gray-900 font-semibold">{details.networkStr}</span>
+                <span className="text-blue-600 ml-1">/{cidr}</span>
               </div>
             )}
-
-            <hr className="border-gray-200" />
-
-            {/* Export Options */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                <Icon name="LinkIcon" className="w-4 h-4" /> Export To
+            {visibleCols.netmask && (
+              <div className="px-2.5 py-1.5 truncate flex items-center border-r border-gray-200 text-gray-500">
+                {details.netmaskStr}
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={handleCopyCSV}
-                  className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium rounded-lg text-sm border border-gray-200 transition-all flex items-center justify-center gap-1.5"
-                >
-                  {copiedCSV ? <Icon name="Check" className="w-4 h-4 text-emerald-600" /> : <Icon name="LinkIcon" className="w-4 h-4 text-gray-400" />}
-                  {copiedCSV ? <span className="text-emerald-600 font-medium">Copied!</span> : <span>CSV</span>}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCopySpreadsheet}
-                  className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium rounded-lg text-sm border border-gray-200 transition-all flex items-center justify-center gap-1.5"
-                >
-                  {copiedSpreadsheet ? <Icon name="Check" className="w-4 h-4 text-emerald-600" /> : <Icon name="LinkIcon" className="w-4 h-4 text-gray-400" />}
-                  {copiedSpreadsheet ? <span className="text-emerald-600 font-medium">Copied!</span> : <span>Spreadsheet</span>}
-                </button>
+            )}
+            {visibleCols.range && (
+              <div className="px-2.5 py-1.5 truncate flex items-center border-r border-gray-200 text-emerald-600">
+                {details.rangeStr}
               </div>
-            </div>
-
-            <hr className="border-gray-200" />
-
-            {/* Columns Toggles */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                <Icon name="Settings2" className="w-4 h-4" /> Columns
+            )}
+            {visibleCols.useable && (
+              <div className="px-2.5 py-1.5 truncate flex items-center border-r border-gray-200 text-blue-600">
+                {details.useableStr}
               </div>
-              <div className="space-y-3">
-                {Object.entries({
-                  subnet: 'Subnet Address',
-                  netmask: 'Netmask',
-                  range: 'Range',
-                  useable: 'Useable IPs',
-                  hosts: 'Hosts',
-                  divide: 'Divide',
-                  join: 'Join'
-                }).map(([key, label]) => (
-                  <Toggle
-                    key={key}
-                    label={label}
-                    checked={visibleCols[key]}
-                    onChange={(val) => toggleCol(key, val)}
-                  />
-                ))}
+            )}
+            {visibleCols.hosts && (
+              <div className="px-2.5 py-1.5 truncate flex items-center border-r border-gray-200 justify-end font-semibold text-gray-800">
+                {details.hosts.toLocaleString()}
               </div>
-            </div>
-
-          </div>
-
-          <div className="p-5 border-t border-gray-200 bg-gray-50 text-[10px] text-gray-500 flex items-center gap-1">
-            <Icon name="ChevronRight" className="w-3.5 h-3.5 text-blue-500" />
-            Click divide to split subnets. Join to merge back.
-          </div>
-        </aside>
-
-        {/* Main Content */}
-        <main className="flex-1 bg-grid overflow-hidden flex flex-col relative">
-          
-          <div className="flex-1 overflow-y-auto p-6 flex flex-col">
-            
-            <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col flex-1">
-              
-              {/* Table Header */}
-              <div className="flex w-full bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
-                <div
-                  className="grid flex-1 items-stretch text-[11px] font-bold text-gray-500 uppercase tracking-wider"
-                  style={{ gridTemplateColumns: gridTemplate }}
-                >
-                  {visibleCols.subnet && <div className="p-3">Subnet Address</div>}
-                  {visibleCols.netmask && <div className="p-3">Netmask</div>}
-                  {visibleCols.range && <div className="p-3">Range of Addresses</div>}
-                  {visibleCols.useable && <div className="p-3">Useable IPs</div>}
-                  {visibleCols.hosts && <div className="p-3 text-right">Hosts</div>}
-                  {visibleCols.divide && <div className="p-3 text-center">Divide</div>}
-                </div>
-                {visibleCols.join && (
-                  <div className="w-12 p-3 border-l border-gray-200 bg-gray-50 flex justify-center text-[11px] font-bold text-gray-500 uppercase tracking-wider">
-                    Join
-                  </div>
+            )}
+            {visibleCols.divide && (
+              <div className="p-2 flex items-center justify-center">
+                {cidr < 32 ? (
+                  <button
+                    onClick={() => onDivide(id)}
+                    className="flex items-center justify-center px-2 py-1.5 w-full bg-gray-100 hover:bg-blue-600 text-gray-700 hover:text-white rounded border border-gray-200 transition-all group"
+                    title="Split into two smaller subnets"
+                  >
+                    <Icon name="Split" className="w-4 h-4 sm:mr-1.5 group-hover:scale-110 transition-transform" />
+                    <span className="hidden sm:inline text-xs font-bold uppercase tracking-wider">Divide</span>
+                  </button>
+                ) : (
+                  <span className="text-xs text-gray-400 uppercase font-bold">Max</span>
                 )}
               </div>
+            )}
+          </div>
+        </div>
+      );
+    };
 
-              {/* Recursive Tree Body */}
-              <div className="overflow-x-auto flex-1">
-                <div className="min-w-[800px] flex flex-col h-full">
-                  <SubnetNode
-                    ip={baseIp}
-                    cidr={baseCidr}
-                    splitNodes={splitNodes}
-                    visibleCols={visibleCols}
-                    onDivide={handleDivide}
-                    onJoin={handleJoin}
-                    gridTemplate={gridTemplate}
-                  />
+
+    // --- Export Utils ---
+
+    const getLeafCount = (ip, cidr, splitNodes) => {
+      const id = `${long2ip(ip)}/${cidr}`;
+      if (splitNodes.has(id)) {
+        const leftIp = ip;
+        const rightIp = ip + Math.pow(2, 32 - (cidr + 1));
+        return getLeafCount(leftIp, cidr + 1, splitNodes) + getLeafCount(rightIp, cidr + 1, splitNodes);
+      }
+      return 1;
+    };
+
+    const getMaxDepth = (ip, cidr, splitNodes, currentDepth = 0) => {
+      const id = `${long2ip(ip)}/${cidr}`;
+      if (splitNodes.has(id)) {
+        const leftIp = ip;
+        const rightIp = ip + Math.pow(2, 32 - (cidr + 1));
+        return Math.max(
+          getMaxDepth(leftIp, cidr + 1, splitNodes, currentDepth + 1),
+          getMaxDepth(rightIp, cidr + 1, splitNodes, currentDepth + 1)
+        );
+      }
+      return currentDepth;
+    };
+
+    const fillGrid = (grid, ip, cidr, splitNodes, rowIndex, colIndex) => {
+      const id = `${long2ip(ip)}/${cidr}`;
+      const isSplit = splitNodes.has(id);
+      const details = getSubnetDetails(ip, cidr);
+
+      if (isSplit) {
+        const leftIp = ip;
+        const rightIp = ip + Math.pow(2, 32 - (cidr + 1));
+
+        const leafCountLeft = getLeafCount(leftIp, cidr + 1, splitNodes);
+        const leafCountRight = getLeafCount(rightIp, cidr + 1, splitNodes);
+
+        grid[rowIndex][colIndex] = {
+          content: `${details.networkStr}/${cidr}`,
+          rowspan: leafCountLeft + leafCountRight
+        };
+
+        fillGrid(grid, leftIp, cidr + 1, splitNodes, rowIndex, colIndex + 1);
+        fillGrid(grid, rightIp, cidr + 1, splitNodes, rowIndex + leafCountLeft, colIndex + 1);
+      } else {
+        // Leaf cell
+        grid[rowIndex][colIndex] = {
+          content: `${details.networkStr}/${cidr}`,
+          rowspan: 1
+        };
+
+        // Details cells at the end of row
+        const detailsColStart = grid[0].length - 5;
+        grid[rowIndex][detailsColStart] = { content: `${details.networkStr}/${cidr}`, rowspan: 1 };
+        grid[rowIndex][detailsColStart + 1] = { content: details.netmaskStr, rowspan: 1 };
+        grid[rowIndex][detailsColStart + 2] = { content: details.rangeStr, rowspan: 1 };
+        grid[rowIndex][detailsColStart + 3] = { content: details.useableStr, rowspan: 1 };
+        grid[rowIndex][detailsColStart + 4] = { content: details.hosts.toLocaleString(), rowspan: 1 };
+      }
+    };
+
+
+    // --- Main Application ---
+
+    export default function App() {
+      // Form State
+      const [networkInput, setNetworkInput] = useState('10.128.160.0');
+      const [cidrInput, setCidrInput] = useState('25');
+      const [error, setError] = useState('');
+
+      // App State
+      const [baseIp, setBaseIp] = useState(ip2long('10.128.160.0'));
+      const [baseCidr, setBaseCidr] = useState(25);
+      const [splitNodes, setSplitNodes] = useState(new Set());
+      const [copiedLink, setCopiedLink] = useState(false);
+      const [copiedCSV, setCopiedCSV] = useState(false);
+      const [copiedSpreadsheet, setCopiedSpreadsheet] = useState(false);
+
+      // Column Visibility State
+      const [visibleCols, setVisibleCols] = useState({
+        subnet: true,
+        netmask: false,
+        range: true,
+        useable: true,
+        hosts: true,
+        divide: true,
+        join: true,
+      });
+
+      // Calculate Grid Template based on visible columns
+      const gridTemplate = useMemo(() => {
+        const cols = [];
+        if (visibleCols.subnet) cols.push('minmax(140px, 2fr)');
+        if (visibleCols.netmask) cols.push('minmax(120px, 1.5fr)');
+        if (visibleCols.range) cols.push('minmax(220px, 3fr)');
+        if (visibleCols.useable) cols.push('minmax(220px, 3fr)');
+        if (visibleCols.hosts) cols.push('minmax(80px, 1fr)');
+        if (visibleCols.divide) cols.push('minmax(90px, 1fr)');
+        return cols.join(' ');
+      }, [visibleCols]);
+
+      // Load from URL on mount
+      useEffect(() => {
+        try {
+          const params = new URLSearchParams(window.location.search);
+          const ipParam = params.get('ip');
+          const cidrParam = params.get('cidr');
+          const splitParam = params.get('split');
+
+          if (ipParam && cidrParam) {
+            setNetworkInput(ipParam);
+            setCidrInput(cidrParam);
+            setBaseIp(ip2long(ipParam));
+            setBaseCidr(parseInt(cidrParam, 10));
+          }
+          if (splitParam) {
+            setSplitNodes(new Set(splitParam.split(',').filter(Boolean)));
+          }
+        } catch (e) {
+          console.warn('Failed to parse URL parameters:', e);
+        }
+      }, []);
+
+      // Sync to URL when state changes
+      useEffect(() => {
+        const params = new URLSearchParams();
+        params.set('ip', long2ip(baseIp));
+        params.set('cidr', baseCidr.toString());
+        const splits = Array.from(splitNodes);
+        if (splits.length > 0) {
+          params.set('split', splits.join(','));
+        }
+        const newUrl = `${window.location.pathname}?${params.toString()}`;
+
+        // Safely update URL history (avoids sandboxed iframe crashes)
+        try {
+          window.history.replaceState(null, '', newUrl);
+        } catch (e) {
+          console.debug('History update blocked by sandbox environment.');
+        }
+      }, [baseIp, baseCidr, splitNodes]);
+
+      const handleUpdate = () => {
+        setError(''); // Clear any previous errors
+
+        // Trim to prevent trailing spaces from breaking the regex
+        const trimmedIp = networkInput.trim();
+        const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+
+        if (!ipRegex.test(trimmedIp)) {
+          setError("Please enter a valid IPv4 address (e.g. 192.168.1.0).");
+          return;
+        }
+
+        const cidr = parseInt(cidrInput, 10);
+        if (isNaN(cidr) || cidr < 0 || cidr > 32) {
+          setError("CIDR must be between 0 and 32.");
+          return;
+        }
+
+        // Auto-correct IP to network address
+        const ipInt = ip2long(trimmedIp);
+        const { networkInt } = getSubnetDetails(ipInt, cidr);
+
+        setBaseIp(networkInt);
+        setNetworkInput(long2ip(networkInt)); // Update input to show network address
+        setBaseCidr(cidr);
+        setSplitNodes(new Set()); // Reset splits on new network
+      };
+
+      const handleKeyDown = (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleUpdate();
+        }
+      };
+
+      const handleReset = () => {
+        setSplitNodes(new Set());
+      };
+
+      const handleDivide = useCallback((id) => {
+        setSplitNodes(prev => {
+          const next = new Set(prev);
+          next.add(id);
+          return next;
+        });
+      }, []);
+
+      const handleJoin = useCallback((id) => {
+        setSplitNodes(prev => {
+          const next = new Set(prev);
+          // Remove the split at this node
+          next.delete(id);
+          // Clean up any nested splits under this node
+          const [ipStr, cidrStr] = id.split('/');
+          const ipInt = ip2long(ipStr);
+          const cidr = parseInt(cidrStr, 10);
+          const { networkInt, broadcastInt } = getSubnetDetails(ipInt, cidr);
+
+          for (const splitId of next) {
+            const [sIpStr, sCidrStr] = splitId.split('/');
+            const sIpInt = ip2long(sIpStr);
+            const sCidr = parseInt(sCidrStr, 10);
+
+            // A node is a child if its IP falls within the parent range 
+            // AND its CIDR prefix is strictly greater than the parent's CIDR
+            if (sIpInt >= networkInt && sIpInt <= broadcastInt && sCidr > cidr) {
+              next.delete(splitId);
+            }
+          }
+          return next;
+        });
+      }, []);
+
+      const toggleCol = (key, value) => {
+        setVisibleCols(prev => ({ ...prev, [key]: value }));
+      };
+
+      const copyLink = () => {
+        try {
+          // Using execCommand as clipboard API might be blocked in sandboxed iframes
+          const textArea = document.createElement("textarea");
+          textArea.value = window.location.href;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textArea);
+
+          setCopiedLink(true);
+          setTimeout(() => setCopiedLink(false), 2000);
+        } catch (err) {
+          console.warn("Failed to copy link:", err);
+        }
+      };
+
+      const handleCopySpreadsheet = () => {
+        const leafCount = getLeafCount(baseIp, baseCidr, splitNodes);
+        const maxDepth = getMaxDepth(baseIp, baseCidr, splitNodes);
+        const totalCols = (maxDepth + 1) + 5; // Levels + Details
+
+        const grid = Array.from({ length: leafCount }, () => Array(totalCols).fill(null));
+        fillGrid(grid, baseIp, baseCidr, splitNodes, 0, 0);
+
+        let html = '<table border="1"><thead><tr>';
+        for (let i = 1; i <= maxDepth + 1; i++) html += `<th>Level ${i}</th>`;
+        html += '<th>Subnet</th><th>Netmask</th><th>Range</th><th>Useable IPs</th><th>Hosts</th></tr></thead><tbody>';
+
+        for (let r = 0; r < leafCount; r++) {
+          html += '<tr>';
+          for (let c = 0; c < totalCols; c++) {
+            const cell = grid[r][c];
+            if (cell) {
+              html += `<td rowspan="${cell.rowspan}" valign="top">${cell.content}</td>`;
+            } else {
+              let covered = false;
+              for (let prevR = 0; prevR < r; prevR++) {
+                const prevCell = grid[prevR][c];
+                if (prevCell && prevCell.rowspan > (r - prevR)) {
+                  covered = true;
+                  break;
+                }
+              }
+              if (!covered) {
+                html += '<td></td>';
+              }
+            }
+          }
+          html += '</tr>';
+        }
+        html += '</tbody></table>';
+
+        const blob = new Blob([html], { type: 'text/html' });
+        try {
+          const data = [new ClipboardItem({ 'text/html': blob })];
+          navigator.clipboard.write(data).then(() => {
+            setCopiedSpreadsheet(true);
+            setTimeout(() => setCopiedSpreadsheet(false), 2000);
+          });
+        } catch (e) {
+          // Fallback for sandboxed iframes or blocking environments: render temporary textarea
+          const textArea = document.createElement("textarea");
+          textArea.value = html; // This is raw HTML string, not rich text, but a fallback is better than crash
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textArea);
+          setCopiedSpreadsheet(true);
+          setTimeout(() => setCopiedSpreadsheet(false), 2000);
+        }
+      };
+
+      const handleCopyCSV = () => {
+        const leafCount = getLeafCount(baseIp, baseCidr, splitNodes);
+        const maxDepth = getMaxDepth(baseIp, baseCidr, splitNodes);
+        const totalCols = (maxDepth + 1) + 5;
+
+        const grid = Array.from({ length: leafCount }, () => Array(totalCols).fill(null));
+        fillGrid(grid, baseIp, baseCidr, splitNodes, 0, 0);
+
+        let csv = '';
+        // Header
+        const headerCols = [];
+        for (let i = 1; i <= maxDepth + 1; i++) headerCols.push(`"Level ${i}"`);
+        headerCols.push('"Subnet"', '"Netmask"', '"Range"', '"Useable IPs"', '"Hosts"');
+        csv += headerCols.join(',') + '\n';
+
+        for (let r = 0; r < leafCount; r++) {
+          const rowData = [];
+          for (let c = 0; c < totalCols; c++) {
+            const cell = grid[r][c];
+            if (cell) {
+              rowData.push(`"${cell.content}"`);
+            } else {
+              let val = '';
+              for (let prevR = 0; prevR < r; prevR++) {
+                const prevCell = grid[prevR][c];
+                if (prevCell && prevCell.rowspan > (r - prevR)) {
+                  val = prevCell.content;
+                  break;
+                }
+              }
+              rowData.push(`"${val}"`); // Repeats parent value in unmerged columns
+            }
+          }
+          csv += rowData.join(',') + '\n';
+        }
+
+        navigator.clipboard.writeText(csv).then(() => {
+          setCopiedCSV(true);
+          setTimeout(() => setCopiedCSV(false), 2000);
+        });
+      };
+
+      return (
+        <div className="h-screen flex flex-col font-sans text-gray-800 bg-gray-50">
+
+          {/* Navbar */}
+          <nav className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shrink-0 z-20">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-sm">C</div>
+              <div className="flex flex-col justify-center">
+                <span className="font-bold tracking-tight text-sm leading-tight">Subnet<span className="text-blue-600">Visualizer</span></span>
+                <span className="text-[10px] text-gray-500 font-medium truncate">Visual IPv4 Subnet Calculator</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={copyLink}
+                className="text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 px-2.5 py-1.5 rounded border border-gray-200 flex items-center gap-1.5 transition-colors"
+              >
+                {copiedLink ? <Icon name="Check" className="w-4 h-4 text-emerald-600" /> : <Icon name="LinkIcon" className="w-4 h-4" />}
+                {copiedLink ? <span className="text-emerald-600">Copied!</span> : <span>Share Link</span>}
+              </button>
+              <a href="https://github.com/sruffilli/sruffilli.github.io/blob/main/webutils/subnet-calculator.html" target="_blank" className="text-gray-400 hover:text-gray-900 transition-colors">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.05-.015-2.055-3.33 0-4.035-1.44-4.29-1.875-.15-.36-.75-1.44-1.29-1.725-.435-.24-1.065-.825-.015-.84 1.14-.015 1.95 1.05 2.22 1.485 1.05 1.785 2.76 1.275 3.45.975.105-.75.405-1.275.735-1.575-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.225 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405 1.02 0 2.04.135 3 .405 2.28-1.545 3.285-1.23 3.285-1.23.66 1.695.24 2.925.12 3.225.765.84 1.23 1.92 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.42.36.78 1.095.78 2.205 0 1.59-.015 2.865-.015 3.255 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" /></svg>
+              </a>
+            </div>
+          </nav>
+
+          <div className="flex flex-1 overflow-hidden">
+
+            {/* Sidebar */}
+            <aside className="w-80 bg-white border-r border-gray-200 flex flex-col shrink-0 z-10 shadow-sm">
+              <div className="flex-1 overflow-y-auto p-5 space-y-6">
+
+                {/* Network Address and Mask Bits Inputs */}
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="col-span-2 space-y-2">
+                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      Network Address
+                    </label>
+                    <input
+                      type="text"
+                      value={networkInput}
+                      onChange={(e) => setNetworkInput(e.target.value)}
+                      onKeyDown={handleKeyDown}
+                      className="w-full bg-white border border-gray-300 text-gray-900 rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono transition-all"
+                      placeholder="192.168.1.0"
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">
+                      Mask Bits
+                    </label>
+                    <div className="relative flex items-center">
+                      <span className="absolute left-2.5 text-gray-500 font-mono text-sm">/</span>
+                      <input
+                        type="number"
+                        min="0"
+                        max="32"
+                        value={cidrInput}
+                        onChange={(e) => setCidrInput(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        className="w-full bg-white border border-gray-300 text-gray-900 rounded-lg pl-6 pr-1 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono transition-all"
+                      />
+                    </div>
+                  </div>
                 </div>
+
+                {/* Actions */}
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={handleUpdate}
+                    className="px-3 py-2 bg-blue-600 hover:bg-blue-600 text-white font-medium rounded-lg text-sm shadow-sm transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <Icon name="RotateCcw" className="w-4 h-4" />
+                    Update
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleReset}
+                    className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium rounded-lg text-sm border border-gray-200 transition-all"
+                  >
+                    Reset
+                  </button>
+                </div>
+
+                {error && (
+                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-600 text-xs">
+                    <span className="font-semibold">Error:</span> {error}
+                  </div>
+                )}
+
+                <hr className="border-gray-200" />
+
+                {/* Presets */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                    <Icon name="Network" className="w-4 h-4" /> Presets
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { label: '10.0.0.0/8', ip: '10.0.0.0', cidr: '8' },
+                      { label: '172.16.0.0/12', ip: '172.16.0.0', cidr: '12' },
+                      { label: '192.168.0.0/16', ip: '192.168.0.0', cidr: '16' },
+                      { label: 'CGNAT (100.64/10)', ip: '100.64.0.0', cidr: '10' }
+                    ].map(preset => (
+                      <button
+                        key={preset.label}
+                        type="button"
+                        onClick={() => {
+                          setNetworkInput(preset.ip);
+                          setCidrInput(preset.cidr);
+                          setBaseIp(ip2long(preset.ip));
+                          setBaseCidr(parseInt(preset.cidr, 10));
+                          setSplitNodes(new Set());
+                          setError('');
+                        }}
+                        className="px-2.5 py-1.5 text-[11px] font-mono font-medium bg-gray-50 hover:bg-blue-50 text-gray-600 hover:text-blue-700 border border-gray-200 hover:border-blue-200 rounded-md transition-all shadow-sm"
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <hr className="border-gray-200" />
+
+                {/* Export Options */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                    <Icon name="LinkIcon" className="w-4 h-4" /> Export To
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      type="button"
+                      onClick={handleCopyCSV}
+                      className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium rounded-lg text-sm border border-gray-200 transition-all flex items-center justify-center gap-1.5"
+                    >
+                      {copiedCSV ? <Icon name="Check" className="w-4 h-4 text-emerald-600" /> : <Icon name="LinkIcon" className="w-4 h-4 text-gray-400" />}
+                      {copiedCSV ? <span className="text-emerald-600 font-medium">Copied!</span> : <span>CSV</span>}
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleCopySpreadsheet}
+                      className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium rounded-lg text-sm border border-gray-200 transition-all flex items-center justify-center gap-1.5"
+                    >
+                      {copiedSpreadsheet ? <Icon name="Check" className="w-4 h-4 text-emerald-600" /> : <Icon name="LinkIcon" className="w-4 h-4 text-gray-400" />}
+                      {copiedSpreadsheet ? <span className="text-emerald-600 font-medium">Copied!</span> : <span>Spreadsheet</span>}
+                    </button>
+                  </div>
+                </div>
+
+                <hr className="border-gray-200" />
+
+                {/* Columns Toggles */}
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                    <Icon name="Settings2" className="w-4 h-4" /> Columns
+                  </div>
+                  <div className="space-y-3">
+                    {Object.entries({
+                      subnet: 'Subnet Address',
+                      netmask: 'Netmask',
+                      range: 'Range',
+                      useable: 'Useable IPs',
+                      hosts: 'Hosts',
+                      divide: 'Divide',
+                      join: 'Join'
+                    }).map(([key, label]) => (
+                      <Toggle
+                        key={key}
+                        label={label}
+                        checked={visibleCols[key]}
+                        onChange={(val) => toggleCol(key, val)}
+                      />
+                    ))}
+                  </div>
+                </div>
+
               </div>
 
-            </div>
+              <div className="p-5 border-t border-gray-200 bg-gray-50 text-[10px] text-gray-500 flex items-center gap-1">
+                <Icon name="ChevronRight" className="w-3.5 h-3.5 text-blue-500" />
+                Click divide to split subnets. Join to merge back.
+              </div>
+            </aside>
+
+            {/* Main Content */}
+            <main className="flex-1 bg-grid overflow-hidden flex flex-col relative">
+
+              <div className="flex-1 overflow-y-auto p-6 flex flex-col">
+
+                <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col flex-1">
+
+                  {/* Table Header */}
+                  <div className="flex w-full bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
+                    <div
+                      className="grid flex-1 items-stretch text-[11px] font-bold text-gray-500 uppercase tracking-wider"
+                      style={{ gridTemplateColumns: gridTemplate }}
+                    >
+                      {visibleCols.subnet && <div className="px-2.5 py-1.5">Subnet Address</div>}
+                      {visibleCols.netmask && <div className="px-2.5 py-1.5">Netmask</div>}
+                      {visibleCols.range && <div className="px-2.5 py-1.5">Range of Addresses</div>}
+                      {visibleCols.useable && <div className="px-2.5 py-1.5">Useable IPs</div>}
+                      {visibleCols.hosts && <div className="px-2.5 py-1.5 text-right">Hosts</div>}
+                      {visibleCols.divide && <div className="px-2.5 py-1.5 text-center">Divide</div>}
+                    </div>
+                    {visibleCols.join && (
+                      <div className="w-12 px-2.5 py-1.5 border-l border-gray-200 bg-gray-50 flex justify-center text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                        Join
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Recursive Tree Body */}
+                  <div className="overflow-x-auto flex-1">
+                    <div className="min-w-[800px] flex flex-col h-full">
+                      <SubnetNode
+                        ip={baseIp}
+                        cidr={baseCidr}
+                        splitNodes={splitNodes}
+                        visibleCols={visibleCols}
+                        onDivide={handleDivide}
+                        onJoin={handleJoin}
+                        gridTemplate={gridTemplate}
+                      />
+                    </div>
+                  </div>
+
+                </div>
+
+              </div>
+
+            </main>
 
           </div>
+        </div>
+      );
+    }
+    // --- Render Logic ---
+    import { createRoot } from 'react-dom/client';
+    const container = document.getElementById('root');
+    const root = createRoot(container);
+    root.render(<App />);
 
-        </main>
-
-      </div>
-    </div>
-  );
-}
-// --- Render Logic ---
-import { createRoot } from 'react-dom/client';
-const container = document.getElementById('root');
-const root = createRoot(container);
-root.render(<App />);
-
-    </script>
+  </script>
 </body>
+
 </html>
