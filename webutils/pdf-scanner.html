@@ -1,0 +1,607 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Scanify Pro - High Perf Document Scanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PDF.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    
+    <script>
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: { mono: ['"JetBrains Mono"', 'monospace'] },
+                    colors: { 
+                        gray: { 850: '#1a1f2e', 900: '#11141d' },
+                        brand: { 500: '#3b82f6', 600: '#2563eb' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap');
+        
+        body { font-family: 'Inter', sans-serif; }
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        
+        /* Custom range slider styling */
+        input[type=range] {
+            -webkit-appearance: none; 
+            background: transparent; 
+        }
+        input[type=range]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 16px; width: 16px;
+            border-radius: 50%;
+            background: #2563eb;
+            margin-top: -6px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+        input[type=range]::-webkit-slider-runnable-track {
+            width: 100%; height: 4px;
+            cursor: pointer; background: #e2e8f0;
+            border-radius: 2px;
+        }
+        
+        /* Grid background for preview area */
+        .bg-grid {
+            background-size: 20px 20px;
+            background-image:
+                linear-gradient(to right, #f1f5f9 1px, transparent 1px),
+                linear-gradient(to bottom, #f1f5f9 1px, transparent 1px);
+        }
+
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    </style>
+</head>
+<body class="bg-gray-50 h-screen flex flex-col overflow-hidden text-gray-800">
+
+    <!-- Navbar -->
+    <nav class="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shrink-0 z-20">
+        <div class="flex items-center gap-2">
+            <div class="w-8 h-8 bg-brand-600 rounded flex items-center justify-center text-white font-bold text-sm">S</div>
+            <div class="flex flex-col justify-center">
+                <span class="font-bold tracking-tight text-sm leading-tight">Scanify<span class="text-brand-600">Pro</span></span>
+                <span id="punDisplay" class="text-[10px] text-gray-500 font-medium truncate max-w-[200px] sm:max-w-md">High Perf Document Scanner</span>
+            </div>
+        </div>
+        <div class="flex items-center gap-4">
+            <span class="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded border border-gray-200" id="pageCountBadge">No file</span>
+            <a href="https://github.com" target="_blank" class="text-gray-400 hover:text-gray-900">
+                <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.05-.015-2.055-3.33 0-4.035-1.44-4.29-1.875-.15-.36-.75-1.44-1.29-1.725-.435-.24-1.065-.825-.015-.84 1.14-.015 1.95 1.05 2.22 1.485 1.05 1.785 2.76 1.275 3.45.975.105-.75.405-1.275.735-1.575-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.225 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405 1.02 0 2.04.135 3 .405 2.28-1.545 3.285-1.23 3.285-1.23.66 1.695.24 2.925.12 3.225.765.84 1.23 1.92 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.42.36.78 1.095.78 2.205 0 1.59-.015 2.865-.015 3.255 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+            </a>
+        </div>
+    </nav>
+
+    <div class="flex flex-1 overflow-hidden">
+        
+        <!-- Sidebar -->
+        <aside class="w-80 bg-white border-r border-gray-200 flex flex-col shrink-0 z-10 shadow-sm">
+            
+            <div class="flex-1 overflow-y-auto p-5 space-y-6">
+                
+                <!-- Upload Section -->
+                <div class="relative group">
+                    <input type="file" id="fileInput" accept="application/pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div class="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center transition-all group-hover:border-brand-500 group-hover:bg-blue-50">
+                        <div class="w-10 h-10 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-white text-gray-500 group-hover:text-brand-600 transition-colors">
+                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                        </div>
+                        <p class="text-sm font-medium text-gray-900">Upload PDF</p>
+                        <p class="text-xs text-gray-500 mt-1">Local processing only</p>
+                    </div>
+                </div>
+
+                <!-- Controls Form -->
+                <div id="controls" class="space-y-6 opacity-40 pointer-events-none transition-opacity">
+                    
+                    <!-- Preset Buttons -->
+                    <div class="grid grid-cols-3 gap-2">
+                        <button onclick="applyPreset('clean')" class="px-2 py-2 text-xs font-medium bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded text-gray-700 transition">Clean</button>
+                        <button onclick="applyPreset('bw')" class="px-2 py-2 text-xs font-medium bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded text-gray-700 transition">B&W</button>
+                        <button onclick="applyPreset('fax')" class="px-2 py-2 text-xs font-medium bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded text-gray-700 transition">Fax</button>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Distortion</h3>
+                        </div>
+
+                        <!-- Rotation -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs">
+                                <label class="font-medium text-gray-700">Tilt Angle</label>
+                                <span class="mono text-gray-500" id="val-rotation">0.5°</span>
+                            </div>
+                            <input type="range" data-param="rotation" min="0" max="3" step="0.1" value="0.5">
+                        </div>
+
+                        <!-- Blur -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs">
+                                <label class="font-medium text-gray-700">Blur / Softness</label>
+                                <span class="mono text-gray-500" id="val-blur">0.4px</span>
+                            </div>
+                            <input type="range" data-param="blur" min="0" max="2" step="0.1" value="0.4">
+                        </div>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div class="flex items-center justify-between">
+                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Texture</h3>
+                        </div>
+
+                        <!-- Noise -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs">
+                                <label class="font-medium text-gray-700">Grain (Fast)</label>
+                                <span class="mono text-gray-500" id="val-noise">30</span>
+                            </div>
+                            <input type="range" data-param="noise" min="0" max="100" step="1" value="30">
+                        </div>
+
+                        <!-- Threshold -->
+                        <div class="space-y-2">
+                            <div class="flex justify-between text-xs">
+                                <label class="font-medium text-gray-700">Threshold (Hard B&W)</label>
+                                <span class="mono text-gray-500" id="val-threshold">Disabled</span>
+                            </div>
+                            <!-- Value 0 means disabled, 1-255 is the threshold level -->
+                            <input type="range" data-param="threshold" min="0" max="200" step="1" value="0">
+                            <p class="text-[10px] text-gray-400">Forces strict black & white logic (Fax/Copier)</p>
+                        </div>
+                         
+                         <!-- Color / Vignette options -->
+                         <div class="space-y-3 pt-2">
+                            <div class="flex items-center gap-2">
+                                <input type="checkbox" id="grayscaleCheck" class="rounded border-gray-300 text-brand-600 focus:ring-brand-500">
+                                <label for="grayscaleCheck" class="text-xs font-medium text-gray-700">Grayscale (Smooth)</label>
+                            </div>
+                            
+                            <div class="flex items-center gap-2">
+                                <input type="checkbox" id="vignetteCheck" class="rounded border-gray-300 text-brand-600 focus:ring-brand-500">
+                                <label for="vignetteCheck" class="text-xs font-medium text-gray-700">Add Scanner Border/Shadows</label>
+                            </div>
+                         </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Action Area -->
+            <div class="p-5 border-t border-gray-200 bg-gray-50">
+                <button id="downloadBtn" disabled class="w-full bg-gray-900 hover:bg-gray-800 text-white h-11 rounded-lg font-medium shadow-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all active:scale-[0.98]">
+                    <span>Export PDF</span>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                </button>
+                
+                <!-- Processing Status -->
+                <div id="statusArea" class="mt-3 hidden">
+                    <div class="h-1.5 w-full bg-gray-200 rounded-full overflow-hidden">
+                        <div id="progressBar" class="h-full bg-brand-600 transition-all duration-100" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between mt-1.5">
+                        <span id="statusText" class="text-[10px] font-medium text-gray-500 uppercase">Processing</span>
+                        <span id="statusPercent" class="text-[10px] font-mono text-gray-900">0%</span>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Preview Canvas -->
+        <main class="flex-1 bg-grid overflow-hidden relative flex flex-col">
+            
+            <div id="previewWrapper" class="flex-1 overflow-y-auto p-8 flex flex-col items-center gap-6">
+                <!-- Welcome/Empty State -->
+                <div id="emptyState" class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
+                    <div class="w-16 h-16 bg-white rounded-2xl shadow-sm border border-gray-200 flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                    </div>
+                    <h2 class="text-gray-900 font-medium">No Document Loaded</h2>
+                    <p class="text-gray-500 text-sm mt-1">Upload a PDF to start scanning</p>
+                </div>
+
+                <!-- Canvas elements injected here -->
+            </div>
+
+            <!-- Preview Pagination/Info -->
+            <div id="previewControls" class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur border border-gray-200 shadow-lg rounded-full px-4 py-2 flex items-center gap-4 opacity-0 transition-opacity pointer-events-none">
+                <span class="text-xs font-medium text-gray-600">Previewing Page 1</span>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // --- Pun Generator ---
+        (function initPuns() {
+            const puns = [
+                "Make it look like your grandma's scanner",
+                "Because pristine PDFs are suspicious",
+                "Authentically terrible quality",
+                "Fax machine vibes only",
+                "Digital degradation on demand",
+                "Simulating hardware failure since 2024",
+                "More noise than signal",
+                "It's not a bug, it's a feature",
+                "Scanning like it's 1999",
+                "The art of bad compression",
+                "Adding character, one artifact at a time",
+                "Enterprise grade mediocrity",
+                "Bureaucracy simulator",
+                "Looks like it was mailed twice",
+                "Paper jam aesthetic"
+            ];
+            const randomPun = puns[Math.floor(Math.random() * puns.length)];
+            document.title = `Scanify Pro - ${randomPun}`;
+            document.getElementById('punDisplay').innerText = randomPun;
+        })();
+
+        // --- Image Processing Engine ---
+        class ScannerEffect {
+            constructor() {
+                this.noisePattern = null;
+                this.vignettePattern = null;
+            }
+
+            // Pre-generate noise texture (Huge performance boost over per-pixel loops)
+            createNoisePattern(intensity) {
+                const canvas = document.createElement('canvas');
+                canvas.width = 512;
+                canvas.height = 512;
+                const ctx = canvas.getContext('2d');
+                
+                const idata = ctx.createImageData(512, 512);
+                const buffer32 = new Uint32Array(idata.data.buffer);
+                const len = buffer32.length;
+
+                for (let i = 0; i < len; i++) {
+                    if (Math.random() < 0.5) {
+                        // 0xff000000 is black (ABGR little endian)
+                        // Alpha is controlled by globalAlpha later
+                        buffer32[i] = 0xff000000;
+                    } else {
+                        buffer32[i] = 0x00000000; // Transparent
+                    }
+                }
+                ctx.putImageData(idata, 0, 0);
+                return canvas;
+            }
+
+            // Binarization (Thresholding) for Fax look
+            applyThreshold(ctx, width, height, thresholdLevel) {
+                const imgData = ctx.getImageData(0, 0, width, height);
+                const d = imgData.data; // R,G,B,A linear array
+                // Loop is unavoidable here, but we optimize math
+                for (let i = 0; i < d.length; i += 4) {
+                    // Simple luminance
+                    const r = d[i];
+                    const g = d[i+1];
+                    const b = d[i+2];
+                    const v = (0.2126*r + 0.7152*g + 0.0722*b);
+                    const val = (v >= thresholdLevel) ? 255 : 0;
+                    d[i] = d[i+1] = d[i+2] = val;
+                }
+                ctx.putImageData(imgData, 0, 0);
+            }
+
+            render(ctx, originalCanvas, options) {
+                const { width, height } = originalCanvas;
+                
+                // 1. Clear & Background
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, width, height);
+
+                // 2. Setup Rotation
+                ctx.save();
+                
+                if (options.rotation > 0) {
+                    // Random slight deviation +/- 
+                    const angle = (Math.random() - 0.5) * 2 * options.rotation;
+                    ctx.translate(width/2, height/2);
+                    ctx.rotate(angle * Math.PI / 180);
+                    ctx.translate(-width/2, -height/2);
+                }
+
+                // 3. Draw Base Image (with Blur & Grayscale)
+                let filterStr = `blur(${options.blur}px)`;
+                if (options.grayscale) {
+                    filterStr += ` grayscale(100%)`;
+                }
+                ctx.filter = filterStr;
+                
+                ctx.drawImage(originalCanvas, 0, 0, width, height);
+                ctx.filter = 'none';
+
+                // 4. Thresholding (If enabled) - "Fax Mode"
+                // Note: Thresholding naturally removes color, so it overrides grayscale
+                if (options.threshold > 0) {
+                    this.applyThreshold(ctx, width, height, options.threshold);
+                }
+
+                ctx.restore(); // Undo rotation for overlays
+
+                // 5. Apply Noise (Composite)
+                if (options.noise > 0) {
+                    if (!this.noisePattern) this.noisePattern = this.createNoisePattern();
+                    
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'overlay';
+                    ctx.globalAlpha = options.noise / 100; // Range 0.0 to 1.0
+                    const pattern = ctx.createPattern(this.noisePattern, 'repeat');
+                    ctx.fillStyle = pattern;
+                    ctx.fillRect(0, 0, width, height);
+                    ctx.restore();
+                }
+
+                // 6. Vignette / Scanner shadow (Optional)
+                if (options.vignette) {
+                    ctx.save();
+                    ctx.globalCompositeOperation = 'multiply';
+                    const grad = ctx.createRadialGradient(width/2, height/2, height/3, width/2, height/2, height);
+                    grad.addColorStop(0, "rgba(0,0,0,0)");
+                    grad.addColorStop(1, "rgba(0,0,0,0.15)"); // Subtle darkening at edges
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(0,0, width, height);
+                    ctx.restore();
+                }
+            }
+        }
+
+        // --- Application State ---
+        const state = {
+            pdfDoc: null,
+            originalPages: [], // Array of Canvases
+            config: {
+                rotation: 0.5,
+                blur: 0.4,
+                noise: 30,
+                threshold: 0,
+                grayscale: false,
+                vignette: false
+            }
+        };
+
+        const engine = new ScannerEffect();
+        const { jsPDF } = window.jspdf;
+
+        // --- DOM Elements ---
+        const els = {
+            input: document.getElementById('fileInput'),
+            previewWrapper: document.getElementById('previewWrapper'),
+            emptyState: document.getElementById('emptyState'),
+            controls: document.getElementById('controls'),
+            downloadBtn: document.getElementById('downloadBtn'),
+            statusArea: document.getElementById('statusArea'),
+            progressBar: document.getElementById('progressBar'),
+            statusText: document.getElementById('statusText'),
+            statusPercent: document.getElementById('statusPercent'),
+            pageCountBadge: document.getElementById('pageCountBadge'),
+            inputs: document.querySelectorAll('#controls input'),
+            vignetteCheck: document.getElementById('vignetteCheck'),
+            grayscaleCheck: document.getElementById('grayscaleCheck')
+        };
+
+        // --- Event Listeners ---
+        els.input.addEventListener('change', loadPDF);
+        els.downloadBtn.addEventListener('click', downloadPDF);
+        els.vignetteCheck.addEventListener('change', (e) => {
+            state.config.vignette = e.target.checked;
+            updatePreview();
+        });
+        els.grayscaleCheck.addEventListener('change', (e) => {
+            state.config.grayscale = e.target.checked;
+            updatePreview();
+        });
+
+        // Bind sliders to state
+        els.inputs.forEach(input => {
+            if(input.type === 'range') {
+                input.addEventListener('input', (e) => {
+                    const param = e.target.dataset.param;
+                    const val = parseFloat(e.target.value);
+                    state.config[param] = val;
+                    
+                    // Update display text
+                    const display = document.getElementById(`val-${param}`);
+                    if(display) {
+                        if (param === 'threshold') display.innerText = val === 0 ? "Disabled" : val;
+                        else if (param === 'rotation') display.innerText = val + "°";
+                        else if (param === 'blur') display.innerText = val + "px";
+                        else display.innerText = val;
+                    }
+                    
+                    requestAnimationFrame(updatePreview);
+                });
+            }
+        });
+
+        function applyPreset(type) {
+            const presets = {
+                clean: { rotation: 0.2, blur: 0, noise: 5, threshold: 0, grayscale: false, vignette: false },
+                bw:    { rotation: 0.4, blur: 0.2, noise: 20, threshold: 0, grayscale: true, vignette: false },
+                fax:   { rotation: 0.8, blur: 0.4, noise: 40, threshold: 160, grayscale: true, vignette: true }
+            };
+            const p = presets[type];
+            if(!p) return;
+
+            // Update state
+            state.config = { ...state.config, ...p };
+            
+            // Update UI Controls
+            document.querySelector('[data-param="rotation"]').value = p.rotation;
+            document.querySelector('[data-param="blur"]').value = p.blur;
+            document.querySelector('[data-param="noise"]').value = p.noise;
+            document.querySelector('[data-param="threshold"]').value = p.threshold;
+            document.getElementById('vignetteCheck').checked = p.vignette;
+            document.getElementById('grayscaleCheck').checked = p.grayscale;
+
+            // Trigger visual updates
+            ['rotation','blur','noise','threshold'].forEach(k => {
+                const el = document.getElementById(`val-${k}`);
+                if(el) el.innerText = p[k] + (k === 'threshold' && p[k]===0 ? 'Disabled' : '');
+            });
+            updatePreview();
+        }
+
+        // --- Core Logic ---
+
+        async function loadPDF(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            els.emptyState.classList.add('hidden');
+            els.controls.classList.remove('opacity-40', 'pointer-events-none');
+            els.downloadBtn.disabled = false;
+            els.pageCountBadge.innerText = "Loading...";
+
+            const buf = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument(buf).promise;
+            state.pdfDoc = pdf;
+            state.originalPages = [];
+
+            els.pageCountBadge.innerText = `${pdf.numPages} Pages`;
+            els.previewWrapper.innerHTML = ''; // Clear existing
+
+            // Render first 3 pages only for preview (Performance)
+            const limit = Math.min(pdf.numPages, 3);
+            
+            for (let i = 1; i <= limit; i++) {
+                const page = await pdf.getPage(i);
+                const viewport = page.getViewport({ scale: 1.0 }); // Preview scale
+                
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                const ctx = canvas.getContext('2d');
+                await page.render({ canvasContext: ctx, viewport }).promise;
+
+                // Create Display Canvas (the one we manipulate)
+                const displayCanvas = document.createElement('canvas');
+                displayCanvas.width = viewport.width;
+                displayCanvas.height = viewport.height;
+                displayCanvas.className = 'shadow-lg bg-white max-w-full h-auto border border-gray-200';
+                
+                // Wrapper for spacing
+                const wrapper = document.createElement('div');
+                wrapper.className = 'relative w-full max-w-2xl flex justify-center';
+                wrapper.appendChild(displayCanvas);
+                els.previewWrapper.appendChild(wrapper);
+
+                // Store references
+                state.originalPages.push({
+                    source: canvas,    // Clean render
+                    display: displayCanvas // Effect render
+                });
+            }
+
+            updatePreview();
+        }
+
+        function updatePreview() {
+            if (state.originalPages.length === 0) return;
+
+            // Sync Process for preview (it's fast enough with 3 pages)
+            state.originalPages.forEach(page => {
+                const ctx = page.display.getContext('2d');
+                engine.render(ctx, page.source, state.config);
+            });
+        }
+
+        // --- Async Download Logic (Prevent freezing) ---
+
+        async function downloadPDF() {
+            if (!state.pdfDoc) return;
+
+            els.statusArea.classList.remove('hidden');
+            els.downloadBtn.disabled = true;
+            els.controls.classList.add('pointer-events-none', 'opacity-50');
+
+            const pdf = new jsPDF();
+            const total = state.pdfDoc.numPages;
+            
+            // Queue system to let UI breathe
+            let currentPage = 1;
+
+            const processPage = async () => {
+                if (currentPage > total) {
+                    // Done
+                    pdf.save('scanify_pro_export.pdf');
+                    finishDownload();
+                    return;
+                }
+
+                updateStatus(currentPage, total);
+
+                try {
+                    // 1. Fetch & Render Original High Res (SOURCE CANVAS)
+                    const pageData = await state.pdfDoc.getPage(currentPage);
+                    // Scale 1.5 is a good balance for quality vs file size
+                    const viewport = pageData.getViewport({ scale: 1.5 });
+                    
+                    const sourceCanvas = document.createElement('canvas');
+                    sourceCanvas.width = viewport.width;
+                    sourceCanvas.height = viewport.height;
+                    const sourceCtx = sourceCanvas.getContext('2d');
+                    
+                    await pageData.render({ canvasContext: sourceCtx, viewport }).promise;
+
+                    // 2. Apply Effects (DESTINATION CANVAS)
+                    // We must use a separate canvas to avoid "draw on self" blank issues
+                    const destCanvas = document.createElement('canvas');
+                    destCanvas.width = viewport.width;
+                    destCanvas.height = viewport.height;
+                    const destCtx = destCanvas.getContext('2d');
+                    
+                    // Render source -> dest with effects
+                    engine.render(destCtx, sourceCanvas, state.config);
+
+                    // 3. Add to PDF
+                    const imgData = destCanvas.toDataURL('image/jpeg', 0.80);
+                    
+                    if (currentPage > 1) pdf.addPage();
+                    
+                    const pdfW = pdf.internal.pageSize.getWidth();
+                    const pdfH = (destCanvas.height * pdfW) / destCanvas.width;
+                    
+                    pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
+
+                    currentPage++;
+                    // Non-blocking recursion
+                    requestAnimationFrame(processPage);
+
+                } catch (err) {
+                    console.error(err);
+                    alert("Error processing page " + currentPage);
+                    finishDownload();
+                }
+            };
+
+            // Start loop
+            processPage();
+        }
+
+        function updateStatus(page, total) {
+            const p = Math.round((page / total) * 100);
+            els.progressBar.style.width = `${p}%`;
+            els.statusPercent.innerText = `${p}%`;
+            els.statusText.innerText = `Rendering Page ${page} of ${total}`;
+        }
+
+        function finishDownload() {
+            els.statusArea.classList.add('hidden');
+            els.downloadBtn.disabled = false;
+            els.controls.classList.remove('pointer-events-none', 'opacity-50');
+            els.progressBar.style.width = '0%';
+        }
+
+    </script>
+</body>
+</html>

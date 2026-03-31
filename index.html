@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Utilities</title>
+    <meta name="description" content="A collection of single-file, portable web utilities that run directly in your browser.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        outfit: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        slate: { 850: '#1e293b' }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glass-card:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            transform: translateY(-2px);
+        }
+        .bg-grid {
+            background-size: 30px 30px;
+            background-image: 
+                linear-gradient(to right, rgba(255, 255, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(255, 255, 255, 0.02) 1px, transparent 1px);
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 font-sans min-h-screen flex flex-col bg-grid">
+
+    <main class="flex-1 flex flex-col justify-center items-center px-4 py-16 relative overflow-hidden">
+        
+        <!-- Decorative Gradients -->
+        <div class="absolute top-0 -left-48 w-96 h-96 bg-blue-600 rounded-full filter blur-[128px] opacity-20 animate-pulse"></div>
+        <div class="absolute bottom-0 -right-48 w-96 h-96 bg-purple-600 rounded-full filter blur-[128px] opacity-20 animate-pulse"></div>
+
+        <div class="max-w-4xl w-full text-center mb-12 relative z-10">
+            <h1 class="text-5xl font-extrabold font-outfit mb-4 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 tracking-tight">
+                Web Utilities
+            </h1>
+            <p class="text-lg text-slate-400 max-w-2xl mx-auto">
+                A collection of single-file, portable web utilities that run directly in your browser.
+            </p>
+        </div>
+
+        <div class="max-w-4xl w-full grid grid-cols-1 md:grid-cols-2 gap-6 relative z-10">
+            
+            <a href="./webutils/pdf-scanner.html" class="glass-card rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 group">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-xl font-bold font-outfit text-white group-hover:text-blue-400 transition-colors">
+                            Scanify Pro
+                        </h2>
+                        <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-sm text-slate-400 group-hover:text-slate-300 transition-colors leading-relaxed">
+                        High-performance document scanner simulation. Add tilt, blur, grain, and threshold effects to PDFs to simulate real scanner output. Local processing only.
+                    </p>
+                </div>
+            </a>
+            <a href="./webutils/subnet-calculator.html" class="glass-card rounded-2xl p-6 flex flex-col justify-between transition-all duration-300 group">
+                <div>
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-xl font-bold font-outfit text-white group-hover:text-blue-400 transition-colors">
+                            Visual Subnet Calculator
+                        </h2>
+                        <div class="w-8 h-8 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-blue-600 group-hover:text-white transition-all duration-300">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+                            </svg>
+                        </div>
+                    </div>
+                    <p class="text-sm text-slate-400 group-hover:text-slate-300 transition-colors leading-relaxed">
+                        Split, join, and visualize IPv4 subnets effortlessly. Light-themed, responsive dashboard with real-time math.
+                    </p>
+                </div>
+            </a>
+        </div>
+
+    </main>
+
+    <footer class="py-8 text-center text-xs text-slate-500 border-t border-slate-800/50 relative z-10">
+        <p>&copy; 2026 sruffilli. github.io. Built with passion & AI.</p>
+    </footer>
+
+</body>
+</html>
