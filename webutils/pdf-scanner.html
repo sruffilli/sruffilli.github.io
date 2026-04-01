@@ -244,7 +244,12 @@
         <!-- Preview Canvas -->
         <main class="flex-1 bg-grid md:overflow-hidden relative flex flex-col">
 
-            <div id="previewWrapper" class="flex-1 overflow-y-auto p-4 md:p-8 flex flex-col items-center gap-6">
+            <div id="previewWrapper" class="flex-1 overflow-auto p-4 md:p-8 flex flex-col gap-6 items-center">
+                <style>
+                    /* Fix for flex-col centering cutoff when overflowing */
+                    #previewWrapper > div { margin: 0 auto; }
+                    #previewWrapper { align-items: normal; } /* Override items-center for safety, rely on mx-auto */
+                </style>
                 <!-- Welcome/Empty State -->
                 <div id="emptyState"
                     class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -267,6 +272,18 @@
             <div id="previewControls"
                 class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur border border-gray-200 shadow-lg rounded-full px-4 py-2 flex items-center gap-4 opacity-0 transition-opacity pointer-events-none">
                 <span class="text-xs font-medium text-gray-600">Previewing Page 1</span>
+            </div>
+
+            <!-- Zoom Controls -->
+            <div id="zoomControls"
+                class="absolute bottom-6 right-6 bg-white/90 backdrop-blur border border-gray-200 shadow-lg rounded-full px-2 py-1 flex items-center gap-1 z-20 hidden">
+                <button id="zoomOutBtn" title="Zoom Out" class="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+                </button>
+                <span id="zoomLevel" class="text-xs font-mono text-gray-600 w-10 text-center">100%</span>
+                <button id="zoomInBtn" title="Zoom In" class="p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                </button>
             </div>
         </main>
     </div>
@@ -415,6 +432,7 @@
         const state = {
             pdfDoc: null,
             originalPages: [], // Array of Canvases
+            zoom: 1.0,         // Zoom level
             config: {
                 rotation: 0.5,
                 blur: 0.4,
@@ -442,7 +460,11 @@
             pageCountBadge: document.getElementById('pageCountBadge'),
             inputs: document.querySelectorAll('#controls input'),
             vignetteCheck: document.getElementById('vignetteCheck'),
-            grayscaleCheck: document.getElementById('grayscaleCheck')
+            grayscaleCheck: document.getElementById('grayscaleCheck'),
+            zoomControls: document.getElementById('zoomControls'),
+            zoomInBtn: document.getElementById('zoomInBtn'),
+            zoomOutBtn: document.getElementById('zoomOutBtn'),
+            zoomLevel: document.getElementById('zoomLevel')
         };
 
         // --- Event Listeners ---
@@ -456,6 +478,22 @@
             state.config.grayscale = e.target.checked;
             updatePreview();
         });
+
+        els.zoomInBtn.addEventListener('click', () => updateZoom(state.zoom + 0.25));
+        els.zoomOutBtn.addEventListener('click', () => updateZoom(state.zoom - 0.25));
+
+        function updateZoom(newZoom) {
+            state.zoom = Math.max(0.25, Math.min(5.0, newZoom));
+            els.zoomLevel.innerText = `${Math.round(state.zoom * 100)}%`;
+            
+            const canvases = document.querySelectorAll('.pdf-canvas');
+            canvases.forEach((canvas, index) => {
+                if (state.originalPages[index]) {
+                     const originalWidth = state.originalPages[index].viewportWidth;
+                     canvas.style.width = `${originalWidth * state.zoom}px`;
+                }
+            });
+        }
 
         // Bind sliders to state
         els.inputs.forEach(input => {
@@ -517,6 +555,7 @@
 
             els.emptyState.classList.add('hidden');
             els.controls.classList.remove('opacity-40', 'pointer-events-none');
+            els.zoomControls.classList.remove('hidden');
             els.downloadBtn.disabled = false;
             els.pageCountBadge.innerText = "Loading...";
 
@@ -533,30 +572,36 @@
 
             for (let i = 1; i <= limit; i++) {
                 const page = await pdf.getPage(i);
-                const viewport = page.getViewport({ scale: 1.0 }); // Preview scale
+                
+                // CSS scale for layout and zoom calculations
+                const cssViewport = page.getViewport({ scale: 1.0 });
+                // High-res actual render scale for crisp preview
+                const renderViewport = page.getViewport({ scale: 2.0 });
 
                 const canvas = document.createElement('canvas');
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
+                canvas.width = renderViewport.width;
+                canvas.height = renderViewport.height;
                 const ctx = canvas.getContext('2d');
-                await page.render({ canvasContext: ctx, viewport }).promise;
+                await page.render({ canvasContext: ctx, viewport: renderViewport }).promise;
 
                 // Create Display Canvas (the one we manipulate)
                 const displayCanvas = document.createElement('canvas');
-                displayCanvas.width = viewport.width;
-                displayCanvas.height = viewport.height;
-                displayCanvas.className = 'shadow-lg bg-white max-w-full h-auto border border-gray-200';
+                displayCanvas.width = renderViewport.width;
+                displayCanvas.height = renderViewport.height;
+                displayCanvas.className = 'pdf-canvas shadow-lg bg-white border border-gray-200 transition-all duration-200';
+                displayCanvas.style.width = `${cssViewport.width * state.zoom}px`;
 
                 // Wrapper for spacing
                 const wrapper = document.createElement('div');
-                wrapper.className = 'relative w-full max-w-2xl flex justify-center';
+                wrapper.className = 'relative flex justify-center mb-6';
                 wrapper.appendChild(displayCanvas);
                 els.previewWrapper.appendChild(wrapper);
 
                 // Store references
                 state.originalPages.push({
                     source: canvas,    // Clean render
-                    display: displayCanvas // Effect render
+                    display: displayCanvas, // Effect render
+                    viewportWidth: cssViewport.width
                 });
             }
 
