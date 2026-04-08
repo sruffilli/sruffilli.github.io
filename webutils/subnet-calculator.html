@@ -201,21 +201,41 @@
     const CopyButton = ({ text, className = "" }) => {
       const [copied, setCopied] = useState(false);
       
-      const handleCopy = (e) => {
+      const handleCopy = async (e) => {
         e.stopPropagation();
-        try {
-          // Using execCommand as clipboard API might be blocked in sandboxed iframes
-          const textArea = document.createElement("textarea");
-          textArea.value = text;
-          document.body.appendChild(textArea);
-          textArea.select();
-          document.execCommand("copy");
-          document.body.removeChild(textArea);
+        
+        const fallbackCopy = () => {
+          try {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            // Prevent scrolling to the bottom of the page
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            textArea.style.top = "-9999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textArea);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+          } catch (err) {
+            console.warn("Fallback copy failed:", err);
+          }
+        };
 
-          setCopied(true);
-          setTimeout(() => setCopied(false), 2000);
-        } catch (err) {
-          console.warn("Failed to copy:", err);
+        // Prefer modern clipboard API if available (and in a secure context like localhost, https, or sometimes file://)
+        if (navigator.clipboard && window.isSecureContext) {
+          try {
+            await navigator.clipboard.writeText(text);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 2000);
+          } catch (err) {
+            console.warn("Clipboard API failed, trying fallback:", err);
+            fallbackCopy();
+          }
+        } else {
+          fallbackCopy();
         }
       };
 
