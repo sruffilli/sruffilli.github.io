@@ -110,6 +110,11 @@
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
             <rect width="8" height="4" x="8" y="2" rx="1" ry="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
           </svg>
+        ),
+        X: (
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
         )
       };
       return icons[name] || null;
@@ -128,6 +133,15 @@
         (long >>> 8) & 255,
         long & 255
       ].join('.');
+    };
+
+    const ip2bin = (ipInt) => {
+      return [
+        (ipInt >>> 24) & 255,
+        (ipInt >>> 16) & 255,
+        (ipInt >>> 8) & 255,
+        ipInt & 255
+      ].map(n => n.toString(2).padStart(8, '0')).join('.');
     };
 
     const getSubnetDetails = (ipInt, cidr) => {
@@ -186,7 +200,7 @@
 
     // --- Recursive Subnet Row Component ---
 
-    const SubnetNode = ({ ip, cidr, splitNodes, visibleCols, onDivide, onJoin, gridTemplate }) => {
+    const SubnetNode = ({ ip, cidr, splitNodes, visibleCols, onDivide, onJoin, onSelect, gridTemplate }) => {
       const id = `${long2ip(ip)}/${cidr}`;
       const isSplit = splitNodes.has(id);
       const details = useMemo(() => getSubnetDetails(ip, cidr), [ip, cidr]);
@@ -201,12 +215,12 @@
               <SubnetNode
                 ip={leftIp} cidr={cidr + 1}
                 splitNodes={splitNodes} visibleCols={visibleCols}
-                onDivide={onDivide} onJoin={onJoin} gridTemplate={gridTemplate}
+                onDivide={onDivide} onJoin={onJoin} onSelect={onSelect} gridTemplate={gridTemplate}
               />
               <SubnetNode
                 ip={rightIp} cidr={cidr + 1}
                 splitNodes={splitNodes} visibleCols={visibleCols}
-                onDivide={onDivide} onJoin={onJoin} gridTemplate={gridTemplate}
+                onDivide={onDivide} onJoin={onJoin} onSelect={onSelect} gridTemplate={gridTemplate}
               />
             </div>
             {visibleCols.join && (
@@ -226,7 +240,10 @@
       }
 
       return (
-        <div className="flex w-full border-b border-gray-200 hover:bg-gray-50 transition-colors">
+        <div 
+          className="flex w-full border-b border-gray-200 hover:bg-blue-50 cursor-pointer transition-colors"
+          onClick={() => onSelect({ ip, cidr })}
+        >
           <div
             className="grid flex-1 items-stretch text-xs font-mono text-gray-700"
             style={{ gridTemplateColumns: gridTemplate }}
@@ -374,6 +391,8 @@
       const [baseIp, setBaseIp] = useState(ip2long('10.128.160.0'));
       const [baseCidr, setBaseCidr] = useState(25);
       const [splitNodes, setSplitNodes] = useState(new Set());
+      const [widgetIpStr, setWidgetIpStr] = useState('10.128.160.0');
+      const [widgetCidrStr, setWidgetCidrStr] = useState('25');
       const [copiedLink, setCopiedLink] = useState(false);
       const [copiedCSV, setCopiedCSV] = useState(false);
       const [copiedSpreadsheet, setCopiedSpreadsheet] = useState(false);
@@ -388,6 +407,22 @@
         divide: true,
         join: true,
       });
+
+      // Widget Input Parsing
+      const parsedWidgetIp = useMemo(() => {
+        const trimmed = widgetIpStr.trim();
+        const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+        if (ipRegex.test(trimmed)) {
+          return ip2long(trimmed);
+        }
+        return null;
+      }, [widgetIpStr]);
+
+      const parsedWidgetCidr = useMemo(() => {
+        const c = parseInt(widgetCidrStr, 10);
+        if (!isNaN(c) && c >= 0 && c <= 32) return c;
+        return null;
+      }, [widgetCidrStr]);
 
       // Calculate Grid Template based on visible columns
       const gridTemplate = useMemo(() => {
@@ -414,6 +449,8 @@
             setCidrInput(cidrParam);
             setBaseIp(ip2long(ipParam));
             setBaseCidr(parseInt(cidrParam, 10));
+            setWidgetIpStr(ipParam);
+            setWidgetCidrStr(cidrParam);
           }
           if (splitParam) {
             setSplitNodes(new Set(splitParam.split(',').filter(Boolean)));
@@ -468,6 +505,8 @@
         setNetworkInput(long2ip(networkInt)); // Update input to show network address
         setBaseCidr(cidr);
         setSplitNodes(new Set()); // Reset splits on new network
+        setWidgetIpStr(long2ip(networkInt));
+        setWidgetCidrStr(cidr.toString());
       };
 
       const handleKeyDown = (e) => {
@@ -479,6 +518,8 @@
 
       const handleReset = () => {
         setSplitNodes(new Set());
+        setWidgetIpStr(long2ip(baseIp));
+        setWidgetCidrStr(baseCidr.toString());
       };
 
       const handleDivide = useCallback((id) => {
@@ -749,6 +790,8 @@
                           setBaseIp(ip2long(preset.ip));
                           setBaseCidr(parseInt(preset.cidr, 10));
                           setSplitNodes(new Set());
+                          setWidgetIpStr(preset.ip);
+                          setWidgetCidrStr(preset.cidr);
                           setError('');
                         }}
                         className="px-2.5 py-1.5 text-[11px] font-mono font-medium bg-gray-50 hover:bg-blue-50 text-gray-600 hover:text-blue-700 border border-gray-200 hover:border-blue-200 rounded-md transition-all shadow-sm"
@@ -858,6 +901,10 @@
                         visibleCols={visibleCols}
                         onDivide={handleDivide}
                         onJoin={handleJoin}
+                        onSelect={({ ip, cidr }) => {
+                          setWidgetIpStr(long2ip(ip));
+                          setWidgetCidrStr(cidr.toString());
+                        }}
                         gridTemplate={gridTemplate}
                       />
                     </div>
@@ -867,6 +914,86 @@
 
               </div>
 
+              {(() => {
+                const ipInt = parsedWidgetIp;
+                const cidr = parsedWidgetCidr;
+                const isValid = ipInt !== null && cidr !== null;
+
+                let details = null;
+                let mask = 0;
+                if (isValid) {
+                  details = getSubnetDetails(ipInt, cidr);
+                  mask = cidr === 0 ? 0 : (0xFFFFFFFF << (32 - cidr)) >>> 0;
+                }
+
+                return (
+                  <div className="bg-white border-t border-gray-200 p-4 shrink-0 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)] z-20">
+                    <div className="flex justify-between items-center mb-3">
+                      <div className="flex items-center gap-4">
+                        <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
+                          <Icon name="Network" className="w-4 h-4 text-blue-600" />
+                          IP/Subnet Details
+                        </h3>
+                        <div className="flex items-center gap-1">
+                          <input 
+                            type="text" 
+                            value={widgetIpStr} 
+                            onChange={e => setWidgetIpStr(e.target.value)}
+                            className="border border-gray-300 rounded px-2 py-1 text-xs font-mono w-32 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            placeholder="IP Address"
+                          />
+                          <span className="text-gray-500 font-mono">/</span>
+                          <input 
+                            type="number" 
+                            value={widgetCidrStr} 
+                            onChange={e => setWidgetCidrStr(e.target.value)}
+                            className="border border-gray-300 rounded px-2 py-1 text-xs font-mono w-16 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            min="0" max="32"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                    {isValid ? (
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-mono">
+                        <div>
+                          <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">Network</span>
+                          <span className="text-gray-900">{details.networkStr}</span>
+                        </div>
+                        <div>
+                          <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">Netmask</span>
+                          <span className="text-gray-900">{details.netmaskStr}</span>
+                        </div>
+                        <div>
+                          <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">Broadcast</span>
+                          <span className="text-gray-900">{details.broadcastStr}</span>
+                        </div>
+                        <div>
+                          <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">Total Hosts</span>
+                          <span className="text-gray-900">{details.hosts.toLocaleString()}</span>
+                        </div>
+                        <div>
+                          <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">IP Decimal</span>
+                          <span className="text-gray-900">{ipInt}</span>
+                        </div>
+                        <div>
+                          <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">Mask Decimal</span>
+                          <span className="text-gray-900">{mask}</span>
+                        </div>
+                        <div className="col-span-2">
+                          <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">IP Binary</span>
+                          <span className="text-gray-900">{ip2bin(ipInt)}</span>
+                        </div>
+                        <div className="col-span-2">
+                          <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">Mask Binary</span>
+                          <span className="text-gray-900">{ip2bin(mask)}</span>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-xs text-red-500 py-4 font-medium">Invalid IP address or CIDR format.</div>
+                    )}
+                  </div>
+                );
+              })()}
             </main>
 
           </div>
