@@ -198,6 +198,38 @@
       </label>
     );
 
+    const CopyButton = ({ text, className = "" }) => {
+      const [copied, setCopied] = useState(false);
+      
+      const handleCopy = (e) => {
+        e.stopPropagation();
+        try {
+          // Using execCommand as clipboard API might be blocked in sandboxed iframes
+          const textArea = document.createElement("textarea");
+          textArea.value = text;
+          document.body.appendChild(textArea);
+          textArea.select();
+          document.execCommand("copy");
+          document.body.removeChild(textArea);
+
+          setCopied(true);
+          setTimeout(() => setCopied(false), 2000);
+        } catch (err) {
+          console.warn("Failed to copy:", err);
+        }
+      };
+
+      return (
+        <button 
+          onClick={handleCopy} 
+          className={`text-gray-400 hover:text-blue-600 transition-colors focus:outline-none flex items-center justify-center p-0.5 rounded hover:bg-blue-50 ${className}`} 
+          title="Copy to clipboard"
+        >
+          {copied ? <Icon name="Check" className="w-3.5 h-3.5 text-emerald-600" /> : <Icon name="Clipboard" className="w-3.5 h-3.5" />}
+        </button>
+      );
+    };
+
     // --- Recursive Subnet Row Component ---
 
     const SubnetNode = ({ ip, cidr, splitNodes, visibleCols, onDivide, onJoin, onSelect, gridTemplate }) => {
@@ -950,6 +982,7 @@
                             className="border border-gray-300 rounded px-2 py-1 text-xs font-mono w-16 focus:outline-none focus:ring-1 focus:ring-blue-500"
                             min="0" max="32"
                           />
+                          <CopyButton text={`${widgetIpStr}/${widgetCidrStr}`} className="ml-1" />
                         </div>
                       </div>
                     </div>
@@ -957,35 +990,59 @@
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-mono">
                         <div>
                           <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">Network</span>
-                          <span className="text-gray-900">{details.networkStr}</span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-gray-900">{details.networkStr}</span>
+                            <CopyButton text={details.networkStr} />
+                          </div>
                         </div>
                         <div>
                           <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">Netmask</span>
-                          <span className="text-gray-900">{details.netmaskStr}</span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-gray-900">{details.netmaskStr}</span>
+                            <CopyButton text={details.netmaskStr} />
+                          </div>
                         </div>
                         <div>
                           <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">Broadcast</span>
-                          <span className="text-gray-900">{details.broadcastStr}</span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-gray-900">{details.broadcastStr}</span>
+                            <CopyButton text={details.broadcastStr} />
+                          </div>
                         </div>
                         <div>
                           <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">Total Hosts</span>
-                          <span className="text-gray-900">{details.hosts.toLocaleString()}</span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-gray-900">{details.hosts.toLocaleString()}</span>
+                            <CopyButton text={details.hosts.toString()} />
+                          </div>
                         </div>
                         <div>
                           <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">IP Decimal</span>
-                          <span className="text-gray-900">{ipInt}</span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-gray-900">{ipInt}</span>
+                            <CopyButton text={ipInt.toString()} />
+                          </div>
                         </div>
                         <div>
                           <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">Mask Decimal</span>
-                          <span className="text-gray-900">{mask}</span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-gray-900">{mask}</span>
+                            <CopyButton text={mask.toString()} />
+                          </div>
                         </div>
                         <div className="col-span-2">
                           <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">IP Binary</span>
-                          <span className="text-gray-900">{ip2bin(ipInt)}</span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-gray-900">{ip2bin(ipInt)}</span>
+                            <CopyButton text={ip2bin(ipInt)} />
+                          </div>
                         </div>
                         <div className="col-span-2">
                           <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">Mask Binary</span>
-                          <span className="text-gray-900">{ip2bin(mask)}</span>
+                          <div className="flex items-center gap-1">
+                            <span className="text-gray-900">{ip2bin(mask)}</span>
+                            <CopyButton text={ip2bin(mask)} />
+                          </div>
                         </div>
                       </div>
                     ) : (
