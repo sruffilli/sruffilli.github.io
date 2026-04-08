@@ -592,7 +592,9 @@
           return;
         }
 
-        const newSplits = new Set(splitNodes);
+        // Start from a clean state to ensure consistent results,
+        // especially when down-splitting from an already modified tree.
+        const newSplits = new Set();
 
         const splitRecursive = (ip, cidr) => {
           if (cidr >= bulkSplitTarget) return;
