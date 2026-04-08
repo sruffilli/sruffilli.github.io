@@ -448,6 +448,12 @@
       const [baseIp, setBaseIp] = useState(ip2long('10.128.160.0'));
       const [baseCidr, setBaseCidr] = useState(25);
       const [splitNodes, setSplitNodes] = useState(new Set());
+      const [bulkSplitTarget, setBulkSplitTarget] = useState(26);
+      
+      useEffect(() => {
+        setBulkSplitTarget(Math.min(32, baseCidr + 1));
+      }, [baseCidr]);
+
       const [widgetIpStr, setWidgetIpStr] = useState('10.128.160.0');
       const [widgetCidrStr, setWidgetCidrStr] = useState('25');
       const [copiedLink, setCopiedLink] = useState(false);
@@ -577,6 +583,30 @@
         setSplitNodes(new Set());
         setWidgetIpStr(long2ip(baseIp));
         setWidgetCidrStr(baseCidr.toString());
+      };
+
+      const handleBulkSplit = () => {
+        if (bulkSplitTarget <= baseCidr || bulkSplitTarget > 32) return;
+        if (bulkSplitTarget - baseCidr > 10) {
+          setError(`Cannot split into more than 1024 subnets (+10 bits) at once to prevent browser lag.`);
+          return;
+        }
+
+        const newSplits = new Set(splitNodes);
+
+        const splitRecursive = (ip, cidr) => {
+          if (cidr >= bulkSplitTarget) return;
+          const id = `${long2ip(ip)}/${cidr}`;
+          newSplits.add(id);
+          const leftIp = ip;
+          const rightIp = ip + Math.pow(2, 32 - (cidr + 1));
+          splitRecursive(leftIp, cidr + 1);
+          splitRecursive(rightIp, cidr + 1);
+        };
+
+        splitRecursive(baseIp, baseCidr);
+        setSplitNodes(newSplits);
+        setError('');
       };
 
       const handleDivide = useCallback((id) => {
@@ -829,6 +859,36 @@
                     <span className="font-semibold">Error:</span> {error}
                   </div>
                 )}
+
+                <hr className="border-gray-200" />
+
+                {/* Bulk Split */}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
+                    <Icon name="Split" className="w-4 h-4" /> Bulk Split
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-sm text-gray-600 font-medium">Split all to /</span>
+                    <input 
+                      type="number" 
+                      min={baseCidr + 1} 
+                      max={Math.min(32, baseCidr + 10)} 
+                      value={bulkSplitTarget}
+                      onChange={(e) => setBulkSplitTarget(parseInt(e.target.value, 10) || baseCidr + 1)}
+                      className="w-16 bg-white border border-gray-300 text-gray-900 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
+                    />
+                    <button 
+                      type="button"
+                      onClick={handleBulkSplit}
+                      className="px-3 py-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 border border-blue-200 hover:border-blue-600 font-medium rounded text-sm transition-all"
+                    >
+                      Go
+                    </button>
+                  </div>
+                  <div className="text-[10px] text-gray-500">
+                    Max +10 bits (1024 subnets) at a time to prevent browser lag.
+                  </div>
+                </div>
 
                 <hr className="border-gray-200" />
 
