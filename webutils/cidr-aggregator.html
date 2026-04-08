@@ -400,8 +400,20 @@
                         <p className="text-sm font-medium">Enter subnets or IP addresses to aggregate</p>
                       </div>
                     ) : (
-                      <div className="font-mono text-sm text-gray-800 select-all whitespace-pre">
-                        {results.join('\n')}
+                      <div className="font-mono text-sm text-gray-800 flex flex-col items-start gap-0.5">
+                        {results.map((cidrStr, i) => {
+                          const [ip, cidr] = cidrStr.split('/');
+                          return (
+                            <a 
+                              key={i} 
+                              href={`subnet-calculator.html?ip=${ip}&cidr=${cidr || 32}`} 
+                              className="hover:text-blue-600 hover:bg-blue-50 px-2 py-0.5 rounded transition-colors"
+                              title="Visualize in Subnet Calculator"
+                            >
+                              {cidrStr}
+                            </a>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
