@@ -6,8 +6,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Scanify Pro - High Perf Document Scanner</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- PDF.js -->
-
     <!-- jsPDF -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/3.0.3/jspdf.umd.min.js"></script>
 
@@ -77,6 +75,9 @@
             -ms-overflow-style: none;
             scrollbar-width: none;
         }
+        
+        #previewWrapper > div { margin: 0 auto; }
+        #previewWrapper { align-items: normal; }
     </style>
 </head>
 
@@ -136,6 +137,34 @@
                         <p class="text-sm font-medium text-gray-900">Upload PDF</p>
                         <p class="text-xs text-gray-500 mt-1">Local processing only</p>
                     </div>
+                </div>
+
+                <!-- Signature Upload -->
+                <div id="signatureControls" class="opacity-40 pointer-events-none transition-opacity border-t border-gray-100 pt-6 mt-6">
+                    <div class="flex justify-between items-center mb-3">
+                        <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Signatures</h3>
+                        <button id="editModeBtn" class="text-[10px] bg-gray-100 hover:bg-gray-200 text-gray-700 px-2 py-1 rounded font-medium transition-colors hidden">Edit Mode</button>
+                    </div>
+
+                    <div id="sigThumbnails" class="flex flex-wrap gap-2 mb-3 empty:hidden"></div>
+
+                    <div class="relative group">
+                        <input type="file" id="sigInput" accept="image/png"
+                            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                        <div
+                            class="border-2 border-dashed border-gray-300 rounded-xl p-3 text-center transition-all group-hover:border-brand-500 group-hover:bg-blue-50 bg-white">
+                            <p class="text-xs font-medium text-gray-900 flex justify-center items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                                Upload Signature
+                            </p>
+                        </div>
+                    </div>
+                    <p id="sigHint" class="text-[10px] text-brand-600 font-medium text-center mt-2 hidden">Click on the document to place</p>
+
+                    <button id="applyEffectsBtn" class="w-full mt-4 bg-brand-600 hover:bg-brand-700 text-white h-10 rounded-lg text-sm font-medium shadow-sm flex items-center justify-center gap-2 transition-all hidden">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        Apply & View Effects
+                    </button>
                 </div>
 
                 <!-- Controls Form -->
@@ -250,11 +279,6 @@
         <main class="flex-1 bg-grid md:overflow-hidden relative flex flex-col">
 
             <div id="previewWrapper" class="flex-1 overflow-auto p-4 md:p-8 flex flex-col gap-6 items-center">
-                <style>
-                    /* Fix for flex-col centering cutoff when overflowing */
-                    #previewWrapper > div { margin: 0 auto; }
-                    #previewWrapper { align-items: normal; } /* Override items-center for safety, rely on mx-auto */
-                </style>
                 <!-- Welcome/Empty State -->
                 <div id="emptyState"
                     class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
@@ -275,8 +299,14 @@
 
             <!-- Preview Pagination/Info -->
             <div id="previewControls"
-                class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur border border-gray-200 shadow-lg rounded-full px-4 py-2 flex items-center gap-4 opacity-0 transition-opacity pointer-events-none">
-                <span class="text-xs font-medium text-gray-600">Previewing Page 1</span>
+                class="absolute bottom-6 left-1/2 -translate-x-1/2 bg-white/90 backdrop-blur border border-gray-200 shadow-lg rounded-full px-2 py-1.5 flex items-center gap-3 z-20 hidden">
+                <button id="prevPageBtn" class="p-1 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                </button>
+                <span id="pageIndicator" class="text-xs font-medium text-gray-700 w-24 text-center">Page 1 of 1</span>
+                <button id="nextPageBtn" class="p-1 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-colors disabled:opacity-30 disabled:cursor-not-allowed">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                </button>
             </div>
 
             <!-- Zoom Controls -->
@@ -298,38 +328,36 @@
 
         pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/5.4.149/pdf.worker.min.mjs';
 
-            // --- Pun Generator ---
-            (function initPuns() {
-                const puns = [
-                    "Make it look like your grandma's scanner",
-                    "Because pristine PDFs are suspicious",
-                    "Authentically terrible quality",
-                    "Fax machine vibes only",
-                    "Digital degradation on demand",
-                    "Simulating hardware failure since 2024",
-                    "More noise than signal",
-                    "It's not a bug, it's a feature",
-                    "Scanning like it's 1999",
-                    "The art of bad compression",
-                    "Adding character, one artifact at a time",
-                    "Enterprise grade mediocrity",
-                    "Bureaucracy simulator",
-                    "Looks like it was mailed twice",
-                    "Paper jam aesthetic"
-                ];
-                const randomPun = puns[Math.floor(Math.random() * puns.length)];
-                document.title = `Scanify Pro - ${randomPun}`;
-                document.getElementById('punDisplay').innerText = randomPun;
-            })();
+        // --- Pun Generator ---
+        (function initPuns() {
+            const puns = [
+                "Make it look like your grandma's scanner",
+                "Because pristine PDFs are suspicious",
+                "Authentically terrible quality",
+                "Fax machine vibes only",
+                "Digital degradation on demand",
+                "Simulating hardware failure since 2024",
+                "More noise than signal",
+                "It's not a bug, it's a feature",
+                "Scanning like it's 1999",
+                "The art of bad compression",
+                "Adding character, one artifact at a time",
+                "Enterprise grade mediocrity",
+                "Bureaucracy simulator",
+                "Looks like it was mailed twice",
+                "Paper jam aesthetic"
+            ];
+            const randomPun = puns[Math.floor(Math.random() * puns.length)];
+            document.title = `Scanify Pro - ${randomPun}`;
+            document.getElementById('punDisplay').innerText = randomPun;
+        })();
 
         // --- Image Processing Engine ---
         class ScannerEffect {
             constructor() {
                 this.noisePattern = null;
-                this.vignettePattern = null;
             }
 
-            // Pre-generate noise texture (Huge performance boost over per-pixel loops)
             createNoisePattern(intensity) {
                 const canvas = document.createElement('canvas');
                 canvas.width = 512;
@@ -341,28 +369,18 @@
                 const len = buffer32.length;
 
                 for (let i = 0; i < len; i++) {
-                    if (Math.random() < 0.5) {
-                        // 0xff000000 is black (ABGR little endian)
-                        // Alpha is controlled by globalAlpha later
-                        buffer32[i] = 0xff000000;
-                    } else {
-                        buffer32[i] = 0x00000000; // Transparent
-                    }
+                    if (Math.random() < 0.5) buffer32[i] = 0xff000000;
+                    else buffer32[i] = 0x00000000;
                 }
                 ctx.putImageData(idata, 0, 0);
                 return canvas;
             }
 
-            // Binarization (Thresholding) for Fax look
             applyThreshold(ctx, width, height, thresholdLevel) {
                 const imgData = ctx.getImageData(0, 0, width, height);
-                const d = imgData.data; // R,G,B,A linear array
-                // Loop is unavoidable here, but we optimize math
+                const d = imgData.data;
                 for (let i = 0; i < d.length; i += 4) {
-                    // Simple luminance
-                    const r = d[i];
-                    const g = d[i + 1];
-                    const b = d[i + 2];
+                    const r = d[i], g = d[i + 1], b = d[i + 2];
                     const v = (0.2126 * r + 0.7152 * g + 0.0722 * b);
                     const val = (v >= thresholdLevel) ? 255 : 0;
                     d[i] = d[i + 1] = d[i + 2] = val;
@@ -373,59 +391,46 @@
             render(ctx, originalCanvas, options) {
                 const { width, height } = originalCanvas;
 
-                // 1. Clear & Background
                 ctx.fillStyle = '#ffffff';
                 ctx.fillRect(0, 0, width, height);
 
-                // 2. Setup Rotation
                 ctx.save();
-
                 if (options.rotation > 0) {
-                    // Random slight deviation +/- 
                     const angle = (Math.random() - 0.5) * 2 * options.rotation;
                     ctx.translate(width / 2, height / 2);
                     ctx.rotate(angle * Math.PI / 180);
                     ctx.translate(-width / 2, -height / 2);
                 }
 
-                // 3. Draw Base Image (with Blur & Grayscale)
                 let filterStr = `blur(${options.blur}px)`;
-                if (options.grayscale) {
-                    filterStr += ` grayscale(100%)`;
-                }
+                if (options.grayscale) filterStr += ` grayscale(100%)`;
                 ctx.filter = filterStr;
 
                 ctx.drawImage(originalCanvas, 0, 0, width, height);
                 ctx.filter = 'none';
 
-                // 4. Thresholding (If enabled) - "Fax Mode"
-                // Note: Thresholding naturally removes color, so it overrides grayscale
                 if (options.threshold > 0) {
                     this.applyThreshold(ctx, width, height, options.threshold);
                 }
+                ctx.restore();
 
-                ctx.restore(); // Undo rotation for overlays
-
-                // 5. Apply Noise (Composite)
                 if (options.noise > 0) {
                     if (!this.noisePattern) this.noisePattern = this.createNoisePattern();
-
                     ctx.save();
                     ctx.globalCompositeOperation = 'overlay';
-                    ctx.globalAlpha = options.noise / 100; // Range 0.0 to 1.0
+                    ctx.globalAlpha = options.noise / 100;
                     const pattern = ctx.createPattern(this.noisePattern, 'repeat');
                     ctx.fillStyle = pattern;
                     ctx.fillRect(0, 0, width, height);
                     ctx.restore();
                 }
 
-                // 6. Vignette / Scanner shadow (Optional)
                 if (options.vignette) {
                     ctx.save();
                     ctx.globalCompositeOperation = 'multiply';
                     const grad = ctx.createRadialGradient(width / 2, height / 2, height / 3, width / 2, height / 2, height);
                     grad.addColorStop(0, "rgba(0,0,0,0)");
-                    grad.addColorStop(1, "rgba(0,0,0,0.15)"); // Subtle darkening at edges
+                    grad.addColorStop(1, "rgba(0,0,0,0.15)");
                     ctx.fillStyle = grad;
                     ctx.fillRect(0, 0, width, height);
                     ctx.restore();
@@ -436,8 +441,13 @@
         // --- Application State ---
         const state = {
             pdfDoc: null,
-            originalPages: [], // Array of Canvases
-            zoom: 1.0,         // Zoom level
+            currentPage: 1,
+            activePage: null,
+            signatures: [],
+            uploadedSignatures: [],
+            activeUploadId: null,
+            mode: 'scanify', // 'scanify' or 'edit'
+            zoom: 1.0,
             config: {
                 rotation: 0.5,
                 blur: 0.4,
@@ -457,6 +467,12 @@
             previewWrapper: document.getElementById('previewWrapper'),
             emptyState: document.getElementById('emptyState'),
             controls: document.getElementById('controls'),
+            signatureControls: document.getElementById('signatureControls'),
+            sigInput: document.getElementById('sigInput'),
+            sigThumbnails: document.getElementById('sigThumbnails'),
+            sigHint: document.getElementById('sigHint'),
+            editModeBtn: document.getElementById('editModeBtn'),
+            applyEffectsBtn: document.getElementById('applyEffectsBtn'),
             downloadBtn: document.getElementById('downloadBtn'),
             statusArea: document.getElementById('statusArea'),
             progressBar: document.getElementById('progressBar'),
@@ -469,12 +485,21 @@
             zoomControls: document.getElementById('zoomControls'),
             zoomInBtn: document.getElementById('zoomInBtn'),
             zoomOutBtn: document.getElementById('zoomOutBtn'),
-            zoomLevel: document.getElementById('zoomLevel')
+            zoomLevel: document.getElementById('zoomLevel'),
+            previewControls: document.getElementById('previewControls'),
+            prevPageBtn: document.getElementById('prevPageBtn'),
+            nextPageBtn: document.getElementById('nextPageBtn'),
+            pageIndicator: document.getElementById('pageIndicator')
         };
 
         // --- Event Listeners ---
         els.input.addEventListener('change', loadPDF);
         els.downloadBtn.addEventListener('click', downloadPDF);
+        els.sigInput.addEventListener('change', loadSignature);
+        
+        els.editModeBtn.addEventListener('click', () => setMode('edit'));
+        els.applyEffectsBtn.addEventListener('click', () => setMode('scanify'));
+
         els.vignetteCheck.addEventListener('change', (e) => {
             state.config.vignette = e.target.checked;
             updatePreview();
@@ -487,20 +512,27 @@
         els.zoomInBtn.addEventListener('click', () => updateZoom(state.zoom + 0.25));
         els.zoomOutBtn.addEventListener('click', () => updateZoom(state.zoom - 0.25));
 
+        els.prevPageBtn.addEventListener('click', () => { 
+            if (state.currentPage > 1) renderPage(state.currentPage - 1); 
+        });
+        els.nextPageBtn.addEventListener('click', () => { 
+            if (state.pdfDoc && state.currentPage < state.pdfDoc.numPages) renderPage(state.currentPage + 1); 
+        });
+
         function updateZoom(newZoom) {
             state.zoom = Math.max(0.25, Math.min(5.0, newZoom));
             els.zoomLevel.innerText = `${Math.round(state.zoom * 100)}%`;
             
-            const canvases = document.querySelectorAll('.pdf-canvas');
-            canvases.forEach((canvas, index) => {
-                if (state.originalPages[index]) {
-                     const originalWidth = state.originalPages[index].viewportWidth;
-                     canvas.style.width = `${originalWidth * state.zoom}px`;
+            if (state.activePage) {
+                const wrapper = els.previewWrapper.querySelector('.relative');
+                if (wrapper) {
+                    wrapper.style.width = `${state.activePage.viewportWidth * state.zoom}px`;
+                    wrapper.style.height = `${state.activePage.viewportHeight * state.zoom}px`;
                 }
-            });
+                renderSignaturesOverlay();
+            }
         }
 
-        // Bind sliders to state
         els.inputs.forEach(input => {
             if (input.type === 'range') {
                 input.addEventListener('input', (e) => {
@@ -508,7 +540,6 @@
                     const val = parseFloat(e.target.value);
                     state.config[param] = val;
 
-                    // Update display text
                     const display = document.getElementById(`val-${param}`);
                     if (display) {
                         if (param === 'threshold') display.innerText = val === 0 ? "Disabled" : val;
@@ -531,10 +562,8 @@
             const p = presets[type];
             if (!p) return;
 
-            // Update state
             state.config = { ...state.config, ...p };
 
-            // Update UI Controls
             document.querySelector('[data-param="rotation"]').value = p.rotation;
             document.querySelector('[data-param="blur"]').value = p.blur;
             document.querySelector('[data-param="noise"]').value = p.noise;
@@ -542,7 +571,6 @@
             document.getElementById('vignetteCheck').checked = p.vignette;
             document.getElementById('grayscaleCheck').checked = p.grayscale;
 
-            // Trigger visual updates
             ['rotation', 'blur', 'noise', 'threshold'].forEach(k => {
                 const el = document.getElementById(`val-${k}`);
                 if (el) el.innerText = p[k] + (k === 'threshold' && p[k] === 0 ? 'Disabled' : '');
@@ -554,76 +582,363 @@
 
         // --- Core Logic ---
 
+        function setMode(mode) {
+            state.mode = mode;
+            if (mode === 'edit') {
+                els.applyEffectsBtn.classList.remove('hidden');
+                els.editModeBtn.classList.add('hidden');
+                els.controls.classList.add('opacity-40', 'pointer-events-none');
+            } else {
+                els.applyEffectsBtn.classList.add('hidden');
+                els.editModeBtn.classList.remove('hidden');
+                els.controls.classList.remove('opacity-40', 'pointer-events-none');
+                selectSignature(null);
+            }
+            updatePreview();
+        }
+
+        function selectSignature(id) {
+            state.activeUploadId = id;
+            renderThumbnails();
+            const overlay = document.getElementById('overlayContainer');
+            if (id) {
+                els.sigHint.classList.remove('hidden');
+                if (overlay) overlay.style.cursor = 'crosshair';
+            } else {
+                els.sigHint.classList.add('hidden');
+                if (overlay) overlay.style.cursor = 'default';
+            }
+        }
+
+        function renderThumbnails() {
+            els.sigThumbnails.innerHTML = '';
+            state.uploadedSignatures.forEach(sig => {
+                const div = document.createElement('div');
+                const isActive = state.activeUploadId === sig.id;
+                div.className = `w-12 h-12 border-2 rounded cursor-pointer flex items-center justify-center bg-white overflow-hidden transition-colors ${isActive ? 'border-brand-500 bg-blue-50' : 'border-gray-200 hover:border-brand-300'}`;
+                div.onclick = () => {
+                    selectSignature(isActive ? null : sig.id);
+                    if (state.mode !== 'edit') setMode('edit');
+                };
+                const img = document.createElement('img');
+                img.src = sig.src;
+                img.className = 'max-w-full max-h-full object-contain p-1';
+                div.appendChild(img);
+                els.sigThumbnails.appendChild(div);
+            });
+        }
+
+        function loadSignature(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = (event) => {
+                const img = new Image();
+                img.onload = () => {
+                    const id = Math.random().toString(36).substr(2, 9);
+                    state.uploadedSignatures.push({ id, image: img, src: event.target.result });
+                    selectSignature(id);
+                    setMode('edit');
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+            e.target.value = ''; // Reset input
+        }
+
         async function loadPDF(e) {
             const file = e.target.files[0];
             if (!file) return;
 
             els.emptyState.classList.add('hidden');
             els.controls.classList.remove('opacity-40', 'pointer-events-none');
+            els.signatureControls.classList.remove('opacity-40', 'pointer-events-none');
             els.zoomControls.classList.remove('hidden');
+            els.previewControls.classList.remove('hidden');
             els.downloadBtn.disabled = false;
             els.pageCountBadge.innerText = "Loading...";
 
             const buf = await file.arrayBuffer();
-            const pdf = await pdfjsLib.getDocument(buf).promise;
-            state.pdfDoc = pdf;
-            state.originalPages = [];
+            state.pdfDoc = await pdfjsLib.getDocument(buf).promise;
+            state.signatures = [];
+            
+            setMode('scanify');
+            els.editModeBtn.classList.remove('hidden');
 
-            els.pageCountBadge.innerText = `${pdf.numPages} Pages`;
-            els.previewWrapper.innerHTML = ''; // Clear existing
+            els.pageCountBadge.innerText = `${state.pdfDoc.numPages} Pages`;
+            
+            await renderPage(1);
+        }
 
-            // Render first 3 pages only for preview (Performance)
-            const limit = Math.min(pdf.numPages, 3);
+        async function renderPage(pageNum) {
+            state.currentPage = pageNum;
+            els.pageIndicator.innerText = `Page ${pageNum} of ${state.pdfDoc.numPages}`;
+            els.prevPageBtn.disabled = pageNum === 1;
+            els.nextPageBtn.disabled = pageNum === state.pdfDoc.numPages;
 
-            for (let i = 1; i <= limit; i++) {
-                const page = await pdf.getPage(i);
-                
-                // CSS scale for layout and zoom calculations
-                const cssViewport = page.getViewport({ scale: 1.0 });
-                // High-res actual render scale for crisp preview
-                const renderViewport = page.getViewport({ scale: 2.0 });
+            els.previewWrapper.innerHTML = '';
+            
+            const page = await state.pdfDoc.getPage(pageNum);
+            
+            const cssViewport = page.getViewport({ scale: 1.0 });
+            const renderViewport = page.getViewport({ scale: 2.0 });
 
-                const canvas = document.createElement('canvas');
-                canvas.width = renderViewport.width;
-                canvas.height = renderViewport.height;
-                const ctx = canvas.getContext('2d');
-                await page.render({ canvasContext: ctx, viewport: renderViewport }).promise;
+            const sourceCanvas = document.createElement('canvas');
+            sourceCanvas.width = renderViewport.width;
+            sourceCanvas.height = renderViewport.height;
+            const sourceCtx = sourceCanvas.getContext('2d');
+            await page.render({ canvasContext: sourceCtx, viewport: renderViewport }).promise;
 
-                // Create Display Canvas (the one we manipulate)
-                const displayCanvas = document.createElement('canvas');
-                displayCanvas.width = renderViewport.width;
-                displayCanvas.height = renderViewport.height;
-                displayCanvas.className = 'pdf-canvas shadow-lg bg-white border border-gray-200 transition-all duration-200';
-                displayCanvas.style.width = `${cssViewport.width * state.zoom}px`;
+            const compositeCanvas = document.createElement('canvas');
+            compositeCanvas.width = renderViewport.width;
+            compositeCanvas.height = renderViewport.height;
 
-                // Wrapper for spacing
-                const wrapper = document.createElement('div');
-                wrapper.className = 'relative flex justify-center mb-6';
-                wrapper.appendChild(displayCanvas);
-                els.previewWrapper.appendChild(wrapper);
+            const displayCanvas = document.createElement('canvas');
+            displayCanvas.width = renderViewport.width;
+            displayCanvas.height = renderViewport.height;
+            displayCanvas.className = 'shadow-lg bg-white border border-gray-200 transition-all duration-200';
+            displayCanvas.style.width = '100%';
+            displayCanvas.style.height = '100%';
+            
+            const wrapper = document.createElement('div');
+            wrapper.className = 'relative flex justify-center mb-6 shrink-0';
+            wrapper.style.width = `${cssViewport.width * state.zoom}px`;
+            wrapper.style.height = `${cssViewport.height * state.zoom}px`;
+            wrapper.style.margin = '0 auto';
 
-                // Store references
-                state.originalPages.push({
-                    source: canvas,    // Clean render
-                    display: displayCanvas, // Effect render
-                    viewportWidth: cssViewport.width
-                });
-            }
+            const overlayContainer = document.createElement('div');
+            overlayContainer.id = 'overlayContainer';
+            overlayContainer.className = 'absolute inset-0 z-10 touch-none';
+
+            wrapper.appendChild(displayCanvas);
+            wrapper.appendChild(overlayContainer);
+            els.previewWrapper.appendChild(wrapper);
+
+            state.activePage = {
+                source: sourceCanvas,
+                composite: compositeCanvas,
+                display: displayCanvas,
+                viewportWidth: cssViewport.width,
+                viewportHeight: cssViewport.height
+            };
+
+            overlayContainer.addEventListener('pointerdown', handleOverlayPointerDown);
 
             updatePreview();
         }
 
         function updatePreview() {
-            if (state.originalPages.length === 0) return;
+            if (!state.activePage) return;
 
-            // Sync Process for preview (it's fast enough with 3 pages)
-            state.originalPages.forEach(page => {
-                const ctx = page.display.getContext('2d');
-                engine.render(ctx, page.source, state.config);
+            const { source, composite, display } = state.activePage;
+            const ctx = composite.getContext('2d');
+            
+            ctx.clearRect(0, 0, composite.width, composite.height);
+            ctx.drawImage(source, 0, 0);
+
+            const renderScale = composite.width / state.activePage.viewportWidth;
+            const pageSigs = state.signatures.filter(s => s.page === state.currentPage);
+            
+            pageSigs.forEach(sig => {
+                ctx.save();
+                ctx.translate(sig.x * renderScale, sig.y * renderScale);
+                ctx.rotate(sig.rotation * Math.PI / 180);
+                ctx.drawImage(
+                    sig.image, 
+                    -(sig.width * renderScale) / 2, 
+                    -(sig.height * renderScale) / 2, 
+                    sig.width * renderScale, 
+                    sig.height * renderScale
+                );
+                ctx.restore();
+            });
+
+            const displayCtx = display.getContext('2d');
+            
+            if (state.mode === 'scanify') {
+                engine.render(displayCtx, composite, state.config);
+            } else {
+                // In Edit Mode, bypass effects for performance and clarity
+                displayCtx.clearRect(0, 0, display.width, display.height);
+                displayCtx.drawImage(composite, 0, 0);
+            }
+
+            renderSignaturesOverlay();
+        }
+
+        // --- Interaction Logic ---
+        let dragState = null;
+        let renderPending = false;
+
+        function renderSignaturesOverlay() {
+            const container = document.getElementById('overlayContainer');
+            if (!container) return;
+
+            container.innerHTML = ''; 
+            
+            if (state.mode !== 'edit') {
+                container.style.pointerEvents = 'none';
+                return;
+            }
+            
+            container.style.pointerEvents = 'auto';
+            
+            const pageSigs = state.signatures.filter(s => s.page === state.currentPage);
+            
+            pageSigs.forEach(sig => {
+                const box = document.createElement('div');
+                box.className = 'absolute border-2 border-transparent hover:border-brand-500 group';
+                box.style.left = `${sig.x * state.zoom}px`;
+                box.style.top = `${sig.y * state.zoom}px`;
+                box.style.width = `${sig.width * state.zoom}px`;
+                box.style.height = `${sig.height * state.zoom}px`;
+                box.style.transform = `translate(-50%, -50%) rotate(${sig.rotation}deg)`;
+                
+                const content = document.createElement('div');
+                content.className = 'w-full h-full cursor-move';
+                content.dataset.action = 'move';
+                content.dataset.id = sig.id;
+                box.appendChild(content);
+
+                const resizer = document.createElement('div');
+                resizer.className = 'absolute -bottom-2 -right-2 w-4 h-4 bg-white border border-gray-400 rounded-full cursor-nwse-resize opacity-0 group-hover:opacity-100 shadow-sm';
+                resizer.dataset.action = 'resize';
+                resizer.dataset.id = sig.id;
+                box.appendChild(resizer);
+
+                const rotator = document.createElement('div');
+                rotator.className = 'absolute -top-6 left-1/2 -translate-x-1/2 w-4 h-4 bg-white border border-gray-400 rounded-full cursor-grab opacity-0 group-hover:opacity-100 shadow-sm';
+                rotator.dataset.action = 'rotate';
+                rotator.dataset.id = sig.id;
+                
+                const line = document.createElement('div');
+                line.className = 'absolute -top-2 left-1/2 w-px h-4 bg-gray-400 opacity-0 group-hover:opacity-100';
+                
+                box.appendChild(line);
+                box.appendChild(rotator);
+
+                const delBtn = document.createElement('div');
+                delBtn.className = 'absolute -top-2 -right-2 w-5 h-5 bg-red-500 text-white rounded-full cursor-pointer opacity-0 group-hover:opacity-100 flex items-center justify-center text-xs font-bold shadow-sm';
+                delBtn.innerHTML = '&times;';
+                delBtn.dataset.action = 'delete';
+                delBtn.dataset.id = sig.id;
+                box.appendChild(delBtn);
+
+                container.appendChild(box);
             });
         }
 
-        // --- Async Download Logic (Prevent freezing) ---
+        function handleOverlayPointerDown(e) {
+            if (state.mode !== 'edit') return;
+
+            const target = e.target;
+            const action = target.dataset.action;
+            const id = target.dataset.id;
+
+            if (action === 'delete') {
+                state.signatures = state.signatures.filter(s => s.id !== id);
+                updatePreview();
+                return;
+            }
+
+            if (action) {
+                e.stopPropagation();
+                e.preventDefault();
+
+                const sig = state.signatures.find(s => s.id === id);
+                dragState = {
+                    action,
+                    sig,
+                    startX: e.clientX,
+                    startY: e.clientY,
+                    initialSig: { ...sig }
+                };
+
+                window.addEventListener('pointermove', handlePointerMove);
+                window.addEventListener('pointerup', handlePointerUp);
+            } else if (state.activeUploadId) {
+                const activeSig = state.uploadedSignatures.find(s => s.id === state.activeUploadId);
+                if (!activeSig) return;
+
+                const container = document.getElementById('overlayContainer');
+                const rect = container.getBoundingClientRect();
+                
+                const offsetX = e.clientX - rect.left;
+                const offsetY = e.clientY - rect.top;
+
+                const img = activeSig.image;
+                const aspect = img.width / img.height;
+                const defaultWidth = 150;
+                const defaultHeight = defaultWidth / aspect;
+
+                state.signatures.push({
+                    id: Math.random().toString(36).substr(2, 9),
+                    page: state.currentPage,
+                    image: img,
+                    x: offsetX / state.zoom,
+                    y: offsetY / state.zoom,
+                    width: defaultWidth,
+                    height: defaultHeight,
+                    rotation: 0
+                });
+
+                updatePreview();
+            }
+        }
+
+        function handlePointerMove(e) {
+            if (!dragState) return;
+
+            const { action, sig, startX, startY, initialSig } = dragState;
+            
+            if (action === 'move') {
+                const dx = (e.clientX - startX) / state.zoom;
+                const dy = (e.clientY - startY) / state.zoom;
+                sig.x = initialSig.x + dx;
+                sig.y = initialSig.y + dy;
+            } 
+            else if (action === 'resize') {
+                const angleRad = -(initialSig.rotation * Math.PI / 180);
+                const cos = Math.cos(angleRad);
+                const sin = Math.sin(angleRad);
+                
+                const pdx = (e.clientX - startX) / state.zoom;
+                const pdy = (e.clientY - startY) / state.zoom;
+                
+                const localDx = pdx * cos - pdy * sin;
+                const localDy = pdx * sin + pdy * cos;
+                
+                sig.width = Math.max(20, initialSig.width + localDx * 2);
+                sig.height = Math.max(20, initialSig.height + localDy * 2);
+            }
+            else if (action === 'rotate') {
+                const container = document.getElementById('overlayContainer');
+                const rect = container.getBoundingClientRect();
+                const centerX = rect.left + (initialSig.x * state.zoom);
+                const centerY = rect.top + (initialSig.y * state.zoom);
+                
+                const angle = Math.atan2(e.clientY - centerY, e.clientX - centerX) * 180 / Math.PI;
+                sig.rotation = angle + 90;
+            }
+
+            if (!renderPending) {
+                renderPending = true;
+                requestAnimationFrame(() => {
+                    updatePreview();
+                    renderPending = false;
+                });
+            }
+        }
+
+        function handlePointerUp() {
+            if (dragState) {
+                window.removeEventListener('pointermove', handlePointerMove);
+                window.removeEventListener('pointerup', handlePointerUp);
+                dragState = null;
+            }
+        }
+
+        // --- Async Download Logic ---
 
         async function downloadPDF() {
             if (!state.pdfDoc) return;
@@ -635,12 +950,10 @@
             const pdf = new jsPDF();
             const total = state.pdfDoc.numPages;
 
-            // Queue system to let UI breathe
             let currentPage = 1;
 
             const processPage = async () => {
                 if (currentPage > total) {
-                    // Done
                     pdf.save('scanify_pro_export.pdf');
                     finishDownload();
                     return;
@@ -649,29 +962,40 @@
                 updateStatus(currentPage, total);
 
                 try {
-                    // 1. Fetch & Render Original High Res (SOURCE CANVAS)
                     const pageData = await state.pdfDoc.getPage(currentPage);
-                    // Scale 1.5 is a good balance for quality vs file size
                     const viewport = pageData.getViewport({ scale: 1.5 });
 
                     const sourceCanvas = document.createElement('canvas');
                     sourceCanvas.width = viewport.width;
                     sourceCanvas.height = viewport.height;
                     const sourceCtx = sourceCanvas.getContext('2d');
-
                     await pageData.render({ canvasContext: sourceCtx, viewport }).promise;
 
-                    // 2. Apply Effects (DESTINATION CANVAS)
-                    // We must use a separate canvas to avoid "draw on self" blank issues
+                    // Apply signatures for this page
+                    const renderScale = viewport.scale;
+                    const pageSigs = state.signatures.filter(s => s.page === currentPage);
+                    
+                    pageSigs.forEach(sig => {
+                        sourceCtx.save();
+                        sourceCtx.translate(sig.x * renderScale, sig.y * renderScale);
+                        sourceCtx.rotate(sig.rotation * Math.PI / 180);
+                        sourceCtx.drawImage(
+                            sig.image, 
+                            -(sig.width * renderScale) / 2, 
+                            -(sig.height * renderScale) / 2, 
+                            sig.width * renderScale, 
+                            sig.height * renderScale
+                        );
+                        sourceCtx.restore();
+                    });
+
                     const destCanvas = document.createElement('canvas');
                     destCanvas.width = viewport.width;
                     destCanvas.height = viewport.height;
                     const destCtx = destCanvas.getContext('2d');
 
-                    // Render source -> dest with effects
                     engine.render(destCtx, sourceCanvas, state.config);
 
-                    // 3. Add to PDF
                     const imgData = destCanvas.toDataURL('image/jpeg', 0.80);
 
                     if (currentPage > 1) pdf.addPage();
@@ -682,7 +1006,6 @@
                     pdf.addImage(imgData, 'JPEG', 0, 0, pdfW, pdfH);
 
                     currentPage++;
-                    // Non-blocking recursion
                     requestAnimationFrame(processPage);
 
                 } catch (err) {
@@ -692,7 +1015,6 @@
                 }
             };
 
-            // Start loop
             processPage();
         }
 
