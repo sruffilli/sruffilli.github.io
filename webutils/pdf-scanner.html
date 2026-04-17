@@ -148,8 +148,34 @@
 
                     <div id="sigThumbnails" class="flex flex-wrap gap-2 mb-3 empty:hidden"></div>
 
+                    <div id="sigSettings" class="hidden space-y-3 bg-gray-50 p-3 rounded-lg border border-gray-200 mb-3">
+                        <div class="flex items-center justify-between">
+                            <span class="text-[10px] font-bold text-gray-400 uppercase">Signature Settings</span>
+                            <button id="removeSigBtn" class="text-red-500 hover:text-red-700 text-[10px] font-bold uppercase">Delete</button>
+                        </div>
+                        <div class="flex items-center justify-between gap-2">
+                             <label class="text-xs font-medium text-gray-700">Ink Color</label>
+                             <select id="inkColorSelect" class="text-[10px] bg-white border border-gray-200 rounded px-1 py-0.5">
+                                 <option value="original">Original</option>
+                                 <option value="black" selected>Black</option>
+                                 <option value="blue">Blue</option>
+                             </select>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <input type="checkbox" id="transparentCheck" class="rounded border-gray-300 text-brand-600 focus:ring-brand-500">
+                            <label for="transparentCheck" class="text-xs font-medium text-gray-700">Remove Background</label>
+                        </div>
+                        <div id="transparentControls" class="hidden space-y-2">
+                            <div class="flex justify-between text-[10px]">
+                                <label class="font-medium text-gray-600">Threshold</label>
+                                <span class="mono text-gray-500" id="val-sigThreshold">50</span>
+                            </div>
+                            <input type="range" id="sigThresholdInput" min="0" max="255" step="1" value="50" class="w-full">
+                        </div>
+                    </div>
+
                     <div class="relative group">
-                        <input type="file" id="sigInput" accept="image/png"
+                        <input type="file" id="sigInput" accept="image/*"
                             class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
                         <div
                             class="border-2 border-dashed border-gray-300 rounded-xl p-3 text-center transition-all group-hover:border-brand-500 group-hover:bg-blue-50 bg-white">
@@ -473,6 +499,13 @@
             sigHint: document.getElementById('sigHint'),
             editModeBtn: document.getElementById('editModeBtn'),
             applyEffectsBtn: document.getElementById('applyEffectsBtn'),
+            sigSettings: document.getElementById('sigSettings'),
+            removeSigBtn: document.getElementById('removeSigBtn'),
+            inkColorSelect: document.getElementById('inkColorSelect'),
+            transparentCheck: document.getElementById('transparentCheck'),
+            transparentControls: document.getElementById('transparentControls'),
+            sigThresholdInput: document.getElementById('sigThresholdInput'),
+            valSigThreshold: document.getElementById('val-sigThreshold'),
             downloadBtn: document.getElementById('downloadBtn'),
             statusArea: document.getElementById('statusArea'),
             progressBar: document.getElementById('progressBar'),
@@ -496,6 +529,31 @@
         els.input.addEventListener('change', loadPDF);
         els.downloadBtn.addEventListener('click', downloadPDF);
         els.sigInput.addEventListener('change', loadSignature);
+        els.removeSigBtn.addEventListener('click', deleteSignature);
+        els.inkColorSelect.addEventListener('change', (e) => {
+            const sig = state.uploadedSignatures.find(s => s.id === state.activeUploadId);
+            if (sig) {
+                sig.inkColor = e.target.value;
+                reprocessSignature(sig.id);
+            }
+        });
+        els.transparentCheck.addEventListener('change', (e) => {
+            const sig = state.uploadedSignatures.find(s => s.id === state.activeUploadId);
+            if (sig) {
+                sig.transparent = e.target.checked;
+                els.transparentControls.classList.toggle('hidden', !sig.transparent);
+                reprocessSignature(sig.id);
+            }
+        });
+        els.sigThresholdInput.addEventListener('input', (e) => {
+            const val = parseInt(e.target.value);
+            const sig = state.uploadedSignatures.find(s => s.id === state.activeUploadId);
+            if (sig) {
+                sig.threshold = val;
+                els.valSigThreshold.innerText = val;
+                reprocessSignature(sig.id);
+            }
+        });
         
         els.editModeBtn.addEventListener('click', () => setMode('edit'));
         els.applyEffectsBtn.addEventListener('click', () => setMode('scanify'));
@@ -534,7 +592,7 @@
         }
 
         els.inputs.forEach(input => {
-            if (input.type === 'range') {
+            if (input.type === 'range' && !input.id.includes('sig')) { // Skip signature threshold
                 input.addEventListener('input', (e) => {
                     const param = e.target.dataset.param;
                     const val = parseFloat(e.target.value);
@@ -603,9 +661,18 @@
             const overlay = document.getElementById('overlayContainer');
             if (id) {
                 els.sigHint.classList.remove('hidden');
+                els.sigSettings.classList.remove('hidden');
                 if (overlay) overlay.style.cursor = 'crosshair';
+
+                const sig = state.uploadedSignatures.find(s => s.id === id);
+                els.transparentCheck.checked = sig.transparent;
+                els.transparentControls.classList.toggle('hidden', !sig.transparent);
+                els.sigThresholdInput.value = sig.threshold;
+                els.valSigThreshold.innerText = sig.threshold;
+                els.inkColorSelect.value = sig.inkColor;
             } else {
                 els.sigHint.classList.add('hidden');
+                els.sigSettings.classList.add('hidden');
                 if (overlay) overlay.style.cursor = 'default';
             }
         }
@@ -628,6 +695,15 @@
             });
         }
 
+        function deleteSignature() {
+            if (!state.activeUploadId) return;
+            const id = state.activeUploadId;
+            state.uploadedSignatures = state.uploadedSignatures.filter(s => s.id !== id);
+            state.signatures = state.signatures.filter(s => s.uploadId !== id);
+            selectSignature(null);
+            updatePreview();
+        }
+
         function loadSignature(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -636,7 +712,15 @@
                 const img = new Image();
                 img.onload = () => {
                     const id = Math.random().toString(36).substr(2, 9);
-                    state.uploadedSignatures.push({ id, image: img, src: event.target.result });
+                    state.uploadedSignatures.push({ 
+                        id, 
+                        originalImage: img, 
+                        processedImage: img,
+                        transparent: false,
+                        threshold: 40,
+                        inkColor: 'black',
+                        src: event.target.result 
+                    });
                     selectSignature(id);
                     setMode('edit');
                 };
@@ -644,6 +728,90 @@
             };
             reader.readAsDataURL(file);
             e.target.value = ''; // Reset input
+        }
+
+        function reprocessSignature(id) {
+            const sig = state.uploadedSignatures.find(s => s.id === id);
+            if (!sig) return;
+
+            if (sig.transparent) {
+                sig.processedImage = makeSignatureTransparent(sig.originalImage, sig.threshold, sig.inkColor);
+            } else {
+                // Even without background removal, we might want to change color
+                if (sig.inkColor !== 'original') {
+                    sig.processedImage = makeSignatureTransparent(sig.originalImage, 0, sig.inkColor);
+                } else {
+                    sig.processedImage = sig.originalImage;
+                }
+            }
+
+            // Update all instances on pages
+            state.signatures.forEach(s => {
+                if (s.uploadId === id) {
+                    s.image = sig.processedImage;
+                }
+            });
+            
+            updatePreview();
+        }
+
+        function makeSignatureTransparent(img, threshold, inkColor) {
+            const canvas = document.createElement('canvas');
+            canvas.width = img.width;
+            canvas.height = img.height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0);
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const d = imgData.data;
+
+            // If threshold is 0, we only care about color replacement while preserving existing alpha
+            const isColorOnly = threshold === 0;
+            const whitePoint = 255 - threshold;
+
+            for (let i = 0; i < d.length; i += 4) {
+                let r = d[i], g = d[i+1], b = d[i+2], a_orig = d[i+3];
+                
+                if (isColorOnly) {
+                    if (inkColor === 'black') {
+                        d[i] = 0; d[i+1] = 0; d[i+2] = 0;
+                    } else if (inkColor === 'blue') {
+                        d[i] = 10; d[i+1] = 50; d[i+2] = 160;
+                    }
+                    continue;
+                }
+
+                // Color to Alpha algorithm for white background
+                // Normalize based on whitePoint
+                const r_n = Math.min(255, (r / whitePoint) * 255);
+                const g_n = Math.min(255, (g / whitePoint) * 255);
+                const b_n = Math.min(255, (b / whitePoint) * 255);
+
+                // Calculate transparency: 0 is white, 255 is black
+                const a_calc = (255 - Math.min(r_n, g_n, b_n));
+                
+                // Combine calculated alpha with existing alpha (respecting original transparency)
+                const finalAlpha = (a_calc * a_orig) / 255;
+
+                if (finalAlpha <= 0) {
+                    d[i+3] = 0;
+                } else {
+                    d[i+3] = finalAlpha;
+                    
+                    if (inkColor === 'black') {
+                        d[i] = 0; d[i+1] = 0; d[i+2] = 0;
+                    } else if (inkColor === 'blue') {
+                        d[i] = 10; d[i+1] = 50; d[i+2] = 160;
+                    } else {
+                        // Original color reconstruction: C_fg = 255 - (255 - C_orig)/A
+                        // Using normalized colors for reconstruction
+                        d[i] = Math.max(0, 255 - (255 - r_n) * 255 / finalAlpha);
+                        d[i+1] = Math.max(0, 255 - (255 - g_n) * 255 / finalAlpha);
+                        d[i+2] = Math.max(0, 255 - (255 - b_n) * 255 / finalAlpha);
+                    }
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+            return canvas;
         }
 
         async function loadPDF(e) {
@@ -866,13 +1034,14 @@
                 const offsetX = e.clientX - rect.left;
                 const offsetY = e.clientY - rect.top;
 
-                const img = activeSig.image;
+                const img = activeSig.processedImage;
                 const aspect = img.width / img.height;
                 const defaultWidth = 150;
                 const defaultHeight = defaultWidth / aspect;
 
                 state.signatures.push({
                     id: Math.random().toString(36).substr(2, 9),
+                    uploadId: activeSig.id,
                     page: state.currentPage,
                     image: img,
                     x: offsetX / state.zoom,
