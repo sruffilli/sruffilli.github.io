@@ -206,69 +206,81 @@
                             class="px-2 py-2 text-xs font-medium bg-gray-50 hover:bg-gray-100 border border-gray-200 rounded text-gray-700 transition">Fax</button>
                     </div>
 
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Distortion</h3>
-                        </div>
+                    <div class="border border-gray-100 rounded-lg overflow-hidden">
+                        <button onclick="document.getElementById('fineTuning').classList.toggle('hidden'); this.querySelector('svg').classList.toggle('rotate-180')" 
+                                class="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors">
+                            <h3 class="text-[10px] font-bold text-gray-400 uppercase tracking-wider">Fine-tuning</h3>
+                            <svg class="w-4 h-4 text-gray-400 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
+                            </svg>
+                        </button>
+                        
+                        <div id="fineTuning" class="hidden p-3 space-y-6 bg-white border-t border-gray-100">
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Distortion</h3>
+                                </div>
 
-                        <!-- Rotation -->
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-xs">
-                                <label class="font-medium text-gray-700">Tilt Angle</label>
-                                <span class="mono text-gray-500" id="val-rotation">0.5°</span>
-                            </div>
-                            <input type="range" data-param="rotation" min="0" max="3" step="0.1" value="0.5">
-                        </div>
+                                <!-- Rotation -->
+                                <div class="space-y-2">
+                                    <div class="flex justify-between text-xs">
+                                        <label class="font-medium text-gray-700">Tilt Angle</label>
+                                        <span class="mono text-gray-500" id="val-rotation">0.4°</span>
+                                    </div>
+                                    <input type="range" data-param="rotation" min="0" max="3" step="0.1" value="0.4">
+                                </div>
 
-                        <!-- Blur -->
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-xs">
-                                <label class="font-medium text-gray-700">Blur / Softness</label>
-                                <span class="mono text-gray-500" id="val-blur">0.4px</span>
-                            </div>
-                            <input type="range" data-param="blur" min="0" max="2" step="0.1" value="0.4">
-                        </div>
-                    </div>
-
-                    <div class="space-y-4">
-                        <div class="flex items-center justify-between">
-                            <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Texture</h3>
-                        </div>
-
-                        <!-- Noise -->
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-xs">
-                                <label class="font-medium text-gray-700">Grain (Fast)</label>
-                                <span class="mono text-gray-500" id="val-noise">30</span>
-                            </div>
-                            <input type="range" data-param="noise" min="0" max="100" step="1" value="30">
-                        </div>
-
-                        <!-- Threshold -->
-                        <div class="space-y-2">
-                            <div class="flex justify-between text-xs">
-                                <label class="font-medium text-gray-700">Threshold (Hard B&W)</label>
-                                <span class="mono text-gray-500" id="val-threshold">Disabled</span>
-                            </div>
-                            <!-- Value 0 means disabled, 1-255 is the threshold level -->
-                            <input type="range" data-param="threshold" min="0" max="200" step="1" value="0">
-                            <p class="text-[10px] text-gray-400">Forces strict black & white logic (Fax/Copier)</p>
-                        </div>
-
-                        <!-- Color / Vignette options -->
-                        <div class="space-y-3 pt-2">
-                            <div class="flex items-center gap-2">
-                                <input type="checkbox" id="grayscaleCheck"
-                                    class="rounded border-gray-300 text-brand-600 focus:ring-brand-500">
-                                <label for="grayscaleCheck" class="text-xs font-medium text-gray-700">Grayscale
-                                    (Smooth)</label>
+                                <!-- Blur -->
+                                <div class="space-y-2">
+                                    <div class="flex justify-between text-xs">
+                                        <label class="font-medium text-gray-700">Blur / Softness</label>
+                                        <span class="mono text-gray-500" id="val-blur">0.2px</span>
+                                    </div>
+                                    <input type="range" data-param="blur" min="0" max="2" step="0.1" value="0.2">
+                                </div>
                             </div>
 
-                            <div class="flex items-center gap-2">
-                                <input type="checkbox" id="vignetteCheck"
-                                    class="rounded border-gray-300 text-brand-600 focus:ring-brand-500">
-                                <label for="vignetteCheck" class="text-xs font-medium text-gray-700">Add Scanner
-                                    Border/Shadows</label>
+                            <div class="space-y-4">
+                                <div class="flex items-center justify-between">
+                                    <h3 class="text-xs font-bold text-gray-400 uppercase tracking-wider">Texture</h3>
+                                </div>
+
+                                <!-- Noise -->
+                                <div class="space-y-2">
+                                    <div class="flex justify-between text-xs">
+                                        <label class="font-medium text-gray-700">Grain</label>
+                                        <span class="mono text-gray-500" id="val-noise">45</span>
+                                    </div>
+                                    <input type="range" data-param="noise" min="0" max="100" step="1" value="45">
+                                </div>
+
+                                <!-- Threshold -->
+                                <div class="space-y-2">
+                                    <div class="flex justify-between text-xs">
+                                        <label class="font-medium text-gray-700">Threshold (Hard B&W)</label>
+                                        <span class="mono text-gray-500" id="val-threshold">Disabled</span>
+                                    </div>
+                                    <!-- Value 0 means disabled, 1-255 is the threshold level -->
+                                    <input type="range" data-param="threshold" min="0" max="200" step="1" value="0">
+                                    <p class="text-[10px] text-gray-400">Forces strict black & white logic (Fax/Copier)</p>
+                                </div>
+
+                                <!-- Color / Vignette options -->
+                                <div class="space-y-3 pt-2">
+                                    <div class="flex items-center gap-2">
+                                        <input type="checkbox" id="grayscaleCheck" checked
+                                            class="rounded border-gray-300 text-brand-600 focus:ring-brand-500">
+                                        <label for="grayscaleCheck" class="text-xs font-medium text-gray-700">Grayscale
+                                            (Smooth)</label>
+                                    </div>
+
+                                    <div class="flex items-center gap-2">
+                                        <input type="checkbox" id="vignetteCheck"
+                                            class="rounded border-gray-300 text-brand-600 focus:ring-brand-500">
+                                        <label for="vignetteCheck" class="text-xs font-medium text-gray-700">Add Scanner
+                                            Border/Shadows</label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -475,11 +487,11 @@
             mode: 'scanify', // 'scanify' or 'edit'
             zoom: 1.0,
             config: {
-                rotation: 0.5,
-                blur: 0.4,
-                noise: 30,
+                rotation: 0.4,
+                blur: 0.2,
+                noise: 45,
                 threshold: 0,
-                grayscale: false,
+                grayscale: true,
                 vignette: false
             }
         };
@@ -614,8 +626,8 @@
         function applyPreset(type) {
             const presets = {
                 clean: { rotation: 0.2, blur: 0, noise: 5, threshold: 0, grayscale: false, vignette: false },
-                bw: { rotation: 0.4, blur: 0.2, noise: 20, threshold: 0, grayscale: true, vignette: false },
-                fax: { rotation: 0.8, blur: 0.4, noise: 40, threshold: 160, grayscale: true, vignette: true }
+                bw: { rotation: 0.4, blur: 0.2, noise: 45, threshold: 0, grayscale: true, vignette: false },
+                fax: { rotation: 0.8, blur: 0.4, noise: 60, threshold: 160, grayscale: true, vignette: true }
             };
             const p = presets[type];
             if (!p) return;
@@ -631,7 +643,12 @@
 
             ['rotation', 'blur', 'noise', 'threshold'].forEach(k => {
                 const el = document.getElementById(`val-${k}`);
-                if (el) el.innerText = p[k] + (k === 'threshold' && p[k] === 0 ? 'Disabled' : '');
+                if (el) {
+                    if (k === 'threshold') el.innerText = p[k] === 0 ? 'Disabled' : p[k];
+                    else if (k === 'rotation') el.innerText = p[k] + '°';
+                    else if (k === 'blur') el.innerText = p[k] + 'px';
+                    else el.innerText = p[k];
+                }
             });
             updatePreview();
         }
