@@ -440,22 +440,34 @@
       }, [pun]);
 
       // Form State
-      const [networkInput, setNetworkInput] = useState('10.128.160.0');
-      const [cidrInput, setCidrInput] = useState('25');
+      const [networkInput, setNetworkInput] = useState(() => {
+        const saved = localStorage.getItem('subnet-calc-network');
+        return saved || '10.128.160.0';
+      });
+      const [cidrInput, setCidrInput] = useState(() => {
+        const saved = localStorage.getItem('subnet-calc-cidr');
+        return saved || '25';
+      });
       const [error, setError] = useState('');
 
       // App State
-      const [baseIp, setBaseIp] = useState(ip2long('10.128.160.0'));
-      const [baseCidr, setBaseCidr] = useState(25);
+      const [baseIp, setBaseIp] = useState(() => ip2long(networkInput));
+      const [baseCidr, setBaseCidr] = useState(() => parseInt(cidrInput, 10));
       const [splitNodes, setSplitNodes] = useState(new Set());
+
+      // Persist to localStorage
+      useEffect(() => {
+        localStorage.setItem('subnet-calc-network', networkInput);
+        localStorage.setItem('subnet-calc-cidr', cidrInput);
+      }, [networkInput, cidrInput]);
       const [bulkSplitTarget, setBulkSplitTarget] = useState(26);
       
       useEffect(() => {
         setBulkSplitTarget(Math.min(32, baseCidr + 1));
       }, [baseCidr]);
 
-      const [widgetIpStr, setWidgetIpStr] = useState('10.128.160.0');
-      const [widgetCidrStr, setWidgetCidrStr] = useState('25');
+      const [widgetIpStr, setWidgetIpStr] = useState(networkInput);
+      const [widgetCidrStr, setWidgetCidrStr] = useState(cidrInput);
       const [copiedLink, setCopiedLink] = useState(false);
       const [copiedCSV, setCopiedCSV] = useState(false);
       const [copiedSpreadsheet, setCopiedSpreadsheet] = useState(false);
@@ -764,13 +776,15 @@
         });
       };
 
+      const homeHref = '../index.html';
+
       return (
         <div className="h-screen flex flex-col font-sans text-gray-800 bg-gray-50">
 
           {/* Navbar */}
           <nav className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shrink-0 z-20">
             <div className="flex items-center gap-2">
-              <a href="/" className="text-gray-400 hover:text-blue-600 transition-colors p-1" title="Back to Index">
+              <a href={homeHref} className="text-gray-400 hover:text-blue-600 transition-colors p-1" title="Back to Index">
                 <Icon name="Home" className="w-5 h-5" />
               </a>
               <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-sm ml-1">C</div>

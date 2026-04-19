@@ -208,11 +208,19 @@
         document.title = `CIDR Aggregator - ${pun}`;
       }, [pun]);
 
-      const [input, setInput] = useState('');
+      const [input, setInput] = useState(() => {
+        const saved = localStorage.getItem('cidr-aggregator-input');
+        return saved || '';
+      });
       const [copiedLink, setCopiedLink] = useState(false);
       const [copiedResults, setCopiedResults] = useState(false);
 
-      // Load from URL on mount
+      // Save to localStorage
+      useEffect(() => {
+        localStorage.setItem('cidr-aggregator-input', input);
+      }, [input]);
+
+      // Load from URL on mount (URL takes precedence over localStorage)
       useEffect(() => {
         try {
           const params = new URLSearchParams(window.location.search);
@@ -240,34 +248,31 @@
         }
       }, [input]);
 
-      const copyLink = () => {
+      const copyToClipboard = async (text, setter) => {
         try {
-          const textArea = document.createElement("textarea");
-          textArea.value = window.location.href;
-          document.body.appendChild(textArea);
-          textArea.select();
-          document.execCommand("copy");
-          document.body.removeChild(textArea);
-
-          setCopiedLink(true);
-          setTimeout(() => setCopiedLink(false), 2000);
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+          } else {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            textArea.style.top = "-9999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textArea);
+          }
+          setter(true);
+          setTimeout(() => setter(false), 2000);
         } catch (err) {
-          console.warn("Failed to copy link:", err);
+          console.warn("Failed to copy:", err);
         }
       };
 
-      const copyResults = (text) => {
-        try {
-          const textArea = document.createElement("textarea");
-          textArea.value = text;
-          document.body.appendChild(textArea);
-          textArea.select();
-          document.execCommand("copy");
-          document.body.removeChild(textArea);
-          setCopiedResults(true);
-          setTimeout(() => setCopiedResults(false), 2000);
-        } catch (e) { }
-      };
+      const copyLink = () => copyToClipboard(window.location.href, setCopiedLink);
+      const copyResults = (text) => copyToClipboard(text, setCopiedResults);
 
       const { ranges, errors } = useMemo(() => parseCIDRs(input), [input]);
       const results = useMemo(() => aggregateCIDRs(ranges), [ranges]);
@@ -278,12 +283,14 @@
         setInput(`192.168.1.0/24\n192.168.2.0/24\n192.168.3.0/24\n192.168.4.0/24\n192.168.0.0/24\n192.168.5.0/24\n10.0.0.5\n10.0.0.6`);
       };
 
+      const homeHref = '../index.html';
+
       return (
         <div className="h-screen flex flex-col font-sans text-gray-800 bg-gray-50">
           {/* Navbar */}
           <nav className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shrink-0 z-20">
             <div className="flex items-center gap-2">
-              <a href="/" className="text-gray-400 hover:text-blue-600 transition-colors p-1" title="Back to Index">
+              <a href={homeHref} className="text-gray-400 hover:text-blue-600 transition-colors p-1" title="Back to Index">
                 <Icon name="Home" className="w-5 h-5" />
               </a>
               <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-sm ml-1">A</div>

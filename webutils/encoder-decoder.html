@@ -367,10 +367,27 @@
       const initParams = new URLSearchParams(window.location.search);
 
       const [pun] = useState(() => PUNS[Math.floor(Math.random() * PUNS.length)]);
-      const [input, setInput] = useState(initParams.get('text') || '');
+      const [input, setInput] = useState(() => {
+        const saved = localStorage.getItem('stringcodec-input');
+        return saved || initParams.get('text') || '';
+      });
       const [output, setOutput] = useState('');
-      const [mode, setMode] = useState(initParams.get('mode') || 'encode'); // 'encode' | 'decode' | 'hash'
-      const [encoding, setEncoding] = useState(initParams.get('algo') || 'Base64');
+      const [mode, setMode] = useState(() => {
+        const saved = localStorage.getItem('stringcodec-mode');
+        return saved || initParams.get('mode') || 'encode';
+      });
+      const [encoding, setEncoding] = useState(() => {
+        const saved = localStorage.getItem('stringcodec-algo');
+        return saved || initParams.get('algo') || 'Base64';
+      });
+
+      // Persist to localStorage
+      useEffect(() => {
+        localStorage.setItem('stringcodec-input', input);
+        localStorage.setItem('stringcodec-mode', mode);
+        localStorage.setItem('stringcodec-algo', encoding);
+      }, [input, mode, encoding]);
+
       const [error, setError] = useState('');
       const [copiedLink, setCopiedLink] = useState(false);
       const [copiedOutput, setCopiedOutput] = useState(false);
@@ -444,6 +461,29 @@
         }
       }, [encoding]);
 
+      const copyToClipboard = async (text, setter) => {
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+          } else {
+            const textArea = document.createElement("textarea");
+            textArea.value = text;
+            textArea.style.position = "fixed";
+            textArea.style.left = "-9999px";
+            textArea.style.top = "-9999px";
+            document.body.appendChild(textArea);
+            textArea.focus();
+            textArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textArea);
+          }
+          setter(true);
+          setTimeout(() => setter(false), 2000);
+        } catch (err) {
+          console.warn("Failed to copy:", err);
+        }
+      };
+
       const copyLink = () => {
         try {
           const urlObj = new URL(window.location.href);
@@ -453,28 +493,16 @@
           else urlObj.searchParams.delete('text');
           
           const newUrl = urlObj.toString();
-
-          const textArea = document.createElement("textarea");
-          textArea.value = newUrl;
-          document.body.appendChild(textArea);
-          textArea.select();
-          document.execCommand("copy");
-          document.body.removeChild(textArea);
-
+          copyToClipboard(newUrl, setCopiedLink);
           try { window.history.replaceState({}, '', newUrl); } catch(e) { }
-
-          setCopiedLink(true);
-          setTimeout(() => setCopiedLink(false), 2000);
         } catch (err) {
-          console.warn("Failed to copy link:", err);
+          console.warn("Failed to generate/copy link:", err);
         }
       };
 
       const copyOutput = () => {
         if (output && !error) {
-          navigator.clipboard.writeText(output);
-          setCopiedOutput(true);
-          setTimeout(() => setCopiedOutput(false), 2000);
+          copyToClipboard(output, setCopiedOutput);
         }
       };
 
@@ -495,13 +523,15 @@
         }
       };
 
+      const homeHref = '../index.html';
+
       return (
         <div className="h-screen flex flex-col font-sans text-gray-800 bg-gray-50">
 
           {/* Navbar */}
           <nav className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shrink-0 z-20">
             <div className="flex items-center gap-2">
-              <a href="/" className="text-gray-400 hover:text-blue-600 transition-colors p-1" title="Back to Index">
+              <a href={homeHref} className="text-gray-400 hover:text-blue-600 transition-colors p-1" title="Back to Index">
                 <Icon name="Home" className="w-5 h-5" />
               </a>
               <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-sm ml-1">S</div>
