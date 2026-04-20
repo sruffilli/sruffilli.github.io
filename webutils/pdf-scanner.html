@@ -225,9 +225,9 @@
                                 <div class="space-y-2">
                                     <div class="flex justify-between text-xs">
                                         <label class="font-medium text-gray-700">Tilt Angle</label>
-                                        <span class="mono text-gray-500" id="val-rotation">0.4°</span>
+                                        <span class="mono text-gray-500" id="val-rotation">-1°</span>
                                     </div>
-                                    <input type="range" data-param="rotation" min="0" max="3" step="0.1" value="0.4">
+                                    <input type="range" data-param="rotation" min="-5" max="5" step="0.1" value="-1">
                                 </div>
 
                                 <!-- Blur -->
@@ -433,8 +433,8 @@
                 ctx.fillRect(0, 0, width, height);
 
                 ctx.save();
-                if (options.rotation > 0) {
-                    const angle = (Math.random() - 0.5) * 2 * options.rotation;
+                if (options.rotation !== 0) {
+                    const angle = options.rotation;
                     ctx.translate(width / 2, height / 2);
                     ctx.rotate(angle * Math.PI / 180);
                     ctx.translate(-width / 2, -height / 2);
@@ -487,7 +487,7 @@
             mode: 'scanify', // 'scanify' or 'edit'
             zoom: 1.0,
             config: {
-                rotation: 0.4,
+                rotation: -1,
                 blur: 0.2,
                 noise: 45,
                 threshold: 0,
