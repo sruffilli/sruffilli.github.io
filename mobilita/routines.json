@@ -1,0 +1,176 @@
+{
+  "version": 1,
+  "restBetweenExercisesSec": {
+    "default": 8,
+    "options": [
+      5,
+      8,
+      10
+    ]
+  },
+  "blocks": [
+    {
+      "id": "A",
+      "label": "Blocco A",
+      "title": "Collo e trapezi",
+      "durationMin": 3,
+      "when": "Alla scrivania, 2× al giorno; anche dopo ogni uscita in bici > 40 km",
+      "targetPerDay": 2,
+      "notes": [
+        "Il chin tuck è l'esercizio chiave (allena i flessori profondi del collo).",
+        "Il blocco completo va fatto anche dopo ogni uscita in bici > 40 km."
+      ],
+      "exercises": [
+        {
+          "id": "a1",
+          "name": "Chin tuck",
+          "kind": "reps",
+          "reps": 10,
+          "holdSec": 5,
+          "restSec": 2,
+          "holdLabel": "Tieni",
+          "sides": false,
+          "instruction": "Mento indietro, doppio mento, senza guardare in basso.",
+          "video": "https://www.youtube.com/watch?v=KGvEkY7tnAs"
+        },
+        {
+          "id": "a2",
+          "name": "Stretch trapezio superiore",
+          "kind": "time",
+          "seconds": 30,
+          "sides": true,
+          "instruction": "Orecchio verso la spalla. Siediti sulla mano opposta per ancorare la spalla in basso.",
+          "video": "https://www.youtube.com/watch?v=WzECPoIzxX0",
+          "videoAlt": "https://www.youtube.com/watch?v=2NOsE-VPpkE"
+        },
+        {
+          "id": "a3",
+          "name": "Stretch elevatore della scapola",
+          "kind": "time",
+          "seconds": 30,
+          "sides": true,
+          "instruction": "Ruota la testa di 45° dal lato opposto, poi guarda verso l'ascella.",
+          "video": "https://www.youtube.com/watch?v=imLiEN0Kf14"
+        },
+        {
+          "id": "a4",
+          "name": "Scapular set",
+          "kind": "reps",
+          "reps": 10,
+          "holdSec": 3,
+          "restSec": 2,
+          "holdLabel": "Giù",
+          "sides": false,
+          "instruction": "Spalle su, indietro e giù. Tieni la posizione \"giù\".",
+          "video": "https://www.youtube.com/watch?v=QN1oZVMMRjE"
+        }
+      ]
+    },
+    {
+      "id": "B",
+      "label": "Blocco B",
+      "title": "Corpo intero",
+      "durationMin": 6,
+      "when": "Ogni giorno o pre-allenamento",
+      "targetPerDay": 1,
+      "modes": {
+        "warmup": {
+          "label": "Warm-up"
+        },
+        "evening": {
+          "label": "Serale",
+          "staticHoldSec": 50,
+          "staticHoldRangeSec": [
+            45,
+            60
+          ]
+        }
+      },
+      "notes": [
+        "Se il Blocco B si fa la sera (non come warm-up), le tenute statiche (#5, #6) vanno allungate a 45–60 s.",
+        "Non fare tenute statiche lunghe subito prima di spinte pesanti."
+      ],
+      "exercises": [
+        {
+          "id": "b1",
+          "name": "Cat-cow",
+          "kind": "reps",
+          "reps": 8,
+          "cadenceSec": 4,
+          "sides": false,
+          "covers": "Flesso-estensione del rachide",
+          "instruction": "Flesso-estensione del rachide, lenta e completa.",
+          "video": "https://www.youtube.com/watch?v=vuyUwtHl694"
+        },
+        {
+          "id": "b2",
+          "name": "Open book",
+          "kind": "reps",
+          "reps": 6,
+          "cadenceSec": 5,
+          "sides": true,
+          "covers": "Rotazione toracica",
+          "instruction": "Sul fianco. Apri il braccio ruotando il torace, segui la mano con lo sguardo.",
+          "video": "https://www.youtube.com/watch?v=twGnMnUapAs",
+          "protectedVariant": "Tieni la mano che ruota dove riesci a vederla; non lasciarla cadere a terra dietro di te."
+        },
+        {
+          "id": "b3",
+          "name": "90/90 hip switch",
+          "kind": "reps",
+          "reps": 8,
+          "cadenceSec": 5,
+          "sides": true,
+          "covers": "Rotazione interna d'anca",
+          "instruction": "Seduto. Passa da un lato all'altro ruotando le anche, busto alto.",
+          "video": "https://www.youtube.com/watch?v=KOV5iN86EwM"
+        },
+        {
+          "id": "b4",
+          "name": "World's Greatest Stretch",
+          "kind": "reps",
+          "reps": 3,
+          "cadenceSec": 10,
+          "sides": true,
+          "covers": "Ileopsoas, adduttori, ischiocrurali, caviglia, rotazione toracica",
+          "instruction": "Affondo, gomito a terra, poi ruota il torace verso il ginocchio anteriore.",
+          "video": "https://www.youtube.com/watch?v=-CiWQ2IvY34",
+          "protectedVariant": "Mano sull'anca, niente reach sopra la testa; ruota solo con le costole."
+        },
+        {
+          "id": "b5",
+          "name": "Couch stretch",
+          "kind": "time",
+          "seconds": 30,
+          "sides": true,
+          "static": true,
+          "covers": "Retto femorale",
+          "instruction": "Affondo in ginocchio, ginocchio dietro piegato. Bacino neutro, spingi l'anca avanti.",
+          "video": "https://www.youtube.com/watch?v=y2a8Mk2-kec"
+        },
+        {
+          "id": "b6",
+          "name": "Squat profondo in tenuta",
+          "kind": "time",
+          "seconds": 30,
+          "sides": false,
+          "static": true,
+          "covers": "Dorsiflessione caviglia, adduttori",
+          "instruction": "Talloni a terra, ginocchia fuori, schiena lunga.",
+          "video": "https://www.youtube.com/watch?v=rVTOaSnWk94"
+        },
+        {
+          "id": "b7",
+          "name": "Flessione laterale in piedi",
+          "kind": "reps",
+          "reps": 5,
+          "cadenceSec": 5,
+          "sides": true,
+          "covers": "QL, gran dorsale",
+          "instruction": "Braccio lungo il fianco, scivola di lato senza ruotare.",
+          "video": "https://www.youtube.com/watch?v=sJCR9AZNjjY"
+        }
+      ]
+    }
+  ]
+}
