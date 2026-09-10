@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Sentieri — trekking di 3 giorni</title>
+  <meta name="description" content="Percorsi ad anello o collegati dai mezzi pubblici: ~100 km in 3 giorni, massimo 1000 m di dislivello al giorno. Appennino emiliano-romagnolo, laghi lombardi e piemontesi.">
+  <meta name="theme-color" content="#f4f1ea">
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Crect width='16' height='16' fill='%231b1b1b'/%3E%3Cpath d='M2 12 L6 5 L9 9 L11 7 L14 12 Z' fill='%23f4f1ea'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="vendor/leaflet/leaflet.css">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="top">
+    <div class="top__title">
+      <h1>Sentieri</h1>
+      <p class="top__sub" id="subtitle"></p>
+    </div>
+    <ul class="chips" id="constraints" aria-label="Vincoli"></ul>
+  </header>
+
+  <main class="layout">
+    <section class="side" aria-label="Percorsi">
+      <div class="filters" id="filters">
+        <div class="filters__group" data-filter="area" role="group" aria-label="Zona"></div>
+        <div class="filters__group" data-filter="access" role="group" aria-label="Accesso"></div>
+        <div class="filters__group" data-filter="fit" role="group" aria-label="Dislivello"></div>
+      </div>
+      <p class="count" id="count" aria-live="polite"></p>
+      <ol class="routes" id="routes"></ol>
+      <section class="rejected" id="rejected">
+        <h2>Scartati</h2>
+        <ul id="rejected-list"></ul>
+      </section>
+      <footer class="foot">
+        <p>Linee tracciate con <a href="https://brouter.de/brouter-web/" rel="noopener">BRouter</a> fra i capi tappa su dati <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap</a>: sono indicative, non il tracciato ufficiale. I numeri con «≈» sono stime BRouter; gli altri vengono dalle pagine tappa ufficiali linkate.</p>
+      </footer>
+    </section>
+    <section class="map-wrap">
+      <div id="map" role="application" aria-label="Mappa dei percorsi"></div>
+      <div class="legend" id="legend" aria-hidden="true"></div>
+    </section>
+  </main>
+
+  <script src="vendor/leaflet/leaflet.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>

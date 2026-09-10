@@ -1,0 +1,1131 @@
+{
+  "title": "Sentieri — trekking di 3 giorni",
+  "subtitle": "Percorsi ad anello o ben collegati dai mezzi: ~100 km in 3 giorni, massimo 1000 m di dislivello al giorno. Appennino emiliano-romagnolo, laghi lombardi e piemontesi.",
+  "constraints": {
+    "days": 3,
+    "kmTarget": 100,
+    "dplusMaxPerDay": 1000
+  },
+  "areas": {
+    "laghi": "Laghi Como / Maggiore",
+    "emilia": "Appennino emiliano",
+    "romagna": "Romagna",
+    "lombardia": "Lombardia bonus"
+  },
+  "routes": [
+    {
+      "id": "carlomagno",
+      "rank": 1,
+      "name": "Cammino di Carlo Magno — tratto camuno",
+      "area": "lombardia",
+      "region": "Valle Camonica (BG/BS)",
+      "access": "treno",
+      "loop": false,
+      "fit": "ok",
+      "verified": true,
+      "pitch": "Lovere → Boario → Breno → Grevo → Edolo a mezza costa sul versante orobico della Valcamonica, sterrato al 40–70%. Sale dal Sebino verso le Alpi con dislivelli che restano sempre sotto i 1000 m e una stazione a ogni fine tappa.",
+      "days": [
+        {
+          "label": "Lovere → Boario → Breno",
+          "km": 33,
+          "dplus": 984,
+          "note": "tappe 4+5 ufficiali (16,1 km/+581 e 16,9 km/+403)"
+        },
+        {
+          "label": "Breno → Grevo",
+          "km": 17.8,
+          "dplus": 720,
+          "note": "tappa 6"
+        },
+        {
+          "label": "Grevo → Edolo",
+          "km": 20.2,
+          "dplus": 741,
+          "note": "tappa 7"
+        }
+      ],
+      "transport": "Ferrovia Brescia–Iseo–Edolo con stazioni a Boario, Breno, Cedegolo (Grevo) ed Edolo. Lovere si raggiunge in battello da Pisogne (stazione) o in bus da Bergamo.",
+      "caveats": "Non allungare a Ponte di Legno: la tappa 8 fa 24 km con +1636 m. Segnaletica visibile solo nel senso Bergamo → Carisolo.",
+      "sources": [
+        {
+          "label": "Tappe ufficiali",
+          "url": "https://www.camminodicarlomagno.it/tappe/"
+        },
+        {
+          "label": "Tracce GPX",
+          "url": "https://www.camminodicarlomagno.it/tracce-gpx/"
+        }
+      ],
+      "profile": "hiking-mountain",
+      "waypoints": [
+        {
+          "name": "Lovere",
+          "lat": 45.8169,
+          "lon": 10.0752,
+          "day": 1
+        },
+        {
+          "name": "Boario Terme",
+          "lat": 45.8943,
+          "lon": 10.1902
+        },
+        {
+          "name": "Breno",
+          "lat": 45.9573,
+          "lon": 10.3037,
+          "day": 2
+        },
+        {
+          "name": "Grevo (Cedegolo)",
+          "lat": 46.0684,
+          "lon": 10.3549,
+          "day": 3
+        },
+        {
+          "name": "Edolo",
+          "lat": 46.1806,
+          "lon": 10.3333,
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "maggiore",
+      "rank": 1,
+      "name": "Cammino del Lago Maggiore — sponda piemontese",
+      "area": "laghi",
+      "region": "Lago Maggiore (NO/VCO)",
+      "access": "treno",
+      "loop": false,
+      "fit": "ok",
+      "verified": true,
+      "pitch": "Sesto Calende → Stresa → Intra → Cannobio: 87 km di lungolago, ville, golfo Borromeo e frazioni a mezza costa. Il giorno più duro fa 800 m. Treno a ogni capo tappa fino a Verbania, battello o bus da Cannobio.",
+      "days": [
+        {
+          "label": "Sesto Calende → Meina → Stresa",
+          "km": 39,
+          "dplus": 710,
+          "note": "tappe ufficiali 24 km/+380 e 15 km/+330"
+        },
+        {
+          "label": "Stresa → Intra",
+          "km": 24,
+          "dplus": 480
+        },
+        {
+          "label": "Intra → Cannobio",
+          "km": 24,
+          "dplus": 800,
+          "note": "la tappa più impegnativa del lato piemontese"
+        }
+      ],
+      "transport": "Linea Milano–Sesto Calende–Arona–Stresa–Verbania-Pallanza (Fondotoce)–Domodossola. Da Cannobio: bus VCO per Verbania o battello per Intra/Laveno.",
+      "caveats": "Variante più montana: Meina → Intra (39 km/+810), Intra → Cannobio (24/+800), Cannobio → Ascona CH (20/+860) = 83 km, ritorno in treno da Locarno.",
+      "sources": [
+        {
+          "label": "Le 11 tappe",
+          "url": "https://www.camminolagomaggiore.it/11-tappe-cammino-lago-maggiore/"
+        }
+      ],
+      "profile": "hiking-beta",
+      "waypoints": [
+        {
+          "name": "Sesto Calende",
+          "lat": 45.724,
+          "lon": 8.6344,
+          "day": 1
+        },
+        {
+          "name": "Arona",
+          "lat": 45.7598,
+          "lon": 8.5604
+        },
+        {
+          "name": "Meina",
+          "lat": 45.7888,
+          "lon": 8.5388
+        },
+        {
+          "name": "Lesa",
+          "lat": 45.8296,
+          "lon": 8.5649
+        },
+        {
+          "name": "Stresa",
+          "lat": 45.8837,
+          "lon": 8.539,
+          "day": 2
+        },
+        {
+          "name": "Baveno",
+          "lat": 45.9089,
+          "lon": 8.505
+        },
+        {
+          "name": "Fondotoce",
+          "lat": 45.9463,
+          "lon": 8.4912
+        },
+        {
+          "name": "Intra",
+          "lat": 45.9366,
+          "lon": 8.5726,
+          "day": 3
+        },
+        {
+          "name": "Ghiffa",
+          "lat": 45.9591,
+          "lon": 8.6198
+        },
+        {
+          "name": "Oggebbio",
+          "lat": 45.9962,
+          "lon": 8.6527
+        },
+        {
+          "name": "Cannero Riviera",
+          "lat": 46.0219,
+          "lon": 8.679
+        },
+        {
+          "name": "Cannobio",
+          "lat": 46.0618,
+          "lon": 8.6976,
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "viandante",
+      "rank": 1,
+      "name": "Sentiero del Viandante",
+      "area": "laghi",
+      "region": "Lago di Como, ramo di Lecco (LC/SO)",
+      "access": "treno",
+      "loop": false,
+      "fit": "ok",
+      "verified": false,
+      "pitch": "Lecco → Varenna → Colico → Morbegno su mulattiere a mezza costa fra le Grigne e il lago, poi il prolungamento in bassa Valtellina. Primo cammino certificato dal Touring Club; stazione in ogni paese, quindi si taglia o si allunga a piacere.",
+      "days": [
+        {
+          "label": "Lecco → Abbadia → Lierna → Varenna",
+          "km": null,
+          "dplus": null,
+          "note": "variante bassa per Vezio; la variante alta per Ortanella aggiunge dislivello"
+        },
+        {
+          "label": "Varenna → Bellano → Dervio → Colico",
+          "km": null,
+          "dplus": null
+        },
+        {
+          "label": "Colico → Piantedo → Delebio → Morbegno",
+          "km": null,
+          "dplus": null,
+          "note": "prolungamento valtellinese, più dolce"
+        }
+      ],
+      "transport": "Linea Lecco–Colico–Sondrio: ogni capo tappa ha la stazione (Lecco, Abbadia, Mandello, Lierna, Varenna-Esino, Bellano, Dervio, Colico, Delebio, Morbegno). Da Milano Centrale a Lecco ~40 min.",
+      "caveats": "Lecco–Colico dichiarati 49 km / +2400 m in 5 tappe: i numeri per giorno qui sono stime BRouter, verificali sul GPX ufficiale. Quota sempre sotto i 1000 m, percorribile da marzo a novembre.",
+      "sources": [
+        {
+          "label": "Sito ufficiale (mappa e tappe)",
+          "url": "https://www.ilsentierodelviandante.eu/"
+        },
+        {
+          "label": "Guida tappe",
+          "url": "https://www.dumacanduma.org/sentiero-del-viandante-tappe-mappa-lago-di-como/"
+        }
+      ],
+      "profile": "hiking-mountain",
+      "waypoints": [
+        {
+          "name": "Lecco",
+          "lat": 45.8564,
+          "lon": 9.3934,
+          "day": 1
+        },
+        {
+          "name": "Abbadia Lariana",
+          "lat": 45.9,
+          "lon": 9.3341
+        },
+        {
+          "name": "Mandello del Lario",
+          "lat": 45.9192,
+          "lon": 9.3193
+        },
+        {
+          "name": "Lierna",
+          "lat": 45.9592,
+          "lon": 9.3025
+        },
+        {
+          "name": "Varenna",
+          "lat": 46.01,
+          "lon": 9.2832,
+          "day": 2
+        },
+        {
+          "name": "Bellano",
+          "lat": 46.0432,
+          "lon": 9.3041
+        },
+        {
+          "name": "Dervio",
+          "lat": 46.0766,
+          "lon": 9.3045
+        },
+        {
+          "name": "Colico",
+          "lat": 46.1363,
+          "lon": 9.3738,
+          "day": 3
+        },
+        {
+          "name": "Piantedo",
+          "lat": 46.1345,
+          "lon": 9.4299
+        },
+        {
+          "name": "Delebio",
+          "lat": 46.1361,
+          "lon": 9.4606
+        },
+        {
+          "name": "Morbegno",
+          "lat": 46.1313,
+          "lon": 9.5697,
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "valeriana",
+      "rank": 2,
+      "name": "Via Valeriana — Sebino e Valcamonica",
+      "area": "lombardia",
+      "region": "Lago d'Iseo / Valle Camonica (BS)",
+      "access": "treno",
+      "loop": false,
+      "fit": "borderline",
+      "verified": true,
+      "pitch": "Pilzone → Pisogne → Malegno → Malonno: si apre con l'Antica Strada Valeriana (CAI 291) a picco sul lago d'Iseo, poi risale la valle sul versante opposto al Carlo Magno. Stessa ferrovia, combinabile in un anello di ~100 km.",
+      "days": [
+        {
+          "label": "Pilzone → Pisogne",
+          "km": 24,
+          "dplus": 1022,
+          "note": "tappa 3: il pezzo più bello, sfora di 22 m"
+        },
+        {
+          "label": "Pisogne → Boario → Malegno",
+          "km": 31,
+          "dplus": 956,
+          "note": "tappe 4+5 (15,4/+276 e 15,6/+680)"
+        },
+        {
+          "label": "Malegno → Ono S. Pietro → Malonno",
+          "km": 28,
+          "dplus": 950,
+          "note": "tappe 6+7 (11/+349 e 17/+601); fino a Edolo sono 38 km/+1272"
+        }
+      ],
+      "transport": "Ferrovia Brescia–Iseo–Edolo: stazioni a Pilzone, Pisogne, Boario, Cividate-Malegno, Malonno, Edolo.",
+      "caveats": "Senso unico di segnaletica (Brescia → Tirano/Tonale). Prima tappa con 50% di asfalto.",
+      "sources": [
+        {
+          "label": "Tappe ufficiali",
+          "url": "https://www.viavaleriana.it/tappe-della-via-valeriana/"
+        }
+      ],
+      "profile": "hiking-beta",
+      "waypoints": [
+        {
+          "name": "Pilzone d'Iseo",
+          "lat": 45.674,
+          "lon": 10.0802,
+          "day": 1
+        },
+        {
+          "name": "Pisogne",
+          "lat": 45.8057,
+          "lon": 10.1082,
+          "day": 2
+        },
+        {
+          "name": "Boario Terme",
+          "lat": 45.8943,
+          "lon": 10.1902
+        },
+        {
+          "name": "Malegno",
+          "lat": 45.9516,
+          "lon": 10.271,
+          "day": 3
+        },
+        {
+          "name": "Ono San Pietro",
+          "lat": 46.0187,
+          "lon": 10.3265
+        },
+        {
+          "name": "Malonno",
+          "lat": 46.1226,
+          "lon": 10.3192,
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "regina",
+      "rank": 2,
+      "name": "Via Regina — sponda ovest del Lario",
+      "area": "lombardia",
+      "region": "Lago di Como (CO)",
+      "access": "treno",
+      "loop": false,
+      "fit": "ok",
+      "verified": false,
+      "pitch": "Sorico → Dongo → Menaggio → Argegno → Como: la strada storica del lago recuperata come cammino, 77 km quasi piatti fra borghi, ville e mulattiere selciate. Il gemello ovest del Viandante.",
+      "days": [
+        {
+          "label": "Dascio → Gravedona → Dongo",
+          "km": 20.3,
+          "dplus": null
+        },
+        {
+          "label": "Dongo → Menaggio → Argegno",
+          "km": 34.1,
+          "dplus": null,
+          "note": "tappe ufficiali 17,8 + 16,3 km"
+        },
+        {
+          "label": "Argegno → Como",
+          "km": 22.4,
+          "dplus": null
+        }
+      ],
+      "transport": "Treno a Como S. Giovanni. Per Sorico: bus C10 da Como, oppure treno fino a Colico e bus. Battelli su tutto il tratto.",
+      "caveats": "Dislivello totale dichiarato ~400 m (i valori per giorno sono stime). Alcuni tratti coincidono con la SS340 senza banchina: lì si prende il bus.",
+      "sources": [
+        {
+          "label": "Descrizione e tappe",
+          "url": "https://www.dueincamminoeinkayak.com/via-regina/"
+        },
+        {
+          "label": "in-Lombardia",
+          "url": "https://www.in-lombardia.it/itinerari/regina"
+        }
+      ],
+      "profile": "hiking-beta",
+      "waypoints": [
+        {
+          "name": "Dascio (Sorico)",
+          "lat": 46.1873,
+          "lon": 9.4175,
+          "day": 1
+        },
+        {
+          "name": "Gravedona",
+          "lat": 46.1472,
+          "lon": 9.3053
+        },
+        {
+          "name": "Dongo",
+          "lat": 46.1229,
+          "lon": 9.2791,
+          "day": 2
+        },
+        {
+          "name": "Menaggio",
+          "lat": 46.0198,
+          "lon": 9.239
+        },
+        {
+          "name": "Argegno",
+          "lat": 45.9433,
+          "lon": 9.1282,
+          "day": 3
+        },
+        {
+          "name": "Como",
+          "lat": 45.8091,
+          "lon": 9.0727,
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "anello3",
+      "rank": 1,
+      "name": "Anello 3 «Nel cuore del Parco» — Foreste Casentinesi",
+      "area": "romagna",
+      "region": "Parco Nazionale Foreste Casentinesi (FC/AR)",
+      "access": "auto",
+      "loop": true,
+      "fit": "ok",
+      "verified": true,
+      "pitch": "Campigna → Eremo di Camaldoli → Badia Prataglia → Foresta della Lama → diga di Ridracoli → San Paolo in Alpe → Campigna. Anello ufficiale del Parco, difficoltà 5/5, con le due notti in rifugio. L'auto resta a Campigna — oppure ci arrivi col bus 132 da Forlì.",
+      "days": [
+        {
+          "label": "Campigna → Passo della Calla → Eremo → Camaldoli → Badia Prataglia",
+          "km": 17,
+          "dplus": 700,
+          "note": "6,5 ore; sentieri 247, 00, 74, 68"
+        },
+        {
+          "label": "Badia Prataglia → Passo Fangacci → Lama → Ridracoli",
+          "km": 14,
+          "dplus": 700,
+          "note": "6 ore; il 227 e la Foresta della Lama"
+        },
+        {
+          "label": "Ridracoli → San Paolo in Alpe → Campigna",
+          "km": 15,
+          "dplus": 1000,
+          "note": "7 ore; il giorno più duro"
+        }
+      ],
+      "transport": "Bus Start Romagna linea 132 da Forlì fino a Campigna. In auto: Forlì → Santa Sofia → Campigna, parcheggio in paese.",
+      "caveats": "Verificare lo stato dei sentieri sul sito del Parco prima di partire. La Locanda Carbonile è chiusa: pernotti a Badia Prataglia e a Rifugio Cà di Sopra (Ridracoli). A passo svelto si chiude in due giorni, oppure si concatena con l'anello 11.",
+      "sources": [
+        {
+          "label": "Da rifugio a rifugio (Parco)",
+          "url": "https://www.parcoforestecasentinesi.it/it/vivi-il-parco/sentieri-ed-escursioni/da-rifugio-a-rifugio"
+        },
+        {
+          "label": "Scheda anello 3 (PDF)",
+          "url": "https://www.parcoforestecasentinesi.it/sites/default/files/anello%203.pdf"
+        }
+      ],
+      "profile": "hiking-mountain",
+      "waypoints": [
+        {
+          "name": "Campigna",
+          "lat": 43.8721,
+          "lon": 11.7462,
+          "day": 1
+        },
+        {
+          "name": "Passo della Calla",
+          "lat": 43.8597,
+          "lon": 11.7444
+        },
+        {
+          "name": "Eremo di Camaldoli",
+          "lat": 43.8106,
+          "lon": 11.8167
+        },
+        {
+          "name": "Camaldoli",
+          "lat": 43.794,
+          "lon": 11.8204
+        },
+        {
+          "name": "Badia Prataglia",
+          "lat": 43.7948,
+          "lon": 11.8774,
+          "day": 2
+        },
+        {
+          "name": "Passo dei Fangacci",
+          "lat": 43.824,
+          "lon": 11.872
+        },
+        {
+          "name": "Diga di Ridracoli",
+          "lat": 43.8733,
+          "lon": 11.8364,
+          "day": 3
+        },
+        {
+          "name": "San Paolo in Alpe",
+          "lat": 43.8769,
+          "lon": 11.799
+        },
+        {
+          "name": "Campigna",
+          "lat": 43.8721,
+          "lon": 11.7462,
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "anello11",
+      "rank": 2,
+      "name": "Anello 11 «Solitari altopiani nella valle del Bidente»",
+      "area": "romagna",
+      "region": "Parco Nazionale Foreste Casentinesi (FC)",
+      "access": "auto",
+      "loop": true,
+      "fit": "ok",
+      "verified": true,
+      "pitch": "Corniolo → Pian di Rocchi (Premilcuore) → crinale di Monte Ritoio e Poggio Corsoio → Campigna → Corniolo. Le valli di Santa Sofia e Premilcuore, prati e zone rocciose, due notti in rifugio. Difficoltà 3/5.",
+      "days": [
+        {
+          "label": "Corniolo → Valpisella → Pian di Rocchi",
+          "km": 12,
+          "dplus": 600,
+          "note": "5 ore"
+        },
+        {
+          "label": "Pian di Rocchi → Monte Ritoio → Piancancelli → Campigna",
+          "km": 18,
+          "dplus": 600,
+          "note": "7 ore"
+        },
+        {
+          "label": "Campigna → San Paolo in Alpe → Corniolo",
+          "km": 14,
+          "dplus": 980,
+          "note": "6 ore"
+        }
+      ],
+      "transport": "Bus Start Romagna linea 132 da Forlì (fermata Corniolo). In auto: Santa Sofia → Corniolo.",
+      "caveats": "Rifugio Pian di Rocchi e Albergo Fiumicello a Premilcuore per la prima notte; Campigna per la seconda.",
+      "sources": [
+        {
+          "label": "Scheda anello 11 (PDF)",
+          "url": "http://www.parcoforestecasentinesi.it/sites/default/files/anello%2011%20nuovo_compressed.pdf"
+        }
+      ],
+      "profile": "hiking-mountain",
+      "waypoints": [
+        {
+          "name": "Corniolo",
+          "lat": 43.9077,
+          "lon": 11.7942,
+          "day": 1
+        },
+        {
+          "name": "Pian di Rocchi (Fiumicello)",
+          "lat": 43.9368,
+          "lon": 11.7497,
+          "day": 2
+        },
+        {
+          "name": "Pian delle Fontanelle",
+          "lat": 43.885,
+          "lon": 11.725
+        },
+        {
+          "name": "Campigna",
+          "lat": 43.8721,
+          "lon": 11.7462,
+          "day": 3
+        },
+        {
+          "name": "San Paolo in Alpe",
+          "lat": 43.8769,
+          "lon": 11.799
+        },
+        {
+          "name": "Corniolo",
+          "lat": 43.9077,
+          "lon": 11.7942,
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "anello2",
+      "rank": 3,
+      "name": "Anello 2 «Antichi sentieri sul Bidente delle Celle»",
+      "area": "romagna",
+      "region": "Parco Nazionale Foreste Casentinesi (FC)",
+      "access": "auto",
+      "loop": true,
+      "fit": "ok",
+      "verified": true,
+      "pitch": "Corniolo → Ripe Toscane → Rifugio Le Fontanelle → Monte Falco e Monte Falterona → Campigna → Corniolo. Corto (30 km) ma con la cima più alta del Parco; difficoltà 2/5.",
+      "days": [
+        {
+          "label": "Lago di Corniolo → Fonte di Fossacupa → Rifugio Le Fontanelle",
+          "km": 11,
+          "dplus": 900,
+          "note": "5,5 ore"
+        },
+        {
+          "label": "Le Fontanelle → Monte Falco → Falterona → Campigna",
+          "km": 12,
+          "dplus": 300,
+          "note": "4 ore"
+        },
+        {
+          "label": "Campigna → Castello di Corniolino → Corniolo",
+          "km": 7,
+          "dplus": 50,
+          "note": "2,5 ore"
+        }
+      ],
+      "transport": "Bus Start Romagna linea 132 da Forlì. In auto: Santa Sofia → Corniolo, frazione Lago.",
+      "caveats": "Troppo corto per il target dei 100 km: va bene come weekend leggero o concatenato con l'anello 11.",
+      "sources": [
+        {
+          "label": "Scheda anello 2 (PDF)",
+          "url": "https://www.parcoforestecasentinesi.it/sites/default/files/anello%202.pdf"
+        }
+      ],
+      "profile": "hiking-mountain",
+      "waypoints": [
+        {
+          "name": "Corniolo (Lago)",
+          "lat": 43.905,
+          "lon": 11.79,
+          "day": 1
+        },
+        {
+          "name": "Rifugio Le Fontanelle",
+          "lat": 43.885,
+          "lon": 11.725,
+          "day": 2
+        },
+        {
+          "name": "Monte Falco",
+          "lat": 43.8775,
+          "lon": 11.7092
+        },
+        {
+          "name": "Campigna",
+          "lat": 43.8721,
+          "lon": 11.7462,
+          "day": 3
+        },
+        {
+          "name": "Corniolo",
+          "lat": 43.9077,
+          "lon": 11.7942,
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "avp-vena",
+      "rank": 2,
+      "name": "Alta Via dei Parchi 14–16 — dal Savena alla Vena del Gesso",
+      "area": "emilia",
+      "region": "Appennino bolognese / Vena del Gesso (BO/RA)",
+      "access": "bus",
+      "loop": false,
+      "fit": "over",
+      "verified": true,
+      "pitch": "Alpe di Monghidoro → Le Selve → Tossignano → Carnè → Brisighella: dalle faggete dell'alto Savena ai castagneti di Castel del Rio, il ponte degli Alidosi e la cresta di selenite della Vena del Gesso. Due giorni entro i 1000 m, il terzo sfora.",
+      "days": [
+        {
+          "label": "Alpe di Monghidoro → Le Selve",
+          "km": 23.7,
+          "dplus": 890,
+          "note": "tappa 14, 7h40"
+        },
+        {
+          "label": "Le Selve → Castel del Rio → Tossignano",
+          "km": 21.4,
+          "dplus": 914,
+          "note": "tappa 15, dati aggiornati 2025"
+        },
+        {
+          "label": "Tossignano → Monte Mauro → Carnè → Brisighella",
+          "km": 24,
+          "dplus": 1611,
+          "note": "tappa 16 (20 km/+1611, 8h50) più la discesa a Brisighella"
+        }
+      ],
+      "transport": "Bus TPER da Bologna a Monghidoro (l'Alpe è 5 km sopra il paese). Ritorno: Brisighella è sulla Faentina, treno per Faenza. In alternativa bus Start Romagna da Tossignano a Imola.",
+      "caveats": "La cresta della Vena del Gesso è tutta saliscendi: il terzo giorno è fuori vincolo. Alternativa: fermarsi a Tossignano dopo due giorni (45 km).",
+      "sources": [
+        {
+          "label": "Proposta Regione ER (Alpe di Monghidoro – Carnè)",
+          "url": "https://ambiente.regione.emilia-romagna.it/it/parchi-natura2000/fruizione/altavia/proposte_trekking/alpe-di-monghidoro-carne"
+        },
+        {
+          "label": "Tappe e GPX",
+          "url": "https://ambiente.regione.emilia-romagna.it/it/parchi-natura2000/fruizione/altavia/tappe"
+        }
+      ],
+      "profile": "hiking-mountain",
+      "waypoints": [
+        {
+          "name": "Alpe di Monghidoro",
+          "lat": 44.1882,
+          "lon": 11.3227,
+          "day": 1
+        },
+        {
+          "name": "Le Selve",
+          "lat": 44.196,
+          "lon": 11.443,
+          "day": 2
+        },
+        {
+          "name": "Castel del Rio",
+          "lat": 44.2143,
+          "lon": 11.5041
+        },
+        {
+          "name": "Tossignano",
+          "lat": 44.2724,
+          "lon": 11.6036,
+          "day": 3
+        },
+        {
+          "name": "Borgo Rivola",
+          "lat": 44.2618,
+          "lon": 11.6715
+        },
+        {
+          "name": "Monte Mauro",
+          "lat": 44.2358,
+          "lon": 11.7008
+        },
+        {
+          "name": "Parco Carnè",
+          "lat": 44.222,
+          "lon": 11.717
+        },
+        {
+          "name": "Brisighella",
+          "lat": 44.2222,
+          "lon": 11.7733,
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "lana-seta",
+      "rank": 3,
+      "name": "Via della Lana e della Seta — tratto centrale",
+      "area": "emilia",
+      "region": "Appennino bolognese / Val di Bisenzio (BO/PO)",
+      "access": "treno",
+      "loop": false,
+      "fit": "borderline",
+      "verified": true,
+      "pitch": "Grizzana Morandi → Castiglione dei Pepoli → Vernio → Vaiano: il crinale fra Reno e Setta, le terre di confine e il massiccio della Calvana con i cavalli selvatici. Lo stesso spirito della Via degli Dei, con la Direttissima Bologna–Prato a entrambi i capi.",
+      "days": [
+        {
+          "label": "Grizzana Morandi → Castiglione dei Pepoli",
+          "km": 22,
+          "dplus": 1100,
+          "note": "tappa 3, 7 ore"
+        },
+        {
+          "label": "Castiglione dei Pepoli → Vernio",
+          "km": 20,
+          "dplus": 800,
+          "note": "tappa 4"
+        },
+        {
+          "label": "Vernio → Calvana → Vaiano",
+          "km": 21,
+          "dplus": 1000,
+          "note": "tappa 5"
+        }
+      ],
+      "transport": "Treno: Grizzana e Vernio (S. Quirico) e Vaiano sono tutte sulla Bologna–Prato via Direttissima.",
+      "caveats": "Il primo giorno sfora di 100 m. Le tappe 1–2 da Bologna (27 km/+1400) sono fuori vincolo.",
+      "sources": [
+        {
+          "label": "Sito ufficiale",
+          "url": "https://www.viadellalanaedellaseta.com/home"
+        },
+        {
+          "label": "Tappe (Val Bisenzio)",
+          "url": "https://www.valbisenziotoscana.it/it/itinerari/la-via-della-lana-e-della-seta"
+        }
+      ],
+      "profile": "hiking-mountain",
+      "waypoints": [
+        {
+          "name": "Grizzana Morandi",
+          "lat": 44.2574,
+          "lon": 11.1529,
+          "day": 1
+        },
+        {
+          "name": "Castiglione dei Pepoli",
+          "lat": 44.1414,
+          "lon": 11.1541,
+          "day": 2
+        },
+        {
+          "name": "Vernio",
+          "lat": 44.0611,
+          "lon": 11.1484,
+          "day": 3
+        },
+        {
+          "name": "Vaiano",
+          "lat": 43.968,
+          "lon": 11.122,
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "sorelle",
+      "rank": 3,
+      "name": "Via delle Sorelle — Brescia → Bergamo",
+      "area": "lombardia",
+      "region": "Franciacorta / Val Calepio / Valli d'Argon (BS/BG)",
+      "access": "treno",
+      "loop": false,
+      "fit": "unknown",
+      "verified": false,
+      "pitch": "Cammino collinare nato nel 2023 fra le due Capitali della Cultura: Franciacorta, riva sud del Sebino, Val Calepio e le valli bergamasche, con «meno asfalto possibile». 130 km in 6 tappe modulabili.",
+      "days": [
+        {
+          "label": "Brescia → Gussago → Provaglio d'Iseo",
+          "km": null,
+          "dplus": null,
+          "note": "tappe 1+2"
+        },
+        {
+          "label": "Provaglio → Sarnico → Bagnatica",
+          "km": null,
+          "dplus": null,
+          "note": "tappe 3+4"
+        },
+        {
+          "label": "Bagnatica → Scanzorosciate → Bergamo",
+          "km": null,
+          "dplus": null,
+          "note": "Via Traversa, tappe 5+6"
+        }
+      ],
+      "transport": "Treno a Brescia, Provaglio-Timoline (linea Brescia–Iseo) e Bergamo; Sarnico con bus per Bergamo.",
+      "caveats": "Il sito ufficiale non pubblica km e dislivello per tappa: i valori qui sono stime BRouter da confrontare con il GPX ufficiale prima di fidarsi.",
+      "sources": [
+        {
+          "label": "Sito ufficiale",
+          "url": "https://www.laviadellesorelle.it/"
+        },
+        {
+          "label": "Tappe",
+          "url": "https://www.laviadellesorelle.it/tappe-2/"
+        }
+      ],
+      "profile": "hiking-beta",
+      "waypoints": [
+        {
+          "name": "Brescia",
+          "lat": 45.539,
+          "lon": 10.22,
+          "day": 1
+        },
+        {
+          "name": "Gussago",
+          "lat": 45.5927,
+          "lon": 10.1535
+        },
+        {
+          "name": "Provaglio d'Iseo",
+          "lat": 45.636,
+          "lon": 10.0446,
+          "day": 2
+        },
+        {
+          "name": "Sarnico",
+          "lat": 45.6669,
+          "lon": 9.9574
+        },
+        {
+          "name": "Bagnatica",
+          "lat": 45.6569,
+          "lon": 9.7668,
+          "day": 3
+        },
+        {
+          "name": "Bergamo",
+          "lat": 45.695,
+          "lon": 9.67,
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "bvg",
+      "rank": 3,
+      "name": "Bassa Via del Garda — Salò → Limone",
+      "area": "lombardia",
+      "region": "Alto Garda bresciano (BS)",
+      "access": "bus",
+      "loop": false,
+      "fit": "borderline",
+      "verified": false,
+      "pitch": "Salò → Toscolano → Gargnano → Tignale → Tremosine → Limone: la Valle delle Cartiere, l'eremo di San Valentino, il santuario di Montecastello e la forra del Brasa. 70 km fra la costa e gli altipiani a 400–600 m sul lago.",
+      "days": [
+        {
+          "label": "Salò → Toscolano Maderno → Gargnano",
+          "km": null,
+          "dplus": null,
+          "note": "tappe 2+3"
+        },
+        {
+          "label": "Gargnano → Gardola (Tignale)",
+          "km": null,
+          "dplus": null,
+          "note": "tappa 4, tratti ripidi ed esposti"
+        },
+        {
+          "label": "Gardola → Voltino (Tremosine) → Valle del Singol → Limone",
+          "km": null,
+          "dplus": null,
+          "note": "tappe 5+6"
+        }
+      ],
+      "transport": "Niente treno: bus da Brescia a Salò; da Limone battello o bus per Riva/Desenzano. Meglio in auto con battello di rientro.",
+      "caveats": "Dislivelli per tappa non pubblicati: le stime BRouter qui sono indicative, e gli altipiani fanno pensare a 800–1200 m al giorno.",
+      "sources": [
+        {
+          "label": "Sito ufficiale",
+          "url": "https://www.bassaviadelgarda.com/"
+        },
+        {
+          "label": "Il percorso",
+          "url": "https://www.bassaviadelgarda.com/percorso-bvg/"
+        }
+      ],
+      "profile": "hiking-mountain",
+      "waypoints": [
+        {
+          "name": "Salò",
+          "lat": 45.6057,
+          "lon": 10.5201,
+          "day": 1
+        },
+        {
+          "name": "Toscolano Maderno",
+          "lat": 45.6346,
+          "lon": 10.6098
+        },
+        {
+          "name": "Gargnano",
+          "lat": 45.6881,
+          "lon": 10.6635,
+          "day": 2
+        },
+        {
+          "name": "Gardola (Tignale)",
+          "lat": 45.7386,
+          "lon": 10.7205,
+          "day": 3
+        },
+        {
+          "name": "Voltino (Tremosine)",
+          "lat": 45.7837,
+          "lon": 10.7648
+        },
+        {
+          "name": "Limone sul Garda",
+          "lat": 45.8141,
+          "lon": 10.7915,
+          "end": true
+        }
+      ]
+    },
+    {
+      "id": "francisca",
+      "rank": 3,
+      "name": "Via Francisca del Lucomagno — tratto varesino",
+      "area": "lombardia",
+      "region": "Varesotto / Olona (VA)",
+      "access": "treno",
+      "loop": false,
+      "fit": "ok",
+      "verified": false,
+      "pitch": "Lavena Ponte Tresa → Sacro Monte di Varese → Castiglione Olona → Castellanza → Abbiategrasso: il tratto italiano della via di Costanza, con due siti UNESCO (Sacro Monte, Monastero di Torba). È un cammino, non un trekking: dislivello solo nel Varesotto, poi piano lungo Olona e Naviglio.",
+      "days": [
+        {
+          "label": "Lavena Ponte Tresa → Sacro Monte → Varese",
+          "km": null,
+          "dplus": null
+        },
+        {
+          "label": "Varese → Castiglione Olona → Torba → Castellanza",
+          "km": null,
+          "dplus": null
+        },
+        {
+          "label": "Castellanza → Cuggiono → Abbiategrasso",
+          "km": null,
+          "dplus": null,
+          "note": "in piano, lungo il Naviglio Grande"
+        }
+      ],
+      "transport": "Tutte le città toccate sono su Trenord (sconto con credenziale). Ponte Tresa: treno a Varese + bus N11.",
+      "caveats": "Rispetta i vincoli alla lettera ma è il meno montano della lista. Valori per giorno stimati con BRouter.",
+      "sources": [
+        {
+          "label": "Tutto il cammino",
+          "url": "https://www.laviafrancisca.org/tutto-il-cammino/"
+        }
+      ],
+      "profile": "hiking-beta",
+      "waypoints": [
+        {
+          "name": "Lavena Ponte Tresa",
+          "lat": 45.9595,
+          "lon": 8.8617,
+          "day": 1
+        },
+        {
+          "name": "Sacro Monte di Varese",
+          "lat": 45.8618,
+          "lon": 8.7923
+        },
+        {
+          "name": "Varese",
+          "lat": 45.8206,
+          "lon": 8.8254,
+          "day": 2
+        },
+        {
+          "name": "Castiglione Olona",
+          "lat": 45.7555,
+          "lon": 8.8659
+        },
+        {
+          "name": "Castellanza",
+          "lat": 45.6116,
+          "lon": 8.8997,
+          "day": 3
+        },
+        {
+          "name": "Cuggiono",
+          "lat": 45.507,
+          "lon": 8.817
+        },
+        {
+          "name": "Abbiategrasso",
+          "lat": 45.4,
+          "lon": 8.918,
+          "end": true
+        }
+      ]
+    }
+  ],
+  "rejected": [
+    {
+      "name": "Val Grande / Alta Via Lago Maggiore",
+      "why": "3000 m di dislivello in 3 giorni, tratti EE, bivacchi"
+    },
+    {
+      "name": "Via dei Monti Lariani",
+      "why": "125 km in 4 tappe di montagna, ben oltre i 1000 m al giorno"
+    },
+    {
+      "name": "Alta Via dei Parchi, crinale (tappe 1–13, 17–27)",
+      "why": "quasi tutte le tappe fanno 1100–1700 m di salita"
+    },
+    {
+      "name": "DOL, Sentiero delle Orobie, Via Priula, Via Spluga",
+      "why": "alpine, oltre i 1000 m al giorno"
+    },
+    {
+      "name": "Anello del Cusna (Ligonchio)",
+      "why": "3 ore di auto, tratto iniziale EE con guado"
+    }
+  ]
+}
