@@ -4,7 +4,7 @@
 // Bump CACHE when any precached file changes — the version string is the whole
 // invalidation mechanism.
 
-const CACHE = 'mobilita-ef9df49-202609091227';
+const CACHE = 'mobilita-8823d08-202609111044';
 
 const PRECACHE = [
   './',

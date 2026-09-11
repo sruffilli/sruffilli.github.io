@@ -13,12 +13,13 @@
       "id": "A",
       "label": "Blocco A",
       "title": "Collo e trapezi",
-      "durationMin": 3,
+      "durationMin": 4,
       "when": "Alla scrivania, 2× al giorno; anche dopo ogni uscita in bici > 40 km",
       "targetPerDay": 2,
       "notes": [
         "Il chin tuck è l'esercizio chiave (allena i flessori profondi del collo).",
-        "Il blocco completo va fatto anche dopo ogni uscita in bici > 40 km."
+        "Il blocco completo va fatto anche dopo ogni uscita in bici > 40 km.",
+        "Pendolo di Codman e scapular set sono la prescrizione del referto ortopedico dell'11/09 (tendinopatia sovraspinato dx): il pendolo decomprime lo spazio sub-acromiale, il set scapolare lavora contro le spalle in avanti."
       ],
       "exercises": [
         {
@@ -63,6 +64,15 @@
           "sides": false,
           "instruction": "Spalle su, indietro e giù. Tieni la posizione \"giù\".",
           "video": "https://www.youtube.com/watch?v=QN1oZVMMRjE"
+        },
+        {
+          "id": "a5",
+          "name": "Pendolo di Codman",
+          "kind": "time",
+          "seconds": 60,
+          "sides": false,
+          "instruction": "Busto inclinato avanti, mano sinistra appoggiata a tavolo o sedia, braccio DESTRO a penzoloni rilassato: piccoli cerchi lenti nei due sensi. È il peso del braccio che lavora, non i muscoli — se la spalla si contrae, fermati e riparti più piccolo.",
+          "video": "https://www.youtube.com/watch?v=QF_ubbr_RUE"
         }
       ]
     },
