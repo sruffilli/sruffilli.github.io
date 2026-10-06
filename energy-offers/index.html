@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
   <title>Comparatore luce e gas</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
-  <link rel="stylesheet" href="style.css?v=20261006T083059">
+  <link rel="stylesheet" href="style.css?v=20261006T085556">
 </head>
 <body data-kind="luce">
   <header class="top">
@@ -24,6 +24,9 @@
       </button>
       <button role="tab" id="tab-gas" aria-selected="false" data-kind="gas">
         <span aria-hidden="true">🔥</span> Gas
+      </button>
+      <button role="tab" id="tab-mercato" aria-selected="false" data-kind="mercato">
+        <span aria-hidden="true">📈</span> Mercato
       </button>
       <span class="tab-ink" aria-hidden="true"></span>
     </nav>
@@ -175,6 +178,60 @@
     </section>
   </main>
 
+  <main class="market" id="market" aria-label="Andamento del mercato">
+    <section class="card chart-card">
+      <div class="chart-head">
+        <div>
+          <h2>PUN · elettricità all'ingrosso</h2>
+          <p class="hint">Media mensile del prezzo unico nazionale (GME), €/kWh. È l'indice delle offerte luce variabili.</p>
+        </div>
+        <div class="seg small-seg" id="punRange" role="radiogroup"></div>
+      </div>
+      <div class="kpis" id="punKpis"></div>
+      <div class="chart" id="punChart"></div>
+    </section>
+
+    <section class="card chart-card">
+      <h2>PUN giorno per giorno</h2>
+      <p class="hint">Ultimi 13 mesi. La linea tratteggiata è la media mobile a 30 giorni.</p>
+      <div class="kpis" id="dailyKpis"></div>
+      <div class="chart" id="punDaily"></div>
+    </section>
+
+    <div class="grid2">
+      <section class="card chart-card">
+        <h2>Quando costa di più</h2>
+        <p class="hint" id="hourlyHint">Prezzo medio ora per ora, ultimi 30 giorni.</p>
+        <div class="chart" id="punHourly"></div>
+      </section>
+      <section class="card chart-card">
+        <h2>Stagionalità</h2>
+        <p class="hint" id="seasonHint">PUN medio per mese dell'anno.</p>
+        <div class="chart" id="punSeason"></div>
+      </section>
+    </div>
+
+    <section class="card chart-card">
+      <div class="chart-head">
+        <div>
+          <h2>PSV · gas all'ingrosso</h2>
+          <p class="hint">Media mensile del PSV day ahead, €/Smc. È l'indice delle offerte gas variabili.</p>
+        </div>
+      </div>
+      <div class="kpis" id="psvKpis"></div>
+      <div class="chart" id="psvChart"></div>
+    </section>
+
+    <h2 class="section-title">Curiosità sulle offerte</h2>
+    <p class="hint section-hint" id="factsHint"></p>
+    <div class="facts-tabs seg" id="factsSeg" role="radiogroup">
+      <button type="button" role="radio" data-v="luce">⚡ Luce</button>
+      <button type="button" role="radio" data-v="gas">🔥 Gas</button>
+    </div>
+    <div class="facts" id="facts"></div>
+    <footer class="foot" id="marketFoot"></footer>
+  </main>
+
   <div class="sheet-backdrop" id="backdrop" hidden></div>
   <article class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
     <div class="grab" aria-hidden="true"></div>
@@ -182,7 +239,8 @@
     <div class="sheet-body" id="sheetBody"></div>
   </article>
 
-  <script src="engine.js?v=20261006T083059"></script>
-  <script src="app.js?v=20261006T083059"></script>
+  <script src="engine.js?v=20261006T085556"></script>
+  <script src="app.js?v=20261006T085556"></script>
+  <script src="market.js?v=20261006T085556"></script>
 </body>
 </html>

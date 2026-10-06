@@ -27,6 +27,7 @@
     punScen: '12m', punCustom: 0.15,
     smc: 1000, psvScen: '12m', psvCustom: 0.6, reteFix: null, reteVar: null,
     type: 'all', regione: '', durata: 0, eligible: true, search: '',
+    factsKind: 'luce', punRange: '5y',
   };
   let state = Object.assign({}, DEFAULTS);
   try { Object.assign(state, JSON.parse(localStorage.getItem(STORE) || '{}')); } catch (e) { /* stato corrotto: default */ }
@@ -64,17 +65,21 @@
     return true;
   }
 
-  function compute() {
-    const kind = state.kind;
+  // opts.market: per le curiosità del tab Mercato — solo regione e profilo,
+  // senza i filtri di tipo/durata/ricerca della classifica.
+  function compute(kindArg, opts) {
+    const kind = kindArg || state.kind;
+    const market = !!(opts && opts.market);
     const block = DATA[kind];
-    const q = state.search.trim().toLowerCase();
+    const q = market ? '' : state.search.trim().toLowerCase();
     const rows = [];
     let pr, idx;
-    if (kind === 'luce') { pr = luceProfile(); idx = E.punIndex(block.params, state.punScen, state.punCustom); }
-    else { pr = gasProfile(); idx = E.psvIndex(block.params, state.psvScen, state.psvCustom); }
+    const scen = opts && opts.scenario;
+    if (kind === 'luce') { pr = luceProfile(); idx = scen ? E.punIndex(block.params, scen, opts.custom) : E.punIndex(block.params, state.punScen, state.punCustom); }
+    else { pr = gasProfile(); idx = scen ? E.psvIndex(block.params, scen, opts.custom) : E.psvIndex(block.params, state.psvScen, state.psvCustom); }
     for (const o of block.offers) {
-      if (state.type !== 'all' && o.t !== state.type) continue;
-      if (state.durata > 0 && o.t === 'F' && o.d > state.durata) continue;
+      if (!market && state.type !== 'all' && o.t !== state.type) continue;
+      if (!market && state.durata > 0 && o.t === 'F' && o.d > state.durata) continue;
       if (state.regione && o.r.length && !o.r.includes(state.regione)) continue;
       if (state.eligible && !(kind === 'luce' ? eligibleLuce(o, pr) : eligibleGas(o, pr))) continue;
       if (q && !(o.n.toLowerCase().includes(q) || o.v.includes(q))) continue;
@@ -226,6 +231,8 @@
   function syncControls() {
     document.body.dataset.kind = state.kind;
     for (const t of document.querySelectorAll('.tabs button')) t.setAttribute('aria-selected', String(t.dataset.kind === state.kind));
+    const tabIdx = { luce: 0, gas: 1, mercato: 2 }[state.kind] || 0;
+    document.querySelector('.tab-ink').style.transform = `translateX(${tabIdx * 100}%)`;
 
     // luce
     const kwh = $('#kwh'); kwh.value = state.kwh; setPct(kwh);
@@ -285,7 +292,7 @@
     ], state.smc, (v) => update({ smc: +v }));
 
     // slider compatto agganciato all'header (mobile)
-    const ms = $('#miniSlider'), src = state.kind === 'luce' ? kwh : smc;
+    const ms = $('#miniSlider'), src = state.kind === 'gas' ? smc : kwh;
     ms.min = src.min; ms.max = src.max; ms.step = src.step; ms.value = src.value; setPct(ms);
     $('#miniVal').textContent = state.kind === 'luce' ? `${nf0.format(state.kwh)} kWh` : `${nf0.format(state.smc)} Smc`;
 
@@ -314,6 +321,10 @@
     if (frame) return;
     frame = requestAnimationFrame(() => {
       frame = 0;
+      if (state.kind === 'mercato') {
+        if (window.EnergyMarket) window.EnergyMarket.render();
+        return;
+      }
       const res = compute();
       renderSummary(res);
       renderList(res);
@@ -365,7 +376,7 @@
     // slider compatto: compare quando il riquadro grande esce dallo schermo
     const miniToggle = () => {
       const h = [...document.querySelectorAll('.hero')].find((x) => x.offsetParent !== null);
-      $('.top').classList.toggle('show-mini', !!h && !mq.matches && h.getBoundingClientRect().bottom < 120);
+      $('.top').classList.toggle('show-mini', state.kind !== 'mercato' && !!h && !mq.matches && h.getBoundingClientRect().bottom < 120);
     };
     window.addEventListener('scroll', miniToggle, { passive: true });
     window.addEventListener('resize', miniToggle);
@@ -386,12 +397,15 @@
   }
 
   function openDetail(id) {
-    const kind = state.kind;
     const pos = lastRows.findIndex((r) => r.o.id === id);
-    const row = pos >= 0 ? lastRows[pos] : null;
-    if (!row) return;
+    if (pos >= 0) openRow(state.kind, lastRows[pos], pos, lastRows);
+  }
+
+  function openRow(kind, row, pos, rows) {
+    const id = row.o.id;
     const sheet = $('#sheet'), bd = $('#backdrop');
-    $('#sheetBody').innerHTML = detailHead(row, pos, kind) + `<div id="dRest" class="loading">Carico i dettagli…</div>`;
+    sheet.dataset.kind = kind;   // palette di luce/gas anche se aperto dal tab Mercato
+    $('#sheetBody').innerHTML = detailHead(row, pos, kind, rows) + `<div id="dRest" class="loading">Carico i dettagli…</div>`;
     sheet.hidden = false; bd.hidden = false;
     requestAnimationFrame(() => { sheet.classList.add('on'); bd.classList.add('on'); });
     $('#sheetBody').scrollTop = 0;
@@ -455,7 +469,7 @@
     ];
   }
 
-  function detailHead(row, pos, kind) {
+  function detailHead(row, pos, kind, rows) {
     const { o, c } = row;
     const parts = breakdown(c, kind).filter((p) => Math.abs(p[1]) > 0.005);
     const pos_ = parts.filter((p) => p[1] > 0);
@@ -466,7 +480,7 @@
         <div class="vendor">${esc(o.v || 'venditore non indicato')}</div>
       </header>
       <div class="d-total"><b>${eur(row.total)}</b><span>all'anno · ${eur(row.total / 12)}/mese</span></div>
-      <div class="d-rank">${pos + 1}° su ${nf0.format(lastRows.length)} con i filtri attuali${pos > 0 ? ` · +${eur(row.total - lastRows[0].total)} rispetto alla prima` : ''}</div>
+      <div class="d-rank">${pos + 1}° su ${nf0.format(rows.length)} con i filtri attuali${pos > 0 ? ` · +${eur(row.total - rows[0].total)} rispetto alla prima` : ''}</div>
       <div class="stack">${pos_.map((p) => `<i style="width:${(100 * p[1] / sumPos).toFixed(2)}%;background:${p[2]}" title="${esc(p[0])}"></i>`).join('')}</div>
       <div class="legend">${parts.map((p) => `<span class="k" style="--c:${p[2]}">${esc(p[0])}</span><span class="v">${eur2(p[1])}</span>`).join('')}
         <span class="k tot" style="--c:transparent">Totale annuo</span><span class="v tot">${eur2(row.total)}</span></div>`;
@@ -561,6 +575,11 @@
     sel.value = state.regione;
   }
 
+  window.EnergyApp = {
+    data: () => DATA, state: () => state, update, compute, openRow, badges,
+    fmt: { nf0, nf2, nf3, nf4, eur, eur2, esc, monthLabel },
+  };
+
   bind();
   syncControls();
   fetch('offers.json', { cache: 'no-cache' })
@@ -569,6 +588,7 @@
       DATA = d;
       footer();
       update({});
+      if (window.EnergyMarket) window.EnergyMarket.ready();
     })
     .catch((e) => {
       $('#dataInfo').textContent = 'Non riesco a caricare le offerte.';
