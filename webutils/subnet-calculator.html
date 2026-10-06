@@ -4,44 +4,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Enforces "your data never leaves the browser": no fetch/XHR/WebSocket/beacon, no forms,
+       scripts only from the pinned CDNs below. See AGENTS.md before relaxing it. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://esm.sh; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
   <title>Visual Subnet Calculator</title>
 
   <!-- Import Map for Bare Module Resolution -->
   <script type="importmap">
     {
       "imports": {
-        "react": "https://esm.sh/react@19",
-        "react-dom": "https://esm.sh/react-dom@19",
-        "react-dom/client": "https://esm.sh/react-dom@19/client",
-        "react/jsx-runtime": "https://esm.sh/react@19/jsx-runtime"
-      }
-    }
-    </script>
-
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { mono: ['"JetBrains Mono"', 'monospace'] },
-          colors: {
-            brand: { 500: '#3b82f6', 600: '#2563eb' }
-          }
-        }
+        "react": "https://esm.sh/react@19.3.0",
+        "react-dom/client": "https://esm.sh/react-dom@19.3.0/client",
+        "htm": "https://esm.sh/htm@3.1.1"
       }
     }
   </script>
+
+  <!-- Tailwind CSS -->
+  <style>*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.container{width:100%}@media (min-width:640px){.container{max-width:640px}}@media (min-width:768px){.container{max-width:768px}}@media (min-width:1024px){.container{max-width:1024px}}@media (min-width:1280px){.container{max-width:1280px}}@media (min-width:1536px){.container{max-width:1536px}}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border-width:0}.visible{visibility:visible}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.sticky{position:sticky}.left-0\.5{left:.125rem}.left-2\.5{left:.625rem}.top-0{top:0}.top-0\.5{top:.125rem}.z-10{z-index:10}.z-20{z-index:20}.col-span-2{grid-column:span 2/span 2}.mb-1{margin-bottom:.25rem}.mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}.ml-1{margin-left:.25rem}.block{display:block}.flex{display:flex}.table{display:table}.grid{display:grid}.hidden{display:none}.h-14{height:3.5rem}.h-3{height:.75rem}.h-3\.5{height:.875rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-8{height:2rem}.h-full{height:100%}.h-screen{height:100vh}.w-12{width:3rem}.w-16{width:4rem}.w-3{width:.75rem}.w-3\.5{width:.875rem}.w-32{width:8rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-8{width:2rem}.w-full{width:100%}.min-w-0{min-width:0}.min-w-\[700px\]{min-width:700px}.min-w-\[800px\]{min-width:800px}.max-w-\[200px\]{max-width:200px}.flex-1{flex:1 1 0%}.shrink-0{flex-shrink:0}.translate-x-0{--tw-translate-x:0px}.translate-x-0,.translate-x-4{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.translate-x-4{--tw-translate-x:1rem}.-rotate-90{--tw-rotate:-90deg}.-rotate-90,.rotate-90{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.rotate-90{--tw-rotate:90deg}.cursor-pointer{cursor:pointer}.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.grid-cols-3{grid-template-columns:repeat(3,minmax(0,1fr))}.flex-col{flex-direction:column}.flex-wrap{flex-wrap:wrap}.items-center{align-items:center}.items-stretch{align-items:stretch}.justify-end{justify-content:flex-end}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:.25rem}.gap-1\.5{gap:.375rem}.gap-2{gap:.5rem}.gap-4{gap:1rem}.space-x-2>:not([hidden])~:not([hidden]){--tw-space-x-reverse:0;margin-right:calc(.5rem*var(--tw-space-x-reverse));margin-left:calc(.5rem*(1 - var(--tw-space-x-reverse)))}.space-y-2>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.5rem*var(--tw-space-y-reverse))}.space-y-3>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.75rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.75rem*var(--tw-space-y-reverse))}.space-y-4>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1rem*var(--tw-space-y-reverse))}.space-y-6>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem*var(--tw-space-y-reverse))}.overflow-hidden{overflow:hidden}.overflow-x-auto{overflow-x:auto}.overflow-y-auto{overflow-y:auto}.truncate{overflow:hidden;text-overflow:ellipsis}.truncate,.whitespace-nowrap{white-space:nowrap}.rounded{border-radius:.25rem}.rounded-full{border-radius:9999px}.rounded-lg{border-radius:.5rem}.rounded-md{border-radius:.375rem}.rounded-xl{border-radius:.75rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-l{border-left-width:1px}.border-r{border-right-width:1px}.border-t{border-top-width:1px}.border-blue-200{--tw-border-opacity:1;border-color:rgb(191 219 254/var(--tw-border-opacity,1))}.border-gray-200{--tw-border-opacity:1;border-color:rgb(229 231 235/var(--tw-border-opacity,1))}.border-gray-300{--tw-border-opacity:1;border-color:rgb(209 213 219/var(--tw-border-opacity,1))}.border-red-200{--tw-border-opacity:1;border-color:rgb(254 202 202/var(--tw-border-opacity,1))}.border-transparent{border-color:transparent}.bg-blue-50{--tw-bg-opacity:1;background-color:rgb(239 246 255/var(--tw-bg-opacity,1))}.bg-blue-600{--tw-bg-opacity:1;background-color:rgb(37 99 235/var(--tw-bg-opacity,1))}.bg-gray-100{--tw-bg-opacity:1;background-color:rgb(243 244 246/var(--tw-bg-opacity,1))}.bg-gray-200{--tw-bg-opacity:1;background-color:rgb(229 231 235/var(--tw-bg-opacity,1))}.bg-gray-50{--tw-bg-opacity:1;background-color:rgb(249 250 251/var(--tw-bg-opacity,1))}.bg-red-50{--tw-bg-opacity:1;background-color:rgb(254 242 242/var(--tw-bg-opacity,1))}.bg-transparent{background-color:transparent}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity,1))}.p-0\.5{padding:.125rem}.p-1{padding:.25rem}.p-2{padding:.5rem}.p-3{padding:.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.px-2{padding-left:.5rem;padding-right:.5rem}.px-2\.5{padding-left:.625rem;padding-right:.625rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-4{padding-top:1rem;padding-bottom:1rem}.pl-6{padding-left:1.5rem}.pr-1{padding-right:.25rem}.text-center{text-align:center}.text-right{text-align:right}.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace}.font-sans{font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xs{font-size:.75rem;line-height:1rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-.025em}.tracking-wider{letter-spacing:.05em}.tracking-widest{letter-spacing:.1em}.text-blue-500{--tw-text-opacity:1;color:rgb(59 130 246/var(--tw-text-opacity,1))}.text-blue-600{--tw-text-opacity:1;color:rgb(37 99 235/var(--tw-text-opacity,1))}.text-emerald-600{--tw-text-opacity:1;color:rgb(5 150 105/var(--tw-text-opacity,1))}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175/var(--tw-text-opacity,1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128/var(--tw-text-opacity,1))}.text-gray-600{--tw-text-opacity:1;color:rgb(75 85 99/var(--tw-text-opacity,1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81/var(--tw-text-opacity,1))}.text-gray-800{--tw-text-opacity:1;color:rgb(31 41 55/var(--tw-text-opacity,1))}.text-gray-900{--tw-text-opacity:1;color:rgb(17 24 39/var(--tw-text-opacity,1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68/var(--tw-text-opacity,1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38/var(--tw-text-opacity,1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.shadow-\[0_-10px_15px_-3px_rgba\(0\2c 0\2c 0\2c 0\.05\)\]{--tw-shadow:0 -10px 15px -3px rgba(0,0,0,.05);--tw-shadow-colored:0 -10px 15px -3px var(--tw-shadow-color)}.shadow-\[0_-10px_15px_-3px_rgba\(0\2c 0\2c 0\2c 0\.05\)\],.shadow-sm{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgba(0,0,0,.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color)}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-transform{transition-property:transform;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.duration-200{transition-duration:.2s}.hover\:border-blue-100:hover{--tw-border-opacity:1;border-color:rgb(219 234 254/var(--tw-border-opacity,1))}.hover\:border-blue-200:hover{--tw-border-opacity:1;border-color:rgb(191 219 254/var(--tw-border-opacity,1))}.hover\:border-blue-600:hover{--tw-border-opacity:1;border-color:rgb(37 99 235/var(--tw-border-opacity,1))}.hover\:bg-blue-50:hover{--tw-bg-opacity:1;background-color:rgb(239 246 255/var(--tw-bg-opacity,1))}.hover\:bg-blue-600:hover{--tw-bg-opacity:1;background-color:rgb(37 99 235/var(--tw-bg-opacity,1))}.hover\:bg-blue-700:hover{--tw-bg-opacity:1;background-color:rgb(29 78 216/var(--tw-bg-opacity,1))}.hover\:bg-gray-100:hover{--tw-bg-opacity:1;background-color:rgb(243 244 246/var(--tw-bg-opacity,1))}.hover\:bg-gray-200:hover{--tw-bg-opacity:1;background-color:rgb(229 231 235/var(--tw-bg-opacity,1))}.hover\:text-blue-600:hover{--tw-text-opacity:1;color:rgb(37 99 235/var(--tw-text-opacity,1))}.hover\:text-blue-700:hover{--tw-text-opacity:1;color:rgb(29 78 216/var(--tw-text-opacity,1))}.hover\:text-gray-900:hover{--tw-text-opacity:1;color:rgb(17 24 39/var(--tw-text-opacity,1))}.hover\:text-white:hover{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.focus\:border-transparent:focus{border-color:transparent}.focus\:outline-none:focus{outline:2px solid transparent;outline-offset:2px}.focus\:ring-1:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(1px + var(--tw-ring-offset-width)) var(--tw-ring-color)}.focus\:ring-1:focus,.focus\:ring-2:focus{box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color)}.focus\:ring-blue-500:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(59 130 246/var(--tw-ring-opacity,1))}.group:hover .group-hover\:scale-110{--tw-scale-x:1.1;--tw-scale-y:1.1;transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.group\/join:hover .group-hover\/join\:border-blue-500\/50{border-color:rgba(59,130,246,.5)}.group\/join:hover .group-hover\/join\:text-blue-500{--tw-text-opacity:1;color:rgb(59 130 246/var(--tw-text-opacity,1))}.group\/join:hover .group-hover\/join\:text-blue-600{--tw-text-opacity:1;color:rgb(37 99 235/var(--tw-text-opacity,1))}.group:hover .group-hover\:text-gray-900{--tw-text-opacity:1;color:rgb(17 24 39/var(--tw-text-opacity,1))}@media (min-width:640px){.sm\:mr-1\.5{margin-right:.375rem}.sm\:block{display:block}.sm\:inline{display:inline}.sm\:max-w-md{max-width:28rem}}@media (min-width:768px){.md\:w-80{width:20rem}.md\:grid-cols-4{grid-template-columns:repeat(4,minmax(0,1fr))}.md\:flex-row{flex-direction:row}.md\:overflow-hidden{overflow:hidden}.md\:border-b-0{border-bottom-width:0}.md\:border-r{border-right-width:1px}.md\:p-6{padding:1.5rem}}</style>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap');
-
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-
     .mono {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
     }
 
     .bg-grid {
@@ -52,75 +35,76 @@
     }
   </style>
 
-  <!-- Babel Standalone for In-Browser Transpilation -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 </head>
 
 <body class="bg-gray-50 h-screen flex flex-col overflow-hidden text-gray-800">
   <div id="root" class="h-full flex flex-col"></div>
 
   <!-- The React App -->
-  <script type="text/babel" data-type="module">
+  <script type="module">
     import React, { useState, useEffect, useMemo, useCallback } from 'react';
+    import htm from 'htm';
+
+    const html = htm.bind(React.createElement);
 
     // --- Icons Fallback (Inline SVGs to prevent import/sandbox issues) ---
     const Icon = ({ name, className }) => {
       const icons = {
         Network: (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=${className}>
             <rect x="16" y="16" width="6" height="6" rx="1" /><rect x="2" y="16" width="6" height="6" rx="1" /><rect x="9" y="2" width="6" height="6" rx="1" />
             <path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3" /><path d="M12 12V8" />
-          </svg>
+          </svg>`
         ),
         Split: (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=${className}>
             <path d="M16 3h5v5" /><path d="M8 3H3v5" /><path d="M12 22v-8.3a4 4 0 0 0-1.172-2.872L3 3" /><path d="m15 9 6-6" />
-          </svg>
+          </svg>`
         ),
         Merge: (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=${className}>
             <path d="m8 6 4-4 4 4" /><path d="M12 2v10.3a4 4 0 0 1-1.172 2.872L3 22" /><path d="m20 22-5-5" />
-          </svg>
+          </svg>`
         ),
         RotateCcw: (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=${className}>
             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" />
-          </svg>
+          </svg>`
         ),
         Settings2: (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=${className}>
             <path d="M20 7h-9" /><path d="M14 17H5" /><circle cx="17" cy="7" r="3" /><circle cx="7" cy="17" r="3" />
-          </svg>
+          </svg>`
         ),
         LinkIcon: (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=${className}>
             <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-          </svg>
+          </svg>`
         ),
         Check: (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=${className}>
             <polyline points="20 6 9 17 4 12" />
-          </svg>
+          </svg>`
         ),
         ChevronRight: (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=${className}>
             <path d="m9 18 6-6-6-6" />
-          </svg>
+          </svg>`
         ),
         Clipboard: (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=${className}>
             <rect width="8" height="4" x="8" y="2" rx="1" ry="1" /><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
-          </svg>
+          </svg>`
         ),
         X: (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=${className}>
             <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-          </svg>
+          </svg>`
         ),
         Home: (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=${className}>
             <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
-          </svg>
+          </svg>`
         )
       };
       return icons[name] || null;
@@ -189,70 +173,71 @@
     // --- UI Components ---
 
     const Toggle = ({ checked, onChange, label }) => (
-      <label className="flex items-center space-x-2 cursor-pointer group">
+      html`<label className="flex items-center space-x-2 cursor-pointer group">
         <div className="relative flex items-center">
           <input
             type="checkbox"
             className="sr-only"
-            checked={checked}
-            onChange={(e) => onChange(e.target.checked)}
+            checked=${checked}
+            onChange=${(e) => onChange(e.target.checked)}
           />
-          <div className={`w-8 h-4 rounded-full transition-colors ${checked ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
-          <div className={`absolute left-0.5 top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${checked ? 'translate-x-4' : 'translate-x-0'}`}></div>
+          <div className=${`w-8 h-4 rounded-full transition-colors ${checked ? 'bg-blue-600' : 'bg-gray-200'}`}></div>
+          <div className=${`absolute left-0.5 top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${checked ? 'translate-x-4' : 'translate-x-0'}`}></div>
         </div>
-        <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">{label}</span>
-      </label>
+        <span className="text-sm font-medium text-gray-700 group-hover:text-gray-900 transition-colors">${label}</span>
+      </label>`
     );
+
+    // Clipboard API where available (https, localhost, file:// in most
+    // browsers), textarea + execCommand fallback for everything else.
+    const copyText = async (text) => {
+      if (navigator.clipboard && window.isSecureContext) {
+        try {
+          await navigator.clipboard.writeText(text);
+          return;
+        } catch (err) {
+          console.warn("Clipboard API failed, trying fallback:", err);
+        }
+      }
+      const textArea = document.createElement("textarea");
+      textArea.value = text;
+      textArea.style.position = "fixed";
+      textArea.style.left = "-9999px";
+      textArea.style.top = "-9999px";
+      document.body.appendChild(textArea);
+      textArea.focus();
+      textArea.select();
+      const ok = document.execCommand("copy");
+      document.body.removeChild(textArea);
+      if (!ok) throw new Error("Copy to clipboard failed");
+    };
+
+    // Runs an async copy and flips a "copied" flag for two seconds on success.
+    const flashCopied = (setter, copy) => {
+      copy().then(
+        () => {
+          setter(true);
+          setTimeout(() => setter(false), 2000);
+        },
+        (err) => console.warn("Copy failed:", err),
+      );
+    };
 
     const CopyButton = ({ text, className = "" }) => {
       const [copied, setCopied] = useState(false);
-      
-      const handleCopy = async (e) => {
+      const handleCopy = (e) => {
         e.stopPropagation();
-        
-        const fallbackCopy = () => {
-          try {
-            const textArea = document.createElement("textarea");
-            textArea.value = text;
-            // Prevent scrolling to the bottom of the page
-            textArea.style.position = "fixed";
-            textArea.style.left = "-9999px";
-            textArea.style.top = "-9999px";
-            document.body.appendChild(textArea);
-            textArea.focus();
-            textArea.select();
-            document.execCommand("copy");
-            document.body.removeChild(textArea);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-          } catch (err) {
-            console.warn("Fallback copy failed:", err);
-          }
-        };
-
-        // Prefer modern clipboard API if available (and in a secure context like localhost, https, or sometimes file://)
-        if (navigator.clipboard && window.isSecureContext) {
-          try {
-            await navigator.clipboard.writeText(text);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2000);
-          } catch (err) {
-            console.warn("Clipboard API failed, trying fallback:", err);
-            fallbackCopy();
-          }
-        } else {
-          fallbackCopy();
-        }
+        flashCopied(setCopied, () => copyText(text));
       };
 
       return (
-        <button 
-          onClick={handleCopy} 
-          className={`text-gray-400 hover:text-blue-600 transition-colors focus:outline-none flex items-center justify-center p-0.5 rounded hover:bg-blue-50 ${className}`} 
+        html`<button 
+          onClick=${handleCopy} 
+          className=${`text-gray-400 hover:text-blue-600 transition-colors focus:outline-none flex items-center justify-center p-0.5 rounded hover:bg-blue-50 ${className}`} 
           title="Copy to clipboard"
         >
-          {copied ? <Icon name="Check" className="w-3.5 h-3.5 text-emerald-600" /> : <Icon name="Clipboard" className="w-3.5 h-3.5" />}
-        </button>
+          ${copied ? html`<${Icon} name="Check" className="w-3.5 h-3.5 text-emerald-600" />` : html`<${Icon} name="Clipboard" className="w-3.5 h-3.5" />`}
+        </button>`
       );
     };
 
@@ -268,88 +253,88 @@
         const rightIp = ip + Math.pow(2, 32 - (cidr + 1));
 
         return (
-          <div className="flex w-full group/join">
+          html`<div className="flex w-full group/join">
             <div className="flex-1 flex flex-col min-w-0">
-              <SubnetNode
-                ip={leftIp} cidr={cidr + 1}
-                splitNodes={splitNodes} visibleCols={visibleCols}
-                onDivide={onDivide} onJoin={onJoin} onSelect={onSelect} gridTemplate={gridTemplate}
+              <${SubnetNode}
+                ip=${leftIp} cidr=${cidr + 1}
+                splitNodes=${splitNodes} visibleCols=${visibleCols}
+                onDivide=${onDivide} onJoin=${onJoin} onSelect=${onSelect} gridTemplate=${gridTemplate}
               />
-              <SubnetNode
-                ip={rightIp} cidr={cidr + 1}
-                splitNodes={splitNodes} visibleCols={visibleCols}
-                onDivide={onDivide} onJoin={onJoin} onSelect={onSelect} gridTemplate={gridTemplate}
+              <${SubnetNode}
+                ip=${rightIp} cidr=${cidr + 1}
+                splitNodes=${splitNodes} visibleCols=${visibleCols}
+                onDivide=${onDivide} onJoin=${onJoin} onSelect=${onSelect} gridTemplate=${gridTemplate}
               />
             </div>
-            {visibleCols.join && (
-              <div
-                onClick={() => onJoin(id)}
+            ${visibleCols.join && (
+              html`<div
+                onClick=${() => onJoin(id)}
                 className="w-12 border-b border-l border-gray-200 bg-gray-50 hover:bg-blue-50 flex flex-col items-center justify-center cursor-pointer transition-all duration-200 group-hover/join:border-blue-500/50 relative overflow-hidden"
-                title={`Join subnets back to /${cidr}`}
+                title=${`Join subnets back to /${cidr}`}
               >
-                <Icon name="Merge" className="w-4 h-4 text-gray-400 group-hover/join:text-blue-500 mb-2 rotate-90" />
+                <${Icon} name="Merge" className="w-4 h-4 text-gray-400 group-hover/join:text-blue-500 mb-2 rotate-90" />
                 <span className="text-xs font-mono font-bold text-gray-400 group-hover/join:text-blue-600 -rotate-90 whitespace-nowrap tracking-widest">
-                  /{cidr}
+                  /${cidr}
                 </span>
-              </div>
+              </div>`
             )}
-          </div>
+          </div>`
         );
       }
 
       return (
-        <div 
+        html`<div 
           className="flex w-full border-b border-gray-200 hover:bg-blue-50 cursor-pointer transition-colors"
-          onClick={() => onSelect({ ip, cidr })}
+          onClick=${() => onSelect({ ip, cidr })}
         >
           <div
             className="grid flex-1 items-stretch text-xs font-mono text-gray-700"
-            style={{ gridTemplateColumns: gridTemplate }}
+            style=${{ gridTemplateColumns: gridTemplate }}
           >
-            {visibleCols.subnet && (
-              <div className="px-2.5 py-1.5 truncate flex items-center border-r border-gray-200">
-                <span className="text-gray-900 font-semibold">{details.networkStr}</span>
-                <span className="text-blue-600 ml-1">/{cidr}</span>
-              </div>
+            ${visibleCols.subnet && (
+              html`<div className="px-2.5 py-1.5 truncate flex items-center border-r border-gray-200">
+                <span className="text-gray-900 font-semibold">${details.networkStr}</span>
+                <span className="text-blue-600 ml-1">/${cidr}</span>
+              </div>`
             )}
-            {visibleCols.netmask && (
-              <div className="px-2.5 py-1.5 truncate flex items-center border-r border-gray-200 text-gray-500">
-                {details.netmaskStr}
-              </div>
+            ${visibleCols.netmask && (
+              html`<div className="px-2.5 py-1.5 truncate flex items-center border-r border-gray-200 text-gray-500">
+                ${details.netmaskStr}
+              </div>`
             )}
-            {visibleCols.range && (
-              <div className="px-2.5 py-1.5 truncate flex items-center border-r border-gray-200 text-emerald-600">
-                {details.rangeStr}
-              </div>
+            ${visibleCols.range && (
+              html`<div className="px-2.5 py-1.5 truncate flex items-center border-r border-gray-200 text-emerald-600">
+                ${details.rangeStr}
+              </div>`
             )}
-            {visibleCols.useable && (
-              <div className="px-2.5 py-1.5 truncate flex items-center border-r border-gray-200 text-blue-600">
-                {details.useableStr}
-              </div>
+            ${visibleCols.useable && (
+              html`<div className="px-2.5 py-1.5 truncate flex items-center border-r border-gray-200 text-blue-600">
+                ${details.useableStr}
+              </div>`
             )}
-            {visibleCols.hosts && (
-              <div className="px-2.5 py-1.5 truncate flex items-center border-r border-gray-200 justify-end font-semibold text-gray-800">
-                {details.hosts.toLocaleString()}
-              </div>
+            ${visibleCols.hosts && (
+              html`<div className="px-2.5 py-1.5 truncate flex items-center border-r border-gray-200 justify-end font-semibold text-gray-800">
+                ${details.hosts.toLocaleString()}
+              </div>`
             )}
-            {visibleCols.divide && (
-              <div className="p-2 flex items-center justify-center">
-                {cidr < 32 ? (
-                  <button
-                    onClick={() => onDivide(id)}
+            ${visibleCols.divide && (
+              html`<div className="p-2 flex items-center justify-center">
+                ${cidr < 32 ? (
+                  html`<button
+                    onClick=${() => onDivide(id)}
                     className="flex items-center justify-center px-2 py-1.5 w-full bg-gray-100 hover:bg-blue-600 text-gray-700 hover:text-white rounded border border-gray-200 transition-all group"
                     title="Split into two smaller subnets"
                   >
-                    <Icon name="Split" className="w-4 h-4 sm:mr-1.5 group-hover:scale-110 transition-transform" />
+                    <${Icon} name="Split" className="w-4 h-4 sm:mr-1.5 group-hover:scale-110 transition-transform" />
                     <span className="hidden sm:inline text-xs font-bold uppercase tracking-wider">Divide</span>
-                  </button>
+                  </button>`
                 ) : (
-                  <span className="text-xs text-gray-400 uppercase font-bold">Max</span>
+                  html`<span className="text-xs text-gray-400 uppercase font-bold">Max</span>`
                 )}
-              </div>
+              </div>`
             )}
           </div>
-        </div>
+        </div>`
       );
     };
 
@@ -418,6 +403,100 @@
 
     // --- Main Application ---
 
+    // --- Input parsing (shared by the form, share links and saved state) ---
+
+    const IPV4_RE = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
+
+    const parseIp = (str) => {
+      const t = String(str ?? '').trim();
+      return IPV4_RE.test(t) ? ip2long(t) : null;
+    };
+
+    const parseCidr = (str) => {
+      const t = String(str ?? '').trim();
+      return /^\d{1,2}$/.test(t) && Number(t) <= 32 ? Number(t) : null;
+    };
+
+    // Returns { ip, cidr } with ip normalised to the network address, or { error }.
+    const parseNetwork = (ipStr, cidrStr) => {
+      const ip = parseIp(ipStr);
+      if (ip === null) return { error: "Please enter a valid IPv4 address (e.g. 192.168.1.0)." };
+      const cidr = parseCidr(cidrStr);
+      if (cidr === null) return { error: "CIDR must be between 0 and 32." };
+      return { ip: getSubnetDetails(ip, cidr).networkInt, cidr };
+    };
+
+    // Split ids from a link are untrusted: keep only aligned subnets inside
+    // the base network, and cap how many a crafted link can make us render.
+    const MAX_SPLITS = 4096;
+    const parseSplits = (str, baseIp, baseCidr) => {
+      const { broadcastInt } = getSubnetDetails(baseIp, baseCidr);
+      const splits = new Set();
+      for (const id of String(str || '').split(',')) {
+        if (splits.size >= MAX_SPLITS) break;
+        const [ipStr, cidrStr] = id.split('/');
+        const n = parseNetwork(ipStr, cidrStr);
+        if (n.error || n.ip !== parseIp(ipStr) || n.cidr < baseCidr || n.cidr > 31) continue;
+        if (n.ip < baseIp || n.ip > broadcastInt) continue;
+        splits.add(`${long2ip(n.ip)}/${n.cidr}`);
+      }
+      return splits;
+    };
+
+    // Share links carry state in the URL fragment, which never reaches the
+    // server. Legacy ?ip=&cidr= links are still read.
+    const readLinkParams = () => {
+      const hash = new URLSearchParams(window.location.hash.slice(1));
+      return hash.has('ip') ? hash : new URLSearchParams(window.location.search);
+    };
+
+    const STORAGE_NET = 'subnet-calc-network';
+    const STORAGE_CIDR = 'subnet-calc-cidr';
+    const DEFAULT_NETWORK = { ip: ip2long('10.128.160.0'), cidr: 25 };
+
+    // Link first, then the last network the user committed with Update.
+    const loadInitialState = () => {
+      const link = readLinkParams();
+      let error = '';
+      if (link.has('ip') || link.has('cidr')) {
+        const n = parseNetwork(link.get('ip'), link.get('cidr'));
+        if (!n.error) return { ...n, splits: parseSplits(link.get('split'), n.ip, n.cidr), error };
+        error = `Ignored invalid link: ${n.error}`;
+      }
+      const saved = parseNetwork(localStorage.getItem(STORAGE_NET), localStorage.getItem(STORAGE_CIDR));
+      return { ...(saved.error ? DEFAULT_NETWORK : saved), splits: new Set(), error };
+    };
+
+    // Spreadsheet/CSV export: one row per leaf subnet, one column per tree
+    // level plus the detail columns. Parent cells span their leaves.
+    const buildExportRows = (baseIp, baseCidr, splitNodes) => {
+      const leafCount = getLeafCount(baseIp, baseCidr, splitNodes);
+      const maxDepth = getMaxDepth(baseIp, baseCidr, splitNodes);
+      const totalCols = (maxDepth + 1) + 5;
+      const grid = Array.from({ length: leafCount }, () => Array(totalCols).fill(null));
+      fillGrid(grid, baseIp, baseCidr, splitNodes, 0, 0);
+
+      const header = [];
+      for (let i = 1; i <= maxDepth + 1; i++) header.push(`Level ${i}`);
+      header.push('Subnet', 'Netmask', 'Range', 'Useable IPs', 'Hosts');
+
+      // rows[r][c] = { content, rowspan } for a cell that starts here,
+      // { content, covered: true } for a cell spanned from above, or null.
+      const owner = Array(totalCols).fill(null);
+      const rows = grid.map((row, r) => row.map((cell, c) => {
+        if (cell) {
+          owner[c] = { cell, until: r + cell.rowspan };
+          return cell;
+        }
+        if (owner[c] && r < owner[c].until) return { content: owner[c].cell.content, covered: true };
+        return null;
+      }));
+      return { header, rows };
+    };
+
+    const csvField = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const htmlEscape = (v) => String(v ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
     const PUNS = [
       "CIDR? I hardly know her!",
       "There's no place like 127.0.0.1",
@@ -433,34 +512,30 @@
       "ARP you glad we routed this?"
     ];
 
-    export default function App() {
+    function App() {
       const [pun] = useState(() => PUNS[Math.floor(Math.random() * PUNS.length)]);
 
       useEffect(() => {
         document.title = `Visual Subnet Calculator - ${pun}`;
       }, [pun]);
 
-      // Form State
-      const [networkInput, setNetworkInput] = useState(() => {
-        const saved = localStorage.getItem('subnet-calc-network');
-        return saved || '10.128.160.0';
-      });
-      const [cidrInput, setCidrInput] = useState(() => {
-        const saved = localStorage.getItem('subnet-calc-cidr');
-        return saved || '25';
-      });
-      const [error, setError] = useState('');
+      const [initial] = useState(loadInitialState);
+
+      // Form State (drafts; only committed by Update)
+      const [networkInput, setNetworkInput] = useState(() => long2ip(initial.ip));
+      const [cidrInput, setCidrInput] = useState(() => String(initial.cidr));
+      const [error, setError] = useState(initial.error);
 
       // App State
-      const [baseIp, setBaseIp] = useState(() => ip2long(networkInput));
-      const [baseCidr, setBaseCidr] = useState(() => parseInt(cidrInput, 10));
-      const [splitNodes, setSplitNodes] = useState(new Set());
+      const [baseIp, setBaseIp] = useState(initial.ip);
+      const [baseCidr, setBaseCidr] = useState(initial.cidr);
+      const [splitNodes, setSplitNodes] = useState(initial.splits);
 
-      // Persist to localStorage
+      // Persist the committed network, never a half-typed draft
       useEffect(() => {
-        localStorage.setItem('subnet-calc-network', networkInput);
-        localStorage.setItem('subnet-calc-cidr', cidrInput);
-      }, [networkInput, cidrInput]);
+        localStorage.setItem(STORAGE_NET, long2ip(baseIp));
+        localStorage.setItem(STORAGE_CIDR, String(baseCidr));
+      }, [baseIp, baseCidr]);
       const [bulkSplitTarget, setBulkSplitTarget] = useState(26);
       
       useEffect(() => {
@@ -485,20 +560,8 @@
       });
 
       // Widget Input Parsing
-      const parsedWidgetIp = useMemo(() => {
-        const trimmed = widgetIpStr.trim();
-        const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-        if (ipRegex.test(trimmed)) {
-          return ip2long(trimmed);
-        }
-        return null;
-      }, [widgetIpStr]);
-
-      const parsedWidgetCidr = useMemo(() => {
-        const c = parseInt(widgetCidrStr, 10);
-        if (!isNaN(c) && c >= 0 && c <= 32) return c;
-        return null;
-      }, [widgetCidrStr]);
+      const parsedWidgetIp = useMemo(() => parseIp(widgetIpStr), [widgetIpStr]);
+      const parsedWidgetCidr = useMemo(() => parseCidr(widgetCidrStr), [widgetCidrStr]);
 
       // Calculate Grid Template based on visible columns
       const gridTemplate = useMemo(() => {
@@ -512,31 +575,7 @@
         return cols.join(' ');
       }, [visibleCols]);
 
-      // Load from URL on mount
-      useEffect(() => {
-        try {
-          const params = new URLSearchParams(window.location.search);
-          const ipParam = params.get('ip');
-          const cidrParam = params.get('cidr');
-          const splitParam = params.get('split');
-
-          if (ipParam && cidrParam) {
-            setNetworkInput(ipParam);
-            setCidrInput(cidrParam);
-            setBaseIp(ip2long(ipParam));
-            setBaseCidr(parseInt(cidrParam, 10));
-            setWidgetIpStr(ipParam);
-            setWidgetCidrStr(cidrParam);
-          }
-          if (splitParam) {
-            setSplitNodes(new Set(splitParam.split(',').filter(Boolean)));
-          }
-        } catch (e) {
-          console.warn('Failed to parse URL parameters:', e);
-        }
-      }, []);
-
-      // Sync to URL when state changes
+      // Sync to the URL fragment when state changes
       useEffect(() => {
         const params = new URLSearchParams();
         params.set('ip', long2ip(baseIp));
@@ -545,7 +584,7 @@
         if (splits.length > 0) {
           params.set('split', splits.join(','));
         }
-        const newUrl = `${window.location.pathname}?${params.toString()}`;
+        const newUrl = `${window.location.pathname}#${params.toString()}`;
 
         // Safely update URL history (avoids sandboxed iframe crashes)
         try {
@@ -555,34 +594,24 @@
         }
       }, [baseIp, baseCidr, splitNodes]);
 
-      const handleUpdate = () => {
-        setError(''); // Clear any previous errors
-
-        // Trim to prevent trailing spaces from breaking the regex
-        const trimmedIp = networkInput.trim();
-        const ipRegex = /^(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/;
-
-        if (!ipRegex.test(trimmedIp)) {
-          setError("Please enter a valid IPv4 address (e.g. 192.168.1.0).");
-          return;
-        }
-
-        const cidr = parseInt(cidrInput, 10);
-        if (isNaN(cidr) || cidr < 0 || cidr > 32) {
-          setError("CIDR must be between 0 and 32.");
-          return;
-        }
-
-        // Auto-correct IP to network address
-        const ipInt = ip2long(trimmedIp);
-        const { networkInt } = getSubnetDetails(ipInt, cidr);
-
-        setBaseIp(networkInt);
-        setNetworkInput(long2ip(networkInt)); // Update input to show network address
+      const applyNetwork = (ip, cidr) => {
+        setBaseIp(ip);
+        setNetworkInput(long2ip(ip)); // Show the normalised network address
+        setCidrInput(cidr.toString());
         setBaseCidr(cidr);
         setSplitNodes(new Set()); // Reset splits on new network
-        setWidgetIpStr(long2ip(networkInt));
+        setWidgetIpStr(long2ip(ip));
         setWidgetCidrStr(cidr.toString());
+        setError('');
+      };
+
+      const handleUpdate = () => {
+        const n = parseNetwork(networkInput, cidrInput);
+        if (n.error) {
+          setError(n.error);
+          return;
+        }
+        applyNetwork(n.ip, n.cidr);
       };
 
       const handleKeyDown = (e) => {
@@ -662,150 +691,79 @@
         setVisibleCols(prev => ({ ...prev, [key]: value }));
       };
 
-      const copyLink = () => {
-        try {
-          // Using execCommand as clipboard API might be blocked in sandboxed iframes
-          const textArea = document.createElement("textarea");
-          textArea.value = window.location.href;
-          document.body.appendChild(textArea);
-          textArea.select();
-          document.execCommand("copy");
-          document.body.removeChild(textArea);
-
-          setCopiedLink(true);
-          setTimeout(() => setCopiedLink(false), 2000);
-        } catch (err) {
-          console.warn("Failed to copy link:", err);
-        }
-      };
+      const copyLink = () => flashCopied(setCopiedLink, () => copyText(window.location.href));
 
       const handleCopySpreadsheet = () => {
-        const leafCount = getLeafCount(baseIp, baseCidr, splitNodes);
-        const maxDepth = getMaxDepth(baseIp, baseCidr, splitNodes);
-        const totalCols = (maxDepth + 1) + 5; // Levels + Details
+        const { header, rows } = buildExportRows(baseIp, baseCidr, splitNodes);
 
-        const grid = Array.from({ length: leafCount }, () => Array(totalCols).fill(null));
-        fillGrid(grid, baseIp, baseCidr, splitNodes, 0, 0);
-
-        let html = '<table border="1"><thead><tr>';
-        for (let i = 1; i <= maxDepth + 1; i++) html += `<th>Level ${i}</th>`;
-        html += '<th>Subnet</th><th>Netmask</th><th>Range</th><th>Useable IPs</th><th>Hosts</th></tr></thead><tbody>';
-
-        for (let r = 0; r < leafCount; r++) {
+        let html = '<table border="1"><thead><tr>' + header.map((h) => `<th>${h}</th>`).join('') + '</tr></thead><tbody>';
+        for (const row of rows) {
           html += '<tr>';
-          for (let c = 0; c < totalCols; c++) {
-            const cell = grid[r][c];
-            if (cell) {
-              html += `<td rowspan="${cell.rowspan}" valign="top">${cell.content}</td>`;
-            } else {
-              let covered = false;
-              for (let prevR = 0; prevR < r; prevR++) {
-                const prevCell = grid[prevR][c];
-                if (prevCell && prevCell.rowspan > (r - prevR)) {
-                  covered = true;
-                  break;
-                }
-              }
-              if (!covered) {
-                html += '<td></td>';
-              }
-            }
+          for (const cell of row) {
+            if (!cell) html += '<td></td>';
+            else if (!cell.covered) html += `<td rowspan="${cell.rowspan}" valign="top">${htmlEscape(cell.content)}</td>`;
           }
           html += '</tr>';
         }
         html += '</tbody></table>';
+        // Plain-text alternative and fallback: tab-separated, so it still
+        // pastes into cells (without the merged parent cells).
+        const tsv = [header, ...rows.map((row) => row.map((cell) => (cell ? cell.content : '')))]
+          .map((r) => r.join('\t')).join('\n') + '\n';
 
-        const blob = new Blob([html], { type: 'text/html' });
-        try {
-          const data = [new ClipboardItem({ 'text/html': blob })];
-          navigator.clipboard.write(data).then(() => {
-            setCopiedSpreadsheet(true);
-            setTimeout(() => setCopiedSpreadsheet(false), 2000);
-          });
-        } catch (e) {
-          // Fallback for sandboxed iframes or blocking environments: render temporary textarea
-          const textArea = document.createElement("textarea");
-          textArea.value = html; // This is raw HTML string, not rich text, but a fallback is better than crash
-          document.body.appendChild(textArea);
-          textArea.select();
-          document.execCommand("copy");
-          document.body.removeChild(textArea);
-          setCopiedSpreadsheet(true);
-          setTimeout(() => setCopiedSpreadsheet(false), 2000);
-        }
+        flashCopied(setCopiedSpreadsheet, async () => {
+          if (window.ClipboardItem && navigator.clipboard && navigator.clipboard.write && window.isSecureContext) {
+            try {
+              await navigator.clipboard.write([new ClipboardItem({
+                'text/html': new Blob([html], { type: 'text/html' }),
+                'text/plain': new Blob([tsv], { type: 'text/plain' }),
+              })]);
+              return;
+            } catch (e) {
+              console.warn('Rich clipboard write failed, copying plain text:', e);
+            }
+          }
+          await copyText(tsv);
+        });
       };
 
       const handleCopyCSV = () => {
-        const leafCount = getLeafCount(baseIp, baseCidr, splitNodes);
-        const maxDepth = getMaxDepth(baseIp, baseCidr, splitNodes);
-        const totalCols = (maxDepth + 1) + 5;
-
-        const grid = Array.from({ length: leafCount }, () => Array(totalCols).fill(null));
-        fillGrid(grid, baseIp, baseCidr, splitNodes, 0, 0);
-
-        let csv = '';
-        // Header
-        const headerCols = [];
-        for (let i = 1; i <= maxDepth + 1; i++) headerCols.push(`"Level ${i}"`);
-        headerCols.push('"Subnet"', '"Netmask"', '"Range"', '"Useable IPs"', '"Hosts"');
-        csv += headerCols.join(',') + '\n';
-
-        for (let r = 0; r < leafCount; r++) {
-          const rowData = [];
-          for (let c = 0; c < totalCols; c++) {
-            const cell = grid[r][c];
-            if (cell) {
-              rowData.push(`"${cell.content}"`);
-            } else {
-              let val = '';
-              for (let prevR = 0; prevR < r; prevR++) {
-                const prevCell = grid[prevR][c];
-                if (prevCell && prevCell.rowspan > (r - prevR)) {
-                  val = prevCell.content;
-                  break;
-                }
-              }
-              rowData.push(`"${val}"`); // Repeats parent value in unmerged columns
-            }
-          }
-          csv += rowData.join(',') + '\n';
-        }
-
-        navigator.clipboard.writeText(csv).then(() => {
-          setCopiedCSV(true);
-          setTimeout(() => setCopiedCSV(false), 2000);
-        });
+        const { header, rows } = buildExportRows(baseIp, baseCidr, splitNodes);
+        // Covered cells repeat their parent's value, so every row is complete.
+        const csv = [header, ...rows.map((row) => row.map((cell) => (cell ? cell.content : '')))]
+          .map((r) => r.map(csvField).join(',')).join('\n') + '\n';
+        flashCopied(setCopiedCSV, () => copyText(csv));
       };
 
       const homeHref = '../index.html';
 
       return (
-        <div className="h-screen flex flex-col font-sans text-gray-800 bg-gray-50">
+        html`<div className="h-screen flex flex-col font-sans text-gray-800 bg-gray-50">
 
-          {/* Navbar */}
+          <!-- Navbar -->
           <nav className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shrink-0 z-20">
             <div className="flex items-center gap-2">
-              <a href={homeHref} className="text-gray-400 hover:text-blue-600 transition-colors p-1" title="Back to Index">
-                <Icon name="Home" className="w-5 h-5" />
+              <a href=${homeHref} className="text-gray-400 hover:text-blue-600 transition-colors p-1" title="Back to Index">
+                <${Icon} name="Home" className="w-5 h-5" />
               </a>
               <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-sm ml-1">C</div>
               <div className="flex flex-col justify-center max-w-[200px] sm:max-w-md">
                 <span className="font-bold tracking-tight text-sm leading-tight">Subnet<span className="text-blue-600">Visualizer</span></span>
-                <span className="text-[10px] text-gray-500 font-medium truncate" title={pun}>{pun}</span>
+                <span className="text-[10px] text-gray-500 font-medium truncate" title=${pun}>${pun}</span>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <a href="cidr-aggregator.html" className="text-xs font-medium text-gray-500 hover:text-blue-600 bg-transparent px-2.5 py-1.5 rounded transition-colors border border-transparent hover:border-blue-100 hover:bg-blue-50 hidden sm:block">
-                CIDR Aggregator &rarr;
+                CIDR Aggregator →
               </a>
               <button
-                onClick={copyLink}
+                onClick=${copyLink}
                 className="text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 px-2.5 py-1.5 rounded border border-gray-200 flex items-center gap-1.5 transition-colors"
               >
-                {copiedLink ? <Icon name="Check" className="w-4 h-4 text-emerald-600" /> : <Icon name="LinkIcon" className="w-4 h-4" />}
-                {copiedLink ? <span className="text-emerald-600">Copied!</span> : <span>Share Link</span>}
+                ${copiedLink ? html`<${Icon} name="Check" className="w-4 h-4 text-emerald-600" />` : html`<${Icon} name="LinkIcon" className="w-4 h-4" />`}
+                ${copiedLink ? html`<span className="text-emerald-600">Copied!</span>` : html`<span>Share Link</span>`}
               </button>
-              <a href="https://github.com/sruffilli/sruffilli.github.io/blob/main/webutils/subnet-calculator.html" target="_blank" className="text-gray-400 hover:text-gray-900 transition-colors">
+              <a href="https://github.com/sruffilli/misc-utils/blob/main/webutils/subnet-calculator.html" target="_blank" className="text-gray-400 hover:text-gray-900 transition-colors">
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.05-.015-2.055-3.33 0-4.035-1.44-4.29-1.875-.15-.36-.75-1.44-1.29-1.725-.435-.24-1.065-.825-.015-.84 1.14-.015 1.95 1.05 2.22 1.485 1.05 1.785 2.76 1.275 3.45.975.105-.75.405-1.275.735-1.575-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.225 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405 1.02 0 2.04.135 3 .405 2.28-1.545 3.285-1.23 3.285-1.23.66 1.695.24 2.925.12 3.225.765.84 1.23 1.92 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.42.36.78 1.095.78 2.205 0 1.59-.015 2.865-.015 3.255 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" /></svg>
               </a>
             </div>
@@ -813,11 +771,11 @@
 
           <div className="flex flex-col md:flex-row flex-1 overflow-y-auto md:overflow-hidden">
 
-            {/* Sidebar */}
+            <!-- Sidebar -->
             <aside className="w-full md:w-80 bg-white border-b md:border-b-0 md:border-r border-gray-200 flex flex-col shrink-0 z-10 shadow-sm">
               <div className="flex-1 overflow-y-auto p-5 space-y-6">
 
-                {/* Network Address and Mask Bits Inputs */}
+                <!-- Network Address and Mask Bits Inputs -->
                 <div className="grid grid-cols-3 gap-2">
                   <div className="col-span-2 space-y-2">
                     <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider">
@@ -825,9 +783,9 @@
                     </label>
                     <input
                       type="text"
-                      value={networkInput}
-                      onChange={(e) => setNetworkInput(e.target.value)}
-                      onKeyDown={handleKeyDown}
+                      value=${networkInput}
+                      onChange=${(e) => setNetworkInput(e.target.value)}
+                      onKeyDown=${handleKeyDown}
                       className="w-full bg-white border border-gray-300 text-gray-900 rounded-lg px-2.5 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono transition-all"
                       placeholder="192.168.1.0"
                     />
@@ -843,60 +801,60 @@
                         type="number"
                         min="0"
                         max="32"
-                        value={cidrInput}
-                        onChange={(e) => setCidrInput(e.target.value)}
-                        onKeyDown={handleKeyDown}
+                        value=${cidrInput}
+                        onChange=${(e) => setCidrInput(e.target.value)}
+                        onKeyDown=${handleKeyDown}
                         className="w-full bg-white border border-gray-300 text-gray-900 rounded-lg pl-6 pr-1 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono transition-all"
                       />
                     </div>
                   </div>
                 </div>
 
-                {/* Actions */}
+                <!-- Actions -->
                 <div className="grid grid-cols-2 gap-2">
                   <button
                     type="button"
-                    onClick={handleUpdate}
-                    className="px-3 py-2 bg-blue-600 hover:bg-blue-600 text-white font-medium rounded-lg text-sm shadow-sm transition-all flex items-center justify-center gap-1.5"
+                    onClick=${handleUpdate}
+                    className="px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg text-sm shadow-sm transition-all flex items-center justify-center gap-1.5"
                   >
-                    <Icon name="RotateCcw" className="w-4 h-4" />
+                    <${Icon} name="RotateCcw" className="w-4 h-4" />
                     Update
                   </button>
                   <button
                     type="button"
-                    onClick={handleReset}
+                    onClick=${handleReset}
                     className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium rounded-lg text-sm border border-gray-200 transition-all"
                   >
                     Reset
                   </button>
                 </div>
 
-                {error && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-600 text-xs">
-                    <span className="font-semibold">Error:</span> {error}
-                  </div>
+                ${error && (
+                  html`<div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-center gap-2 text-red-600 text-xs">
+                    <span className="font-semibold">Error:</span> ${error}
+                  </div>`
                 )}
 
                 <hr className="border-gray-200" />
 
-                {/* Bulk Split */}
+                <!-- Bulk Split -->
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                    <Icon name="Split" className="w-4 h-4" /> Bulk Split
+                    <${Icon} name="Split" className="w-4 h-4" /> Bulk Split
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-sm text-gray-600 font-medium">Split all to /</span>
                     <input 
                       type="number" 
-                      min={baseCidr + 1} 
-                      max={Math.min(32, baseCidr + 10)} 
-                      value={bulkSplitTarget}
-                      onChange={(e) => setBulkSplitTarget(parseInt(e.target.value, 10) || baseCidr + 1)}
+                      min=${baseCidr + 1} 
+                      max=${Math.min(32, baseCidr + 10)} 
+                      value=${bulkSplitTarget}
+                      onChange=${(e) => setBulkSplitTarget(parseInt(e.target.value, 10) || baseCidr + 1)}
                       className="w-16 bg-white border border-gray-300 text-gray-900 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 font-mono"
                     />
                     <button 
                       type="button"
-                      onClick={handleBulkSplit}
+                      onClick=${handleBulkSplit}
                       className="px-3 py-1 bg-blue-50 hover:bg-blue-600 hover:text-white text-blue-600 border border-blue-200 hover:border-blue-600 font-medium rounded text-sm transition-all"
                     >
                       Go
@@ -909,75 +867,66 @@
 
                 <hr className="border-gray-200" />
 
-                {/* Presets */}
+                <!-- Presets -->
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                    <Icon name="Network" className="w-4 h-4" /> Presets
+                    <${Icon} name="Network" className="w-4 h-4" /> Presets
                   </div>
                   <div className="flex flex-wrap gap-2">
-                    {[
+                    ${[
                       { label: '10.0.0.0/8', ip: '10.0.0.0', cidr: '8' },
                       { label: '172.16.0.0/12', ip: '172.16.0.0', cidr: '12' },
                       { label: '192.168.0.0/16', ip: '192.168.0.0', cidr: '16' },
                       { label: 'CGNAT (100.64/10)', ip: '100.64.0.0', cidr: '10' }
                     ].map(preset => (
-                      <button
-                        key={preset.label}
+                      html`<button
+                        key=${preset.label}
                         type="button"
-                        onClick={() => {
-                          setNetworkInput(preset.ip);
-                          setCidrInput(preset.cidr);
-                          setBaseIp(ip2long(preset.ip));
-                          setBaseCidr(parseInt(preset.cidr, 10));
-                          setSplitNodes(new Set());
-                          setWidgetIpStr(preset.ip);
-                          setWidgetCidrStr(preset.cidr);
-                          setError('');
-                        }}
+                        onClick=${() => applyNetwork(ip2long(preset.ip), Number(preset.cidr))}
                         className="px-2.5 py-1.5 text-[11px] font-mono font-medium bg-gray-50 hover:bg-blue-50 text-gray-600 hover:text-blue-700 border border-gray-200 hover:border-blue-200 rounded-md transition-all shadow-sm"
                       >
-                        {preset.label}
-                      </button>
+                        ${preset.label}
+                      </button>`
                     ))}
                   </div>
                 </div>
 
                 <hr className="border-gray-200" />
 
-                {/* Copy to Clipboard Options */}
+                <!-- Copy to Clipboard Options -->
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                    <Icon name="Clipboard" className="w-4 h-4" /> Copy To Clipboard
+                    <${Icon} name="Clipboard" className="w-4 h-4" /> Copy To Clipboard
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
-                      onClick={handleCopyCSV}
+                      onClick=${handleCopyCSV}
                       className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium rounded-lg text-sm border border-gray-200 transition-all flex items-center justify-center gap-1.5"
                     >
-                      {copiedCSV ? <Icon name="Check" className="w-4 h-4 text-emerald-600" /> : <Icon name="Clipboard" className="w-4 h-4 text-gray-400" />}
-                      {copiedCSV ? <span className="text-emerald-600 font-medium">Copied!</span> : <span>CSV</span>}
+                      ${copiedCSV ? html`<${Icon} name="Check" className="w-4 h-4 text-emerald-600" />` : html`<${Icon} name="Clipboard" className="w-4 h-4 text-gray-400" />`}
+                      ${copiedCSV ? html`<span className="text-emerald-600 font-medium">Copied!</span>` : html`<span>CSV</span>`}
                     </button>
                     <button
                       type="button"
-                      onClick={handleCopySpreadsheet}
+                      onClick=${handleCopySpreadsheet}
                       className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium rounded-lg text-sm border border-gray-200 transition-all flex items-center justify-center gap-1.5"
                     >
-                      {copiedSpreadsheet ? <Icon name="Check" className="w-4 h-4 text-emerald-600" /> : <Icon name="Clipboard" className="w-4 h-4 text-gray-400" />}
-                      {copiedSpreadsheet ? <span className="text-emerald-600 font-medium">Copied!</span> : <span>Spreadsheet</span>}
+                      ${copiedSpreadsheet ? html`<${Icon} name="Check" className="w-4 h-4 text-emerald-600" />` : html`<${Icon} name="Clipboard" className="w-4 h-4 text-gray-400" />`}
+                      ${copiedSpreadsheet ? html`<span className="text-emerald-600 font-medium">Copied!</span>` : html`<span>Spreadsheet</span>`}
                     </button>
                   </div>
                 </div>
 
                 <hr className="border-gray-200" />
 
-                {/* Columns Toggles */}
+                <!-- Columns Toggles -->
                 <div className="space-y-4">
                   <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                    <Icon name="Settings2" className="w-4 h-4" /> Columns
+                    <${Icon} name="Settings2" className="w-4 h-4" /> Columns
                   </div>
                   <div className="space-y-3">
-                    {Object.entries({
+                    ${Object.entries({
                       subnet: 'Subnet Address',
                       netmask: 'Netmask',
                       range: 'Range',
@@ -986,12 +935,12 @@
                       divide: 'Divide',
                       join: 'Join'
                     }).map(([key, label]) => (
-                      <Toggle
-                        key={key}
-                        label={label}
-                        checked={visibleCols[key]}
-                        onChange={(val) => toggleCol(key, val)}
-                      />
+                      html`<${Toggle}
+                        key=${key}
+                        label=${label}
+                        checked=${visibleCols[key]}
+                        onChange=${(val) => toggleCol(key, val)}
+                      />`
                     ))}
                   </div>
                 </div>
@@ -999,53 +948,53 @@
               </div>
 
               <div className="p-5 border-t border-gray-200 bg-gray-50 text-[10px] text-gray-500 flex items-center gap-1">
-                <Icon name="ChevronRight" className="w-3.5 h-3.5 text-blue-500" />
+                <${Icon} name="ChevronRight" className="w-3.5 h-3.5 text-blue-500" />
                 Click divide to split subnets. Join to merge back.
               </div>
             </aside>
 
-            {/* Main Content */}
+            <!-- Main Content -->
             <main className="flex-1 bg-grid md:overflow-hidden flex flex-col relative">
 
               <div className="flex-1 overflow-y-auto overflow-x-auto p-4 md:p-6 flex flex-col">
 
                 <div className="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden flex flex-col flex-1 min-w-[700px]">
 
-                  {/* Table Header */}
+                  <!-- Table Header -->
                   <div className="flex w-full bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
                     <div
                       className="grid flex-1 items-stretch text-[11px] font-bold text-gray-500 uppercase tracking-wider"
-                      style={{ gridTemplateColumns: gridTemplate }}
+                      style=${{ gridTemplateColumns: gridTemplate }}
                     >
-                      {visibleCols.subnet && <div className="px-2.5 py-1.5">Subnet Address</div>}
-                      {visibleCols.netmask && <div className="px-2.5 py-1.5">Netmask</div>}
-                      {visibleCols.range && <div className="px-2.5 py-1.5">Range of Addresses</div>}
-                      {visibleCols.useable && <div className="px-2.5 py-1.5">Useable IPs</div>}
-                      {visibleCols.hosts && <div className="px-2.5 py-1.5 text-right">Hosts</div>}
-                      {visibleCols.divide && <div className="px-2.5 py-1.5 text-center">Divide</div>}
+                      ${visibleCols.subnet && html`<div className="px-2.5 py-1.5">Subnet Address</div>`}
+                      ${visibleCols.netmask && html`<div className="px-2.5 py-1.5">Netmask</div>`}
+                      ${visibleCols.range && html`<div className="px-2.5 py-1.5">Range of Addresses</div>`}
+                      ${visibleCols.useable && html`<div className="px-2.5 py-1.5">Useable IPs</div>`}
+                      ${visibleCols.hosts && html`<div className="px-2.5 py-1.5 text-right">Hosts</div>`}
+                      ${visibleCols.divide && html`<div className="px-2.5 py-1.5 text-center">Divide</div>`}
                     </div>
-                    {visibleCols.join && (
-                      <div className="w-12 px-2.5 py-1.5 border-l border-gray-200 bg-gray-50 flex justify-center text-[11px] font-bold text-gray-500 uppercase tracking-wider">
+                    ${visibleCols.join && (
+                      html`<div className="w-12 px-2.5 py-1.5 border-l border-gray-200 bg-gray-50 flex justify-center text-[11px] font-bold text-gray-500 uppercase tracking-wider">
                         Join
-                      </div>
+                      </div>`
                     )}
                   </div>
 
-                  {/* Recursive Tree Body */}
+                  <!-- Recursive Tree Body -->
                   <div className="overflow-x-auto flex-1">
                     <div className="min-w-[800px] flex flex-col h-full">
-                      <SubnetNode
-                        ip={baseIp}
-                        cidr={baseCidr}
-                        splitNodes={splitNodes}
-                        visibleCols={visibleCols}
-                        onDivide={handleDivide}
-                        onJoin={handleJoin}
-                        onSelect={({ ip, cidr }) => {
+                      <${SubnetNode}
+                        ip=${baseIp}
+                        cidr=${baseCidr}
+                        splitNodes=${splitNodes}
+                        visibleCols=${visibleCols}
+                        onDivide=${handleDivide}
+                        onJoin=${handleJoin}
+                        onSelect=${({ ip, cidr }) => {
                           setWidgetIpStr(long2ip(ip));
                           setWidgetCidrStr(cidr.toString());
                         }}
-                        gridTemplate={gridTemplate}
+                        gridTemplate=${gridTemplate}
                       />
                     </div>
                   </div>
@@ -1054,7 +1003,7 @@
 
               </div>
 
-              {(() => {
+              ${(() => {
                 const ipInt = parsedWidgetIp;
                 const cidr = parsedWidgetCidr;
                 const isValid = ipInt !== null && cidr !== null;
@@ -1067,109 +1016,109 @@
                 }
 
                 return (
-                  <div className="bg-white border-t border-gray-200 p-4 shrink-0 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)] z-20">
+                  html`<div className="bg-white border-t border-gray-200 p-4 shrink-0 shadow-[0_-10px_15px_-3px_rgba(0,0,0,0.05)] z-20">
                     <div className="flex justify-between items-center mb-3">
                       <div className="flex items-center gap-4">
                         <h3 className="text-sm font-bold text-gray-800 flex items-center gap-2">
-                          <Icon name="Network" className="w-4 h-4 text-blue-600" />
+                          <${Icon} name="Network" className="w-4 h-4 text-blue-600" />
                           IP/Subnet Details
                         </h3>
                         <div className="flex items-center gap-1">
                           <input 
                             type="text" 
-                            value={widgetIpStr} 
-                            onChange={e => setWidgetIpStr(e.target.value)}
+                            value=${widgetIpStr} 
+                            onChange=${e => setWidgetIpStr(e.target.value)}
                             className="border border-gray-300 rounded px-2 py-1 text-xs font-mono w-32 focus:outline-none focus:ring-1 focus:ring-blue-500"
                             placeholder="IP Address"
                           />
                           <span className="text-gray-500 font-mono">/</span>
                           <input 
                             type="number" 
-                            value={widgetCidrStr} 
-                            onChange={e => setWidgetCidrStr(e.target.value)}
+                            value=${widgetCidrStr} 
+                            onChange=${e => setWidgetCidrStr(e.target.value)}
                             className="border border-gray-300 rounded px-2 py-1 text-xs font-mono w-16 focus:outline-none focus:ring-1 focus:ring-blue-500"
                             min="0" max="32"
                           />
-                          <CopyButton text={`${widgetIpStr}/${widgetCidrStr}`} className="ml-1" />
+                          <${CopyButton} text=${`${widgetIpStr}/${widgetCidrStr}`} className="ml-1" />
                         </div>
                       </div>
                     </div>
-                    {isValid ? (
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-mono">
+                    ${isValid ? (
+                      html`<div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs font-mono">
                         <div>
                           <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">Network</span>
                           <div className="flex items-center gap-1">
-                            <span className="text-gray-900">{details.networkStr}</span>
-                            <CopyButton text={details.networkStr} />
+                            <span className="text-gray-900">${details.networkStr}</span>
+                            <${CopyButton} text=${details.networkStr} />
                           </div>
                         </div>
                         <div>
                           <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">Netmask</span>
                           <div className="flex items-center gap-1">
-                            <span className="text-gray-900">{details.netmaskStr}</span>
-                            <CopyButton text={details.netmaskStr} />
+                            <span className="text-gray-900">${details.netmaskStr}</span>
+                            <${CopyButton} text=${details.netmaskStr} />
                           </div>
                         </div>
                         <div>
                           <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">Broadcast</span>
                           <div className="flex items-center gap-1">
-                            <span className="text-gray-900">{details.broadcastStr}</span>
-                            <CopyButton text={details.broadcastStr} />
+                            <span className="text-gray-900">${details.broadcastStr}</span>
+                            <${CopyButton} text=${details.broadcastStr} />
                           </div>
                         </div>
                         <div>
                           <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">Total Hosts</span>
                           <div className="flex items-center gap-1">
-                            <span className="text-gray-900">{details.hosts.toLocaleString()}</span>
-                            <CopyButton text={details.hosts.toString()} />
+                            <span className="text-gray-900">${details.hosts.toLocaleString()}</span>
+                            <${CopyButton} text=${details.hosts.toString()} />
                           </div>
                         </div>
                         <div>
                           <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">IP Decimal</span>
                           <div className="flex items-center gap-1">
-                            <span className="text-gray-900">{ipInt}</span>
-                            <CopyButton text={ipInt.toString()} />
+                            <span className="text-gray-900">${ipInt}</span>
+                            <${CopyButton} text=${ipInt.toString()} />
                           </div>
                         </div>
                         <div>
                           <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">Mask Decimal</span>
                           <div className="flex items-center gap-1">
-                            <span className="text-gray-900">{mask}</span>
-                            <CopyButton text={mask.toString()} />
+                            <span className="text-gray-900">${mask}</span>
+                            <${CopyButton} text=${mask.toString()} />
                           </div>
                         </div>
                         <div className="col-span-2">
                           <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">IP Binary</span>
                           <div className="flex items-center gap-1">
-                            <span className="text-gray-900">{ip2bin(ipInt)}</span>
-                            <CopyButton text={ip2bin(ipInt)} />
+                            <span className="text-gray-900">${ip2bin(ipInt)}</span>
+                            <${CopyButton} text=${ip2bin(ipInt)} />
                           </div>
                         </div>
                         <div className="col-span-2">
                           <span className="block text-[10px] text-gray-500 font-sans uppercase font-bold tracking-wider mb-1">Mask Binary</span>
                           <div className="flex items-center gap-1">
-                            <span className="text-gray-900">{ip2bin(mask)}</span>
-                            <CopyButton text={ip2bin(mask)} />
+                            <span className="text-gray-900">${ip2bin(mask)}</span>
+                            <${CopyButton} text=${ip2bin(mask)} />
                           </div>
                         </div>
-                      </div>
+                      </div>`
                     ) : (
-                      <div className="text-xs text-red-500 py-4 font-medium">Invalid IP address or CIDR format.</div>
+                      html`<div className="text-xs text-red-500 py-4 font-medium">Invalid IP address or CIDR format.</div>`
                     )}
-                  </div>
+                  </div>`
                 );
               })()}
             </main>
 
           </div>
-        </div>
+        </div>`
       );
     }
     // --- Render Logic ---
     import { createRoot } from 'react-dom/client';
     const container = document.getElementById('root');
     const root = createRoot(container);
-    root.render(<App />);
+    root.render(html`<${App} />`);
 
   </script>
 </body>

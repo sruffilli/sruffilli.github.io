@@ -4,44 +4,27 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Enforces "your data never leaves the browser": no fetch/XHR/WebSocket/beacon, no forms,
+       scripts only from the pinned CDNs below. See AGENTS.md before relaxing it. -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline' https://esm.sh; style-src 'unsafe-inline'; img-src data: blob:; connect-src 'none'; form-action 'none'; base-uri 'none'">
   <title>String Encoder & Decoder</title>
 
   <!-- Import Map for Bare Module Resolution -->
   <script type="importmap">
     {
       "imports": {
-        "react": "https://esm.sh/react@19",
-        "react-dom": "https://esm.sh/react-dom@19",
-        "react-dom/client": "https://esm.sh/react-dom@19/client",
-        "react/jsx-runtime": "https://esm.sh/react@19/jsx-runtime"
-      }
-    }
-    </script>
-
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { mono: ['"JetBrains Mono"', 'monospace'] },
-          colors: {
-            brand: { 500: '#3b82f6', 600: '#2563eb' }
-          }
-        }
+        "react": "https://esm.sh/react@19.3.0",
+        "react-dom/client": "https://esm.sh/react-dom@19.3.0/client",
+        "htm": "https://esm.sh/htm@3.1.1"
       }
     }
   </script>
+
+  <!-- Tailwind CSS -->
+  <style>*,:after,:before{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }::backdrop{--tw-border-spacing-x:0;--tw-border-spacing-y:0;--tw-translate-x:0;--tw-translate-y:0;--tw-rotate:0;--tw-skew-x:0;--tw-skew-y:0;--tw-scale-x:1;--tw-scale-y:1;--tw-pan-x: ;--tw-pan-y: ;--tw-pinch-zoom: ;--tw-scroll-snap-strictness:proximity;--tw-gradient-from-position: ;--tw-gradient-via-position: ;--tw-gradient-to-position: ;--tw-ordinal: ;--tw-slashed-zero: ;--tw-numeric-figure: ;--tw-numeric-spacing: ;--tw-numeric-fraction: ;--tw-ring-inset: ;--tw-ring-offset-width:0px;--tw-ring-offset-color:#fff;--tw-ring-color:rgba(59,130,246,.5);--tw-ring-offset-shadow:0 0 #0000;--tw-ring-shadow:0 0 #0000;--tw-shadow:0 0 #0000;--tw-shadow-colored:0 0 #0000;--tw-blur: ;--tw-brightness: ;--tw-contrast: ;--tw-grayscale: ;--tw-hue-rotate: ;--tw-invert: ;--tw-saturate: ;--tw-sepia: ;--tw-drop-shadow: ;--tw-backdrop-blur: ;--tw-backdrop-brightness: ;--tw-backdrop-contrast: ;--tw-backdrop-grayscale: ;--tw-backdrop-hue-rotate: ;--tw-backdrop-invert: ;--tw-backdrop-opacity: ;--tw-backdrop-saturate: ;--tw-backdrop-sepia: ;--tw-contain-size: ;--tw-contain-layout: ;--tw-contain-paint: ;--tw-contain-style: }/*! tailwindcss v3.4.17 | MIT License | https://tailwindcss.com*/*,:after,:before{box-sizing:border-box;border:0 solid #e5e7eb}:after,:before{--tw-content:""}:host,html{line-height:1.5;-webkit-text-size-adjust:100%;-moz-tab-size:4;-o-tab-size:4;tab-size:4;font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji;font-feature-settings:normal;font-variation-settings:normal;-webkit-tap-highlight-color:transparent}body{margin:0;line-height:inherit}hr{height:0;color:inherit;border-top-width:1px}abbr:where([title]){-webkit-text-decoration:underline dotted;text-decoration:underline dotted}h1,h2,h3,h4,h5,h6{font-size:inherit;font-weight:inherit}a{color:inherit;text-decoration:inherit}b,strong{font-weight:bolder}code,kbd,pre,samp{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace;font-feature-settings:normal;font-variation-settings:normal;font-size:1em}small{font-size:80%}sub,sup{font-size:75%;line-height:0;position:relative;vertical-align:baseline}sub{bottom:-.25em}sup{top:-.5em}table{text-indent:0;border-color:inherit;border-collapse:collapse}button,input,optgroup,select,textarea{font-family:inherit;font-feature-settings:inherit;font-variation-settings:inherit;font-size:100%;font-weight:inherit;line-height:inherit;letter-spacing:inherit;color:inherit;margin:0;padding:0}button,select{text-transform:none}button,input:where([type=button]),input:where([type=reset]),input:where([type=submit]){-webkit-appearance:button;background-color:transparent;background-image:none}:-moz-focusring{outline:auto}:-moz-ui-invalid{box-shadow:none}progress{vertical-align:baseline}::-webkit-inner-spin-button,::-webkit-outer-spin-button{height:auto}[type=search]{-webkit-appearance:textfield;outline-offset:-2px}::-webkit-search-decoration{-webkit-appearance:none}::-webkit-file-upload-button{-webkit-appearance:button;font:inherit}summary{display:list-item}blockquote,dd,dl,figure,h1,h2,h3,h4,h5,h6,hr,p,pre{margin:0}fieldset{margin:0}fieldset,legend{padding:0}menu,ol,ul{list-style:none;margin:0;padding:0}dialog{padding:0}textarea{resize:vertical}input::-moz-placeholder,textarea::-moz-placeholder{opacity:1;color:#9ca3af}input::placeholder,textarea::placeholder{opacity:1;color:#9ca3af}[role=button],button{cursor:pointer}:disabled{cursor:default}audio,canvas,embed,iframe,img,object,svg,video{display:block;vertical-align:middle}img,video{max-width:100%;height:auto}[hidden]:where(:not([hidden=until-found])){display:none}.pointer-events-none{pointer-events:none}.fixed{position:fixed}.absolute{position:absolute}.relative{position:relative}.inset-y-0{top:0;bottom:0}.bottom-6{bottom:1.5rem}.left-1\/2{left:50%}.right-0{right:0}.z-10{z-index:10}.z-20{z-index:20}.z-50{z-index:50}.mx-auto{margin-left:auto;margin-right:auto}.ml-1{margin-left:.25rem}.mt-0\.5{margin-top:.125rem}.mt-10{margin-top:2.5rem}.block{display:block}.inline{display:inline}.flex{display:flex}.grid{display:grid}.h-14{height:3.5rem}.h-3{height:.75rem}.h-4{height:1rem}.h-5{height:1.25rem}.h-8{height:2rem}.h-full{height:100%}.h-screen{height:100vh}.max-h-\[900px\]{max-height:900px}.w-3{width:.75rem}.w-4{width:1rem}.w-5{width:1.25rem}.w-8{width:2rem}.w-full{width:100%}.max-w-4xl{max-width:56rem}.max-w-\[200px\]{max-width:200px}.flex-1{flex:1 1 0%}.shrink-0{flex-shrink:0}.-translate-x-1\/2{--tw-translate-x:-50%}.-translate-x-1\/2,.transform{transform:translate(var(--tw-translate-x),var(--tw-translate-y)) rotate(var(--tw-rotate)) skewX(var(--tw-skew-x)) skewY(var(--tw-skew-y)) scaleX(var(--tw-scale-x)) scaleY(var(--tw-scale-y))}.cursor-not-allowed{cursor:not-allowed}.cursor-pointer{cursor:pointer}.select-text{-webkit-user-select:text;-moz-user-select:text;user-select:text}.resize-none{resize:none}.appearance-none{-webkit-appearance:none;-moz-appearance:none;appearance:none}.grid-cols-2{grid-template-columns:repeat(2,minmax(0,1fr))}.flex-col{flex-direction:column}.items-start{align-items:flex-start}.items-center{align-items:center}.justify-center{justify-content:center}.justify-between{justify-content:space-between}.gap-1{gap:.25rem}.gap-1\.5{gap:.375rem}.gap-2{gap:.5rem}.gap-4{gap:1rem}.gap-5{gap:1.25rem}.space-y-3>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(.75rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(.75rem*var(--tw-space-y-reverse))}.space-y-6>:not([hidden])~:not([hidden]){--tw-space-y-reverse:0;margin-top:calc(1.5rem*(1 - var(--tw-space-y-reverse)));margin-bottom:calc(1.5rem*var(--tw-space-y-reverse))}.overflow-auto{overflow:auto}.overflow-hidden{overflow:hidden}.overflow-y-auto{overflow-y:auto}.overflow-x-hidden{overflow-x:hidden}.truncate{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.whitespace-pre-wrap{white-space:pre-wrap}.break-all{word-break:break-all}.rounded{border-radius:.25rem}.rounded-lg{border-radius:.5rem}.rounded-md{border-radius:.375rem}.rounded-xl{border-radius:.75rem}.rounded-t-xl{border-top-left-radius:.75rem;border-top-right-radius:.75rem}.border{border-width:1px}.border-b{border-bottom-width:1px}.border-gray-100{--tw-border-opacity:1;border-color:rgb(243 244 246/var(--tw-border-opacity,1))}.border-gray-200{--tw-border-opacity:1;border-color:rgb(229 231 235/var(--tw-border-opacity,1))}.border-gray-300{--tw-border-opacity:1;border-color:rgb(209 213 219/var(--tw-border-opacity,1))}.border-red-200{--tw-border-opacity:1;border-color:rgb(254 202 202/var(--tw-border-opacity,1))}.border-transparent{border-color:transparent}.bg-blue-600{--tw-bg-opacity:1;background-color:rgb(37 99 235/var(--tw-bg-opacity,1))}.bg-gray-100{--tw-bg-opacity:1;background-color:rgb(243 244 246/var(--tw-bg-opacity,1))}.bg-gray-50{--tw-bg-opacity:1;background-color:rgb(249 250 251/var(--tw-bg-opacity,1))}.bg-gray-900{--tw-bg-opacity:1;background-color:rgb(17 24 39/var(--tw-bg-opacity,1))}.bg-red-50{--tw-bg-opacity:1;background-color:rgb(254 242 242/var(--tw-bg-opacity,1))}.bg-transparent{background-color:transparent}.bg-white{--tw-bg-opacity:1;background-color:rgb(255 255 255/var(--tw-bg-opacity,1))}.fill-current{fill:currentColor}.p-1{padding:.25rem}.p-3{padding:.75rem}.p-4{padding:1rem}.p-5{padding:1.25rem}.px-2{padding-left:.5rem;padding-right:.5rem}.px-2\.5{padding-left:.625rem;padding-right:.625rem}.px-3{padding-left:.75rem;padding-right:.75rem}.px-4{padding-left:1rem;padding-right:1rem}.py-1{padding-top:.25rem;padding-bottom:.25rem}.py-1\.5{padding-top:.375rem;padding-bottom:.375rem}.py-2{padding-top:.5rem;padding-bottom:.5rem}.py-2\.5{padding-top:.625rem;padding-bottom:.625rem}.py-3{padding-top:.75rem;padding-bottom:.75rem}.text-left{text-align:left}.text-center{text-align:center}.font-mono{font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,Liberation Mono,Courier New,monospace}.font-sans{font-family:ui-sans-serif,system-ui,sans-serif,Apple Color Emoji,Segoe UI Emoji,Segoe UI Symbol,Noto Color Emoji}.text-\[10px\]{font-size:10px}.text-\[11px\]{font-size:11px}.text-sm{font-size:.875rem;line-height:1.25rem}.text-xl{font-size:1.25rem;line-height:1.75rem}.text-xs{font-size:.75rem;line-height:1rem}.font-bold{font-weight:700}.font-medium{font-weight:500}.font-semibold{font-weight:600}.uppercase{text-transform:uppercase}.italic{font-style:italic}.leading-relaxed{line-height:1.625}.leading-tight{line-height:1.25}.tracking-tight{letter-spacing:-.025em}.tracking-wider{letter-spacing:.05em}.text-blue-600{--tw-text-opacity:1;color:rgb(37 99 235/var(--tw-text-opacity,1))}.text-emerald-500{--tw-text-opacity:1;color:rgb(16 185 129/var(--tw-text-opacity,1))}.text-emerald-600{--tw-text-opacity:1;color:rgb(5 150 105/var(--tw-text-opacity,1))}.text-gray-400{--tw-text-opacity:1;color:rgb(156 163 175/var(--tw-text-opacity,1))}.text-gray-500{--tw-text-opacity:1;color:rgb(107 114 128/var(--tw-text-opacity,1))}.text-gray-700{--tw-text-opacity:1;color:rgb(55 65 81/var(--tw-text-opacity,1))}.text-gray-800{--tw-text-opacity:1;color:rgb(31 41 55/var(--tw-text-opacity,1))}.text-gray-900{--tw-text-opacity:1;color:rgb(17 24 39/var(--tw-text-opacity,1))}.text-red-500{--tw-text-opacity:1;color:rgb(239 68 68/var(--tw-text-opacity,1))}.text-red-600{--tw-text-opacity:1;color:rgb(220 38 38/var(--tw-text-opacity,1))}.text-white{--tw-text-opacity:1;color:rgb(255 255 255/var(--tw-text-opacity,1))}.shadow-lg{--tw-shadow:0 10px 15px -3px rgba(0,0,0,.1),0 4px 6px -4px rgba(0,0,0,.1);--tw-shadow-colored:0 10px 15px -3px var(--tw-shadow-color),0 4px 6px -4px var(--tw-shadow-color)}.shadow-lg,.shadow-sm{box-shadow:var(--tw-ring-offset-shadow,0 0 #0000),var(--tw-ring-shadow,0 0 #0000),var(--tw-shadow)}.shadow-sm{--tw-shadow:0 1px 2px 0 rgba(0,0,0,.05);--tw-shadow-colored:0 1px 2px 0 var(--tw-shadow-color)}.outline-none{outline:2px solid transparent;outline-offset:2px}.ring-blue-500{--tw-ring-opacity:1;--tw-ring-color:rgb(59 130 246/var(--tw-ring-opacity,1))}.ring-offset-2{--tw-ring-offset-width:2px}.ring-offset-gray-50{--tw-ring-offset-color:#f9fafb}.transition-all{transition-property:all;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-colors{transition-property:color,background-color,border-color,text-decoration-color,fill,stroke;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.transition-shadow{transition-property:box-shadow;transition-timing-function:cubic-bezier(.4,0,.2,1);transition-duration:.15s}.focus-within\:ring-2:focus-within{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}.hover\:bg-blue-700:hover{--tw-bg-opacity:1;background-color:rgb(29 78 216/var(--tw-bg-opacity,1))}.hover\:bg-gray-100:hover{--tw-bg-opacity:1;background-color:rgb(243 244 246/var(--tw-bg-opacity,1))}.hover\:bg-gray-200:hover{--tw-bg-opacity:1;background-color:rgb(229 231 235/var(--tw-bg-opacity,1))}.hover\:bg-gray-50:hover{--tw-bg-opacity:1;background-color:rgb(249 250 251/var(--tw-bg-opacity,1))}.hover\:text-blue-600:hover{--tw-text-opacity:1;color:rgb(37 99 235/var(--tw-text-opacity,1))}.hover\:text-blue-800:hover{--tw-text-opacity:1;color:rgb(30 64 175/var(--tw-text-opacity,1))}.hover\:text-gray-900:hover{--tw-text-opacity:1;color:rgb(17 24 39/var(--tw-text-opacity,1))}.focus\:border-blue-500:focus{--tw-border-opacity:1;border-color:rgb(59 130 246/var(--tw-border-opacity,1))}.focus\:ring-2:focus{--tw-ring-offset-shadow:var(--tw-ring-inset) 0 0 0 var(--tw-ring-offset-width) var(--tw-ring-offset-color);--tw-ring-shadow:var(--tw-ring-inset) 0 0 0 calc(2px + var(--tw-ring-offset-width)) var(--tw-ring-color);box-shadow:var(--tw-ring-offset-shadow),var(--tw-ring-shadow),var(--tw-shadow,0 0 #0000)}.focus\:ring-blue-500:focus{--tw-ring-opacity:1;--tw-ring-color:rgb(59 130 246/var(--tw-ring-opacity,1))}@media (min-width:640px){.sm\:max-w-md{max-width:28rem}}@media (min-width:768px){.md\:w-80{width:20rem}.md\:flex-row{flex-direction:row}.md\:overflow-hidden{overflow:hidden}.md\:overflow-y-auto{overflow-y:auto}.md\:border-b-0{border-bottom-width:0}.md\:border-r{border-right-width:1px}.md\:p-6{padding:1.5rem}}</style>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500&family=Inter:wght@400;500;600;700&display=swap');
-
-    body {
-      font-family: 'Inter', sans-serif;
-    }
-
     .mono {
-      font-family: 'JetBrains Mono', monospace;
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
     }
 
     .bg-grid {
@@ -52,62 +35,78 @@
     }
   </style>
 
-  <!-- Babel Standalone for In-Browser Transpilation -->
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <!-- CryptoJS for Hashing Algorithms -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
 </head>
 
 <body class="bg-gray-50 h-screen flex flex-col overflow-hidden text-gray-800">
   <div id="root" class="h-full flex flex-col"></div>
 
-  <script type="text/babel" data-type="module">
+  <script type="module">
     import React, { useState, useEffect } from 'react';
+    import htm from 'htm';
+
+    const html = htm.bind(React.createElement);
     import { createRoot } from 'react-dom/client';
 
     // --- Icons Fallback ---
     const Icon = ({ name, className }) => {
       const icons = {
         LinkIcon: (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=${className}>
             <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71" /><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71" />
-          </svg>
+          </svg>`
         ),
         Home: (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=${className}>
             <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" />
-          </svg>
+          </svg>`
         ),
         Check: (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=${className}>
             <polyline points="20 6 9 17 4 12" />
-          </svg>
+          </svg>`
         ),
         RefreshCw: (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=${className}>
             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8" /><path d="M3 3v5h5" />
-          </svg>
+          </svg>`
         ),
         Trash2: (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=${className}>
             <polyline points="3 6 5 6 21 6" /><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" /><line x1="10" y1="11" x2="10" y2="17" /><line x1="14" y1="11" x2="14" y2="17" />
-          </svg>
+          </svg>`
         ),
         Code2: (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=${className}>
             <path d="M16 18l6-6-6-6M8 6l-6 6 6 6" />
-          </svg>
+          </svg>`
         ),
         FileText: (
-          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+          html`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className=${className}>
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" />
-          </svg>
+          </svg>`
         ),
       };
       return icons[name] || null;
     };
 
     // --- Conversion Utilities ---
+    // Every byte-oriented codec works on UTF-8 bytes, so non-ASCII text
+    // round-trips. Decoded bytes are read as UTF-8; byte sequences that are
+    // not valid UTF-8 (binary payloads) fall back to one character per byte.
+
+    const utf8 = new TextEncoder();
+    const toBytes = (str) => utf8.encode(str);
+    const fromBytes = (bytes) => {
+      try {
+        return new TextDecoder('utf-8', { fatal: true }).decode(bytes);
+      } catch (e) {
+        return Array.from(bytes, (b) => String.fromCharCode(b)).join('');
+      }
+    };
+    const isUtf8 = (bytes) => {
+      try { new TextDecoder('utf-8', { fatal: true }).decode(bytes); return true; }
+      catch (e) { return false; }
+    };
 
     const rot13 = (str) => {
       return str.replace(/[a-zA-Z]/g, function (c) {
@@ -117,15 +116,19 @@
       });
     };
 
-    const base64Encode = (str) => {
-      try { return btoa(unescape(encodeURIComponent(str))); }
-      catch (e) { throw new Error("Invalid string for Base64 encoding."); }
+    const base64EncodeBytes = (bytes) => {
+      let bin = '';
+      for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+      return btoa(bin);
     };
-
-    const base64Decode = (str) => {
-      try { return decodeURIComponent(escape(atob(str))); }
+    const base64DecodeBytes = (str) => {
+      let bin;
+      try { bin = atob(str.replace(/\s+/g, '')); }
       catch (e) { throw new Error("Invalid Base64 sequence."); }
+      return Uint8Array.from(bin, (c) => c.charCodeAt(0));
     };
+    const base64Encode = (str) => base64EncodeBytes(toBytes(str));
+    const base64Decode = (str) => fromBytes(base64DecodeBytes(str));
 
     const uriEncode = (str) => encodeURIComponent(str);
 
@@ -134,101 +137,78 @@
       catch (e) { throw new Error("Invalid URL Encoding."); }
     };
 
-    const uuEncode = (str) => {
-      if (!str) return "";
+    const uuEncodeBytes = (bytes) => {
+      if (!bytes.length) return "";
+      const toChar = (val) => (val === 0 ? '`' : String.fromCharCode(val + 32));
       let out = "begin 644 string.txt\n";
-      const toChar = (val) => {
-        const c = val + 32;
-        return c === 32 ? '`' : String.fromCharCode(c);
-      };
-      
-      for (let i = 0; i < str.length; i += 45) {
-        let chunk = str.slice(i, i + 45);
+      for (let i = 0; i < bytes.length; i += 45) {
+        const chunk = bytes.subarray(i, i + 45);
         out += toChar(chunk.length);
         for (let j = 0; j < chunk.length; j += 3) {
-          let n = (chunk.charCodeAt(j) << 16) | ((chunk.charCodeAt(j + 1) || 0) << 8) | (chunk.charCodeAt(j + 2) || 0);
-          out += toChar((n >> 18) & 63) +
-                 toChar((n >> 12) & 63) +
-                 toChar((n >> 6) & 63) +
-                 toChar(n & 63);
+          const n = (chunk[j] << 16) | ((chunk[j + 1] || 0) << 8) | (chunk[j + 2] || 0);
+          out += toChar((n >> 18) & 63) + toChar((n >> 12) & 63) + toChar((n >> 6) & 63) + toChar(n & 63);
         }
         out += "\n";
       }
-      out += "\`\nend\n";
-      return out;
+      return out + "`\nend\n";
     };
-
-    const uuDecode = (str) => {
-      let lines = str.split("\n");
-      let out = "";
-      let valid = false;
-      
-      const fromChar = (c) => {
-        let val = c.charCodeAt(0);
-        return (val === 96 ? 0 : val - 32) & 63;
-      };
-
-      for (let line of lines) {
-        line = line.trimEnd();
-        if (line.startsWith("begin") || line.startsWith("end") || line === "\`" || line === "") {
-          if (line.startsWith("end")) valid = true;
-          continue;
-        }
-        let lenChar = line.charCodeAt(0);
-        let len = (lenChar === 96 ? 0 : lenChar - 32);
-        if (len <= 0) break;
-        
-        for (let i = 1; i < line.length; i += 4) {
-          let c1 = fromChar(line[i] || ' ');
-          let c2 = fromChar(line[i + 1] || ' ');
-          let c3 = fromChar(line[i + 2] || ' ');
-          let c4 = fromChar(line[i + 3] || ' ');
-          
-          let n = (c1 << 18) | (c2 << 12) | (c3 << 6) | c4;
-          out += String.fromCharCode((n >> 16) & 255);
-          if (--len > 0) out += String.fromCharCode((n >> 8) & 255);
-          if (--len > 0) out += String.fromCharCode(n & 255);
-          if (--len === 0) break;
+    const uuDecodeBytes = (str) => {
+      const fromChar = (c) => ((c === '`' ? 0 : c.charCodeAt(0) - 32) & 63);
+      const out = [];
+      let sawBegin = false;
+      let sawEnd = false;
+      for (let line of str.split("\n")) {
+        line = line.replace(/\r$/, '');
+        if (line.startsWith("begin ")) { sawBegin = true; continue; }
+        if (line.trim() === "end") { sawEnd = true; break; }
+        if (line === "" || line === "`") continue;
+        let len = fromChar(line[0]);
+        if (len <= 0) continue;
+        for (let i = 1; len > 0; i += 4) {
+          const n = (fromChar(line[i] || ' ') << 18) | (fromChar(line[i + 1] || ' ') << 12) |
+                    (fromChar(line[i + 2] || ' ') << 6) | fromChar(line[i + 3] || ' ');
+          out.push((n >> 16) & 255);
+          if (--len > 0) out.push((n >> 8) & 255);
+          if (--len > 0) out.push(n & 255);
+          len--;
         }
       }
-      if (!valid && out === "") throw new Error("Invalid UUEncode format.");
-      return out;
+      if (!sawBegin || !sawEnd) throw new Error("Invalid UUEncode format.");
+      return Uint8Array.from(out);
     };
+    const uuEncode = (str) => uuEncodeBytes(toBytes(str));
+    const uuDecode = (str) => fromBytes(uuDecodeBytes(str));
 
-    // --- Additional Conversions ---
-    const hexEncode = (str) => {
-      return Array.from(str).map(c => c.charCodeAt(0).toString(16).padStart(2, '0')).join('');
-    };
-    const hexDecode = (str) => {
-      str = str.replace(/[^0-9A-Fa-f]/g, '');
+    const hexEncode = (str) => Array.from(toBytes(str), (b) => b.toString(16).padStart(2, '0')).join('');
+    const hexDecodeBytes = (str) => {
+      str = str.replace(/\s+/g, '').replace(/^0x/i, '');
+      if (/[^0-9A-Fa-f]/.test(str)) throw new Error("Invalid Hex character.");
       if (str.length % 2 !== 0) throw new Error("Invalid Hex string length.");
-      let res = '';
-      for (let i = 0; i < str.length; i += 2) {
-        res += String.fromCharCode(parseInt(str.substring(i, i + 2), 16));
-      }
-      return res;
+      const out = new Uint8Array(str.length / 2);
+      for (let i = 0; i < out.length; i++) out[i] = parseInt(str.substr(i * 2, 2), 16);
+      return out;
     };
+    const hexDecode = (str) => fromBytes(hexDecodeBytes(str));
 
-    const binEncode = (str) => {
-      return Array.from(str).map(c => c.charCodeAt(0).toString(2).padStart(8, '0')).join(' ');
-    };
-    const binDecode = (str) => {
-      str = str.replace(/[^01]/g, '');
+    const binEncode = (str) => Array.from(toBytes(str), (b) => b.toString(2).padStart(8, '0')).join(' ');
+    const binDecodeBytes = (str) => {
+      str = str.replace(/\s+/g, '');
+      if (/[^01]/.test(str)) throw new Error("Invalid Binary character.");
       if (str.length % 8 !== 0) throw new Error("Invalid Binary string length.");
-      let res = '';
-      for (let i = 0; i < str.length; i += 8) {
-        res += String.fromCharCode(parseInt(str.substring(i, i + 8), 2));
-      }
-      return res;
+      const out = new Uint8Array(str.length / 8);
+      for (let i = 0; i < out.length; i++) out[i] = parseInt(str.substr(i * 8, 8), 2);
+      return out;
     };
+    const binDecode = (str) => fromBytes(binDecodeBytes(str));
 
     const BASE32_ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
     const base32Encode = (str) => {
+      const bytes = toBytes(str);
       let result = "";
       let bits = 0;
       let value = 0;
-      for (let i = 0; i < str.length; i++) {
-        value = (value << 8) | str.charCodeAt(i);
+      for (const byte of bytes) {
+        value = ((value << 8) | byte) & 0xffff;
         bits += 8;
         while (bits >= 5) {
           result += BASE32_ALPHABET[(value >>> (bits - 5)) & 31];
@@ -239,106 +219,141 @@
       while (result.length % 8 !== 0) result += "=";
       return result;
     };
-    const base32Decode = (str) => {
-      str = str.replace(/=+$/, "").toUpperCase();
-      let result = "";
+    const base32DecodeBytes = (str) => {
+      str = str.replace(/\s+/g, '').replace(/=+$/, "").toUpperCase();
+      const out = [];
       let bits = 0;
       let value = 0;
-      for (let i = 0; i < str.length; i++) {
-        let val = BASE32_ALPHABET.indexOf(str[i]);
+      for (const ch of str) {
+        const val = BASE32_ALPHABET.indexOf(ch);
         if (val === -1) throw new Error("Invalid Base32 character.");
-        value = (value << 5) | val;
+        value = ((value << 5) | val) & 0xffff;
         bits += 5;
         if (bits >= 8) {
-          result += String.fromCharCode((value >>> (bits - 8)) & 255);
+          out.push((value >>> (bits - 8)) & 255);
           bits -= 8;
         }
       }
-      return result;
+      return Uint8Array.from(out);
     };
+    const base32Decode = (str) => fromBytes(base32DecodeBytes(str));
 
     const BASE58_ALPHABET = '123456789ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz';
+    const BASE58_MAP = Object.fromEntries([...BASE58_ALPHABET].map((c, i) => [c, i]));
     const base58Encode = (str) => {
-      if (!str.length) return '';
-      const bytes = Array.from(str).map(c => c.charCodeAt(0));
-      const digits = [0];
-      for (let i = 0; i < bytes.length; i++) {
-        for (let j = 0; j < digits.length; j++) digits[j] <<= 8;
-        digits[0] += bytes[i];
-        let carry = 0;
-        for (let j = 0; j < digits.length; ++j) {
-          digits[j] += carry;
-          carry = (digits[j] / 58) | 0;
-          digits[j] %= 58;
-        }
-        while (carry) {
-          digits.push(carry % 58);
+      const bytes = toBytes(str);
+      const digits = [];
+      for (const byte of bytes) {
+        let carry = byte;
+        for (let j = 0; j < digits.length; j++) {
+          carry += digits[j] << 8;
+          digits[j] = carry % 58;
           carry = (carry / 58) | 0;
         }
+        while (carry) { digits.push(carry % 58); carry = (carry / 58) | 0; }
       }
-      for (let i = 0; str[i] === '\x00' && i < str.length - 1; i++) digits.push(0);
-      return digits.reverse().map(digit => BASE58_ALPHABET[digit]).join('');
+      let zeros = 0;
+      while (zeros < bytes.length && bytes[zeros] === 0) zeros++;
+      return '1'.repeat(zeros) + digits.reverse().map((d) => BASE58_ALPHABET[d]).join('');
     };
-    const base58Decode = (str) => {
-      if (!str.length) return '';
-      const bytes = [0];
-      for (let i = 0; i < str.length; i++) {
-        const c = str[i];
-        if (!(c in Object.fromEntries([...BASE58_ALPHABET].map((c, i) => [c, i])))) throw new Error('Invalid Base58 character');
-        for (let j = 0; j < bytes.length; j++) bytes[j] *= 58;
-        bytes[0] += BASE58_ALPHABET.indexOf(c);
-        let carry = 0;
-        for (let j = 0; j < bytes.length; ++j) {
-          bytes[j] += carry;
-          carry = bytes[j] >> 8;
-          bytes[j] &= 0xff;
-        }
-        while (carry) {
-          bytes.push(carry & 0xff);
+    const base58DecodeBytes = (str) => {
+      str = str.trim();
+      const bytes = [];
+      for (const c of str) {
+        if (!(c in BASE58_MAP)) throw new Error('Invalid Base58 character.');
+        let carry = BASE58_MAP[c];
+        for (let j = 0; j < bytes.length; j++) {
+          carry += bytes[j] * 58;
+          bytes[j] = carry & 0xff;
           carry >>= 8;
         }
+        while (carry) { bytes.push(carry & 0xff); carry >>= 8; }
       }
-      for (let i = 0; str[i] === '1' && i < str.length - 1; i++) bytes.push(0);
-      return bytes.reverse().map(byte => String.fromCharCode(byte)).join('');
+      let zeros = 0;
+      while (zeros < str.length && str[zeros] === '1') zeros++;
+      return Uint8Array.from([...new Array(zeros).fill(0), ...bytes.reverse()]);
+    };
+    const base58Decode = (str) => fromBytes(base58DecodeBytes(str));
+
+    // --- Hashing (Web Crypto for SHA, inline MD5: Web Crypto has no MD5) ---
+
+    const toHex = (bytes) => Array.from(bytes, (b) => b.toString(16).padStart(2, '0')).join('');
+
+    const md5 = (bytes) => {
+      const K = new Uint32Array(64);
+      for (let i = 0; i < 64; i++) K[i] = Math.floor(Math.abs(Math.sin(i + 1)) * 2 ** 32);
+      const S = [7, 12, 17, 22, 5, 9, 14, 20, 4, 11, 16, 23, 6, 10, 15, 21];
+      const len = bytes.length;
+      const padded = new Uint8Array((((len + 8) >> 6) + 1) << 6);
+      padded.set(bytes);
+      padded[len] = 0x80;
+      const view = new DataView(padded.buffer);
+      view.setUint32(padded.length - 8, (len * 8) >>> 0, true);
+      view.setUint32(padded.length - 4, Math.floor(len / 0x20000000), true);
+      let a0 = 0x67452301, b0 = 0xefcdab89, c0 = 0x98badcfe, d0 = 0x10325476;
+      const M = new Uint32Array(16);
+      for (let off = 0; off < padded.length; off += 64) {
+        for (let i = 0; i < 16; i++) M[i] = view.getUint32(off + i * 4, true);
+        let A = a0, B = b0, C = c0, D = d0;
+        for (let i = 0; i < 64; i++) {
+          let F, g;
+          if (i < 16) { F = (B & C) | (~B & D); g = i; }
+          else if (i < 32) { F = (D & B) | (~D & C); g = (5 * i + 1) % 16; }
+          else if (i < 48) { F = B ^ C ^ D; g = (3 * i + 5) % 16; }
+          else { F = C ^ (B | ~D); g = (7 * i) % 16; }
+          const s = S[(i >> 4) * 4 + (i % 4)];
+          F = (F + A + K[i] + M[g]) >>> 0;
+          A = D; D = C; C = B;
+          B = (B + ((F << s) | (F >>> (32 - s)))) >>> 0;
+        }
+        a0 = (a0 + A) >>> 0; b0 = (b0 + B) >>> 0; c0 = (c0 + C) >>> 0; d0 = (d0 + D) >>> 0;
+      }
+      const out = new DataView(new ArrayBuffer(16));
+      [a0, b0, c0, d0].forEach((v, i) => out.setUint32(i * 4, v, true));
+      return toHex(new Uint8Array(out.buffer));
+    };
+
+    const HASH_ALGOS = ['MD5', 'SHA-1', 'SHA-256', 'SHA-512'];
+    const hashText = async (algo, str) => {
+      const bytes = toBytes(str);
+      if (algo === 'MD5') return md5(bytes);
+      if (!(globalThis.crypto && crypto.subtle)) {
+        throw new Error("SHA hashing needs a secure context: open the page over https or as a local file.");
+      }
+      return toHex(new Uint8Array(await crypto.subtle.digest(algo, bytes)));
+    };
+
+    // --- Auto-detection ---
+    // A candidate decoding is accepted only if it yields valid UTF-8 text
+    // with no control characters, so plain words are not "decoded" into
+    // binary garbage by permissive alphabets like Base32 and Base58.
+
+    const looksLikeText = (bytes) => {
+      if (!bytes.length || !isUtf8(bytes)) return false;
+      const text = fromBytes(bytes);
+      return !/[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/.test(text);
     };
 
     const autoDecode = (str) => {
-      if (!str.trim()) return { decoded: "", format: "Auto" };
+      const s = str.trim();
+      if (!s) return { decoded: "", format: "Auto" };
 
-      if (str.includes("begin ") && str.includes("end")) {
-        try { return { decoded: uuDecode(str), format: "UUEncode" }; } catch (e) { }
-      }
-
-      if (/^[01\s]+$/.test(str.trim()) && str.replace(/[^01]/g, '').length > 0 && str.replace(/[^01]/g, '').length % 8 === 0) {
-        try { return { decoded: binDecode(str), format: "Binary" }; } catch (e) { }
-      }
-
-      if (/^[0-9a-fA-F]+$/.test(str.trim()) && str.trim().length % 2 === 0) {
+      const candidates = [
+        ['UUEncode', () => /^begin \d{3} /m.test(s) && /^end\s*$/m.test(s) && uuDecodeBytes(s)],
+        ['Binary', () => /^[01\s]+$/.test(s) && binDecodeBytes(s)],
+        ['Hexadecimal', () => /^(0x)?[0-9a-fA-F\s]+$/.test(s) && hexDecodeBytes(s)],
+        ['Base64', () => /^[A-Za-z0-9+/\s]+={0,2}$/.test(s) && s.replace(/\s+/g, '').length % 4 === 0 && base64DecodeBytes(s)],
+        ['Base32', () => /^[A-Z2-7]+=*$/.test(s) && base32DecodeBytes(s)],
+        ['Base58', () => /^[1-9A-HJ-NP-Za-km-z]+$/.test(s) && base58DecodeBytes(s)],
+      ];
+      for (const [format, attempt] of candidates) {
         try {
-          const decoded = hexDecode(str.trim());
-          if (/^[\x20-\x7E\s]*$/.test(decoded) && decoded !== '') return { decoded, format: "Hexadecimal" };
+          const bytes = attempt();
+          if (bytes && looksLikeText(bytes)) return { decoded: fromBytes(bytes), format };
         } catch (e) { }
       }
 
-      const b64Regex = /^(?:[A-Za-z0-9+/]{4})*(?:(?:[A-Za-z0-9+/]{3}=)|(?:[A-Za-z0-9+/]{2}==))?$/;
-      if (b64Regex.test(str.trim()) && str.trim().length > 0 && !str.includes(' ')) {
-        try {
-          const decoded = base64Decode(str);
-          if (/^[\x20-\x7E\s\w\W]*$/.test(decoded)) return { decoded, format: "Base64" };
-        } catch (e) { }
-      }
-
-      const b32Regex = /^[A-Z2-7]+=*$/i;
-      if (b32Regex.test(str.trim())) {
-        try { return { decoded: base32Decode(str.trim()), format: "Base32" }; } catch (e) { }
-      }
-
-      try {
-        const decoded = base58Decode(str.trim());
-        if (/^[\x20-\x7E\s\w\W]*$/.test(decoded)) return { decoded, format: "Base58" };
-      } catch (e) { }
-
-      if (str.includes("%")) {
+      if (/%[0-9A-Fa-f]{2}/.test(str)) {
         try { return { decoded: uriDecode(str), format: "URL Encoding" }; } catch (e) { }
       }
 
@@ -364,27 +379,63 @@
       "It's not obfuscation, it's *vibes*"
     ];
 
+    const MODES = ['encode', 'decode', 'hash'];
+    const CODECS = ['Base64', 'Base32', 'Base58', 'Binary', 'Hexadecimal', 'ROT13', 'ROT26', 'URL', 'UUEncode'];
+    const algosFor = (mode) => (mode === 'hash' ? HASH_ALGOS : mode === 'decode' ? ['Auto', ...CODECS] : CODECS);
+
+    const ENCODERS = {
+      Base64: base64Encode, Base32: base32Encode, Base58: base58Encode, Hexadecimal: hexEncode,
+      Binary: binEncode, UUEncode: uuEncode, ROT13: rot13, ROT26: (s) => s, URL: uriEncode,
+    };
+    const DECODERS = {
+      Base64: base64Decode, Base32: base32Decode, Base58: base58Decode, Hexadecimal: hexDecode,
+      Binary: binDecode, UUEncode: uuDecode, ROT13: rot13, ROT26: (s) => s, URL: uriDecode,
+    };
+
+    // Share links carry state in the URL fragment, which never reaches the
+    // server. Legacy ?query links are still read.
+    const readLinkParams = () => {
+      const hash = new URLSearchParams(window.location.hash.slice(1));
+      return hash.has('mode') || hash.has('text') ? hash : new URLSearchParams(window.location.search);
+    };
+
+    // The input text lives in sessionStorage: it survives a reload but not
+    // closing the tab, so a pasted token does not linger on disk forever.
+    const INPUT_KEY = 'stringcodec-input';
+
+    const initialState = () => {
+      const link = readLinkParams();
+      const fromLink = link.has('mode') || link.has('text');
+      let mode = (fromLink ? link.get('mode') : localStorage.getItem('stringcodec-mode')) || 'encode';
+      if (!MODES.includes(mode)) mode = 'encode';
+      let encoding = (fromLink ? link.get('algo') : localStorage.getItem('stringcodec-algo')) || '';
+      if (!algosFor(mode).includes(encoding)) encoding = algosFor(mode)[mode === 'hash' ? 2 : 0];
+      const input = (fromLink ? link.get('text') : sessionStorage.getItem(INPUT_KEY)) || '';
+      localStorage.removeItem(INPUT_KEY); // written by older versions
+      return { mode, encoding, input };
+    };
+
+    const transform = async (mode, encoding, input) => {
+      if (mode === 'hash') return { output: await hashText(encoding, input), format: '' };
+      if (mode === 'decode' && encoding === 'Auto') {
+        const auto = autoDecode(input);
+        return { output: auto.decoded, format: auto.format };
+      }
+      const fn = (mode === 'decode' ? DECODERS : ENCODERS)[encoding];
+      if (!fn) throw new Error(`Unknown format: ${encoding}`);
+      return { output: fn(input), format: '' };
+    };
+
     function App() {
-      const initParams = new URLSearchParams(window.location.search);
-
+      const [initial] = useState(initialState);
       const [pun] = useState(() => PUNS[Math.floor(Math.random() * PUNS.length)]);
-      const [input, setInput] = useState(() => {
-        const saved = localStorage.getItem('stringcodec-input');
-        return saved || initParams.get('text') || '';
-      });
+      const [input, setInput] = useState(initial.input);
       const [output, setOutput] = useState('');
-      const [mode, setMode] = useState(() => {
-        const saved = localStorage.getItem('stringcodec-mode');
-        return saved || initParams.get('mode') || 'encode';
-      });
-      const [encoding, setEncoding] = useState(() => {
-        const saved = localStorage.getItem('stringcodec-algo');
-        return saved || initParams.get('algo') || 'Base64';
-      });
+      const [mode, setMode] = useState(initial.mode);
+      const [encoding, setEncoding] = useState(initial.encoding);
 
-      // Persist to localStorage
       useEffect(() => {
-        localStorage.setItem('stringcodec-input', input);
+        sessionStorage.setItem(INPUT_KEY, input);
         localStorage.setItem('stringcodec-mode', mode);
         localStorage.setItem('stringcodec-algo', encoding);
       }, [input, mode, encoding]);
@@ -395,59 +446,31 @@
       const [toastMessage, setToastMessage] = useState('');
       const [detectedFormat, setDetectedFormat] = useState('');
 
-      const handleUpdate = () => {
+      // Recompute on every change. Hashing is async (Web Crypto), so a slow
+      // result for stale input must not overwrite a newer one.
+      useEffect(() => {
+        let current = true;
         if (!input) {
           setOutput('');
           setError('');
           setDetectedFormat('');
           return;
         }
-
-        try {
-          setError('');
-          let res = '';
-          setDetectedFormat('');
-          if (mode === 'encode') {
-            if (encoding === 'Base64') res = base64Encode(input);
-            else if (encoding === 'Base32') res = base32Encode(input);
-            else if (encoding === 'Base58') res = base58Encode(input);
-            else if (encoding === 'Hexadecimal') res = hexEncode(input);
-            else if (encoding === 'Binary') res = binEncode(input);
-            else if (encoding === 'UUEncode') res = uuEncode(input);
-            else if (encoding === 'ROT13') res = rot13(input);
-            else if (encoding === 'ROT26') res = input; // ROT26 is just the input
-            else if (encoding === 'URL') res = uriEncode(input);
-          } else if (mode === 'decode') {
-            if (encoding === 'Auto') {
-              const auto = autoDecode(input);
-              res = auto.decoded;
-              setDetectedFormat(auto.format);
-            }
-            else if (encoding === 'Base64') res = base64Decode(input);
-            else if (encoding === 'Base32') res = base32Decode(input);
-            else if (encoding === 'Base58') res = base58Decode(input);
-            else if (encoding === 'Hexadecimal') res = hexDecode(input);
-            else if (encoding === 'Binary') res = binDecode(input);
-            else if (encoding === 'UUEncode') res = uuDecode(input);
-            else if (encoding === 'ROT13') res = rot13(input);
-            else if (encoding === 'ROT26') res = input; // ROT26 is just the input
-            else if (encoding === 'URL') res = uriDecode(input);
-          } else if (mode === 'hash') {
-            if (encoding === 'MD5') res = CryptoJS.MD5(input).toString(CryptoJS.enc.Hex);
-            else if (encoding === 'SHA-1') res = CryptoJS.SHA1(input).toString(CryptoJS.enc.Hex);
-            else if (encoding === 'SHA-256') res = CryptoJS.SHA256(input).toString(CryptoJS.enc.Hex);
-            else if (encoding === 'SHA-512') res = CryptoJS.SHA512(input).toString(CryptoJS.enc.Hex);
-          }
-          setOutput(res);
-        } catch (e) {
-          setError(e.message);
-          setOutput('');
-        }
-      };
-
-      // Re-render when input or modes change
-      useEffect(() => {
-        handleUpdate();
+        transform(mode, encoding, input).then(
+          ({ output, format }) => {
+            if (!current) return;
+            setError('');
+            setOutput(output);
+            setDetectedFormat(format);
+          },
+          (e) => {
+            if (!current) return;
+            setError(e.message);
+            setOutput('');
+            setDetectedFormat('');
+          },
+        );
+        return () => { current = false; };
       }, [input, mode, encoding]);
 
       useEffect(() => {
@@ -487,13 +510,9 @@
 
       const copyLink = () => {
         try {
-          const urlObj = new URL(window.location.href);
-          urlObj.searchParams.set('mode', mode);
-          urlObj.searchParams.set('algo', encoding);
-          if (input) urlObj.searchParams.set('text', input);
-          else urlObj.searchParams.delete('text');
-          
-          const newUrl = urlObj.toString();
+          const params = new URLSearchParams({ mode, algo: encoding });
+          if (input) params.set('text', input);
+          const newUrl = `${window.location.href.split(/[?#]/)[0]}#${params}`;
           copyToClipboard(newUrl, setCopiedLink);
           try { window.history.replaceState({}, '', newUrl); } catch(e) { }
         } catch (err) {
@@ -527,27 +546,27 @@
       const homeHref = '../index.html';
 
       return (
-        <div className="h-screen flex flex-col font-sans text-gray-800 bg-gray-50">
+        html`<div className="h-screen flex flex-col font-sans text-gray-800 bg-gray-50">
 
-          {/* Navbar */}
+          <!-- Navbar -->
           <nav className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shrink-0 z-20">
             <div className="flex items-center gap-2">
-              <a href={homeHref} className="text-gray-400 hover:text-blue-600 transition-colors p-1" title="Back to Index">
-                <Icon name="Home" className="w-5 h-5" />
+              <a href=${homeHref} className="text-gray-400 hover:text-blue-600 transition-colors p-1" title="Back to Index">
+                <${Icon} name="Home" className="w-5 h-5" />
               </a>
               <div className="w-8 h-8 bg-blue-600 rounded flex items-center justify-center text-white font-bold text-sm ml-1">S</div>
               <div className="flex flex-col justify-center max-w-[200px] sm:max-w-md">
                 <span className="font-bold tracking-tight text-sm leading-tight">String<span className="text-blue-600">Codec</span></span>
-                <span className="text-[10px] text-gray-500 font-medium truncate" title={pun}>{pun}</span>
+                <span className="text-[10px] text-gray-500 font-medium truncate" title=${pun}>${pun}</span>
               </div>
             </div>
             <div className="flex items-center gap-4">
               <button
-                onClick={copyLink}
+                onClick=${copyLink}
                 className="text-xs font-medium text-gray-500 bg-gray-100 hover:bg-gray-200 px-2.5 py-1.5 rounded border border-gray-200 flex items-center gap-1.5 transition-colors"
               >
-                {copiedLink ? <Icon name="Check" className="w-4 h-4 text-emerald-600" /> : <Icon name="LinkIcon" className="w-4 h-4" />}
-                {copiedLink ? <span className="text-emerald-600">Copied!</span> : <span>Share Link</span>}
+                ${copiedLink ? html`<${Icon} name="Check" className="w-4 h-4 text-emerald-600" />` : html`<${Icon} name="LinkIcon" className="w-4 h-4" />`}
+                ${copiedLink ? html`<span className="text-emerald-600">Copied!</span>` : html`<span>Share Link</span>`}
               </button>
               <a href="https://github.com/sruffilli/sruffilli.github.io/blob/main/webutils/encoder-decoder.html" target="_blank" className="text-gray-400 hover:text-gray-900 transition-colors" title="GitHub Repository">
                 <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.05-.015-2.055-3.33 0-4.035-1.44-4.29-1.875-.15-.36-.75-1.44-1.29-1.725-.435-.24-1.065-.825-.015-.84 1.14-.015 1.95 1.05 2.22 1.485 1.05 1.785 2.76 1.275 3.45.975.105-.75.405-1.275.735-1.575-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.225 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405 1.02 0 2.04.135 3 .405 2.28-1.545 3.285-1.23 3.285-1.23.66 1.695.24 2.925.12 3.225.765.84 1.23 1.92 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.42.36.78 1.095.78 2.205 0 1.59-.015 2.865-.015 3.255 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" /></svg>
@@ -557,51 +576,51 @@
 
           <div className="flex flex-col md:flex-row flex-1 overflow-y-auto md:overflow-hidden">
 
-            {/* Sidebar */}
+            <!-- Sidebar -->
             <aside className="w-full md:w-80 bg-white border-b md:border-b-0 md:border-r border-gray-200 flex flex-col shrink-0 z-10 shadow-sm relative">
               <div className="flex-1 overflow-y-auto p-5 space-y-6">
 
-                {/* Mode Selection */}
+                <!-- Mode Selection -->
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                    <Icon name="RefreshCw" className="w-4 h-4" /> Mode
+                    <${Icon} name="RefreshCw" className="w-4 h-4" /> Mode
                   </div>
                   <div className="flex p-1 bg-gray-100 rounded-lg">
                     <button
-                      className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] font-bold rounded-md transition-all ${mode === 'encode' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
-                      onClick={() => { setMode('encode'); if (['MD5', 'SHA-1', 'SHA-256', 'SHA-512'].includes(encoding) || encoding === 'Auto') setEncoding('Base64'); }}
+                      className=${`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] font-bold rounded-md transition-all ${mode === 'encode' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
+                      onClick=${() => { setMode('encode'); if (['MD5', 'SHA-1', 'SHA-256', 'SHA-512'].includes(encoding) || encoding === 'Auto') setEncoding('Base64'); }}
                     >
                       Encode
                     </button>
                     <button
-                      className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] font-bold rounded-md transition-all ${mode === 'decode' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
-                      onClick={() => { setMode('decode'); if (['MD5', 'SHA-1', 'SHA-256', 'SHA-512'].includes(encoding)) setEncoding('Auto'); }}
+                      className=${`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] font-bold rounded-md transition-all ${mode === 'decode' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
+                      onClick=${() => { setMode('decode'); if (['MD5', 'SHA-1', 'SHA-256', 'SHA-512'].includes(encoding)) setEncoding('Auto'); }}
                     >
                       Decode
                     </button>
                     <button
-                      className={`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] font-bold rounded-md transition-all ${mode === 'hash' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
-                      onClick={() => { setMode('hash'); if (!['MD5', 'SHA-1', 'SHA-256', 'SHA-512'].includes(encoding)) setEncoding('SHA-256'); }}
+                      className=${`flex-1 flex items-center justify-center gap-1 px-2 py-1.5 text-[11px] font-bold rounded-md transition-all ${mode === 'hash' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-900'}`}
+                      onClick=${() => { setMode('hash'); if (!['MD5', 'SHA-1', 'SHA-256', 'SHA-512'].includes(encoding)) setEncoding('SHA-256'); }}
                     >
                       Hash
                     </button>
                   </div>
                 </div>
 
-                {/* Format Selection */}
+                <!-- Format Selection -->
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                    <Icon name="Code2" className="w-4 h-4" /> Format
+                    <${Icon} name="Code2" className="w-4 h-4" /> Format
                   </div>
                   <div className="relative">
                     <select
-                      value={encoding}
-                      onChange={(e) => setEncoding(e.target.value)}
+                      value=${encoding}
+                      onChange=${(e) => setEncoding(e.target.value)}
                       className="w-full bg-white border border-gray-300 text-gray-900 font-semibold text-sm rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 block px-3 py-2.5 outline-none appearance-none cursor-pointer hover:bg-gray-50"
                     >
-                      {mode === 'decode' && <option value="Auto">Auto-detect ✨</option>}
-                      {mode !== 'hash' && (
-                        <>
+                      ${mode === 'decode' && html`<option value="Auto">Auto-detect ✨</option>`}
+                      ${mode !== 'hash' && (
+                        html`
                           <option value="Base64">Base64</option>
                           <option value="Base32">Base32</option>
                           <option value="Base58">Base58</option>
@@ -611,15 +630,15 @@
                           <option value="ROT26">ROT26</option>
                           <option value="URL">URL Encoding</option>
                           <option value="UUEncode">UUEncode</option>
-                        </>
+                        `
                       )}
-                      {mode === 'hash' && (
-                        <>
+                      ${mode === 'hash' && (
+                        html`
                           <option value="MD5">MD5</option>
                           <option value="SHA-1">SHA-1</option>
                           <option value="SHA-256">SHA-256</option>
                           <option value="SHA-512">SHA-512</option>
-                        </>
+                        `
                       )}
                     </select>
                     <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
@@ -630,47 +649,47 @@
 
                 <hr className="border-gray-200" />
 
-                {/* Actions */}
+                <!-- Actions -->
                 <div className="space-y-3">
                   <div className="flex items-center gap-2 text-xs font-bold text-gray-400 uppercase tracking-wider">
-                    <Icon name="FileText" className="w-4 h-4" /> Actions
+                    <${Icon} name="FileText" className="w-4 h-4" /> Actions
                   </div>
                   <div className="grid grid-cols-2 gap-2">
                     <button
                       type="button"
-                      onClick={handleSwitchMode}
-                      disabled={mode === 'hash'}
-                      className={`px-3 py-2 font-medium rounded-lg text-sm shadow-sm transition-all flex items-center justify-center gap-1.5 ${mode === 'hash' ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-100' : 'bg-blue-600 hover:bg-blue-700 text-white border border-transparent'}`}
+                      onClick=${handleSwitchMode}
+                      disabled=${mode === 'hash'}
+                      className=${`px-3 py-2 font-medium rounded-lg text-sm shadow-sm transition-all flex items-center justify-center gap-1.5 ${mode === 'hash' ? 'bg-gray-100 text-gray-400 cursor-not-allowed border border-gray-100' : 'bg-blue-600 hover:bg-blue-700 text-white border border-transparent'}`}
                     >
-                      <Icon name="RefreshCw" className="w-4 h-4" />
+                      <${Icon} name="RefreshCw" className="w-4 h-4" />
                       Swap
                     </button>
                     <button
                       type="button"
-                      onClick={handleClear}
+                      onClick=${handleClear}
                       className="px-3 py-2 bg-gray-50 hover:bg-gray-100 text-gray-700 font-medium rounded-lg text-sm border border-gray-200 transition-all flex items-center justify-center gap-1.5"
                     >
-                      <Icon name="Trash2" className="w-4 h-4 text-gray-400" />
+                      <${Icon} name="Trash2" className="w-4 h-4 text-gray-400" />
                       Clear
                     </button>
                   </div>
                 </div>
 
-                {error && (
-                  <div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 text-red-600 text-xs text-left">
+                ${error && (
+                  html`<div className="p-3 bg-red-50 border border-red-200 rounded-lg flex items-start gap-2 text-red-600 text-xs text-left">
                     <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 mt-0.5 shrink-0" viewBox="0 0 20 20" fill="currentColor"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" /></svg>
-                    <span className="font-semibold">{error}</span>
-                  </div>
+                    <span className="font-semibold">${error}</span>
+                  </div>`
                 )}
 
               </div>
             </aside>
 
-            {/* Main Content */}
+            <!-- Main Content -->
             <main className="flex-1 bg-grid md:overflow-y-auto overflow-x-hidden flex flex-col relative p-4 md:p-6">
 
               <div className="flex flex-col h-full gap-5 mx-auto w-full max-w-4xl max-h-[900px]">
-                {/* Input Panel */}
+                <!-- Input Panel -->
                 <div className="flex-1 flex flex-col bg-white border border-gray-200 rounded-xl shadow-sm text-gray-800 focus-within:ring-2 ring-blue-500 ring-offset-2 ring-offset-gray-50 transition-shadow">
                   <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 rounded-t-xl shrink-0 flex items-center justify-between">
                     <div className="text-xs font-bold tracking-wider uppercase text-gray-500 flex items-center gap-2">
@@ -678,40 +697,40 @@
                     </div>
                   </div>
                   <textarea
-                    value={input}
-                    onChange={(e) => setInput(e.target.value)}
-                    placeholder={`Paste or type string to ${mode}...`}
+                    value=${input}
+                    onChange=${(e) => setInput(e.target.value)}
+                    placeholder=${`Paste or type string to ${mode}...`}
                     className="w-full flex-1 p-4 bg-transparent resize-none outline-none font-mono text-sm leading-relaxed"
                     spellCheck="false"
                   ></textarea>
                 </div>
 
-                {/* Output Panel */}
+                <!-- Output Panel -->
                 <div className="flex-1 flex flex-col bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden relative">
                   <div className="bg-gray-50 px-4 py-3 border-b border-gray-200 rounded-t-xl shrink-0 flex justify-between items-center">
                     <div className="text-xs font-bold tracking-wider uppercase text-gray-500 flex items-center gap-2">
-                      {mode === 'encode' ? 'Encoded Output' : mode === 'decode' ? (encoding === 'Auto' && detectedFormat && detectedFormat !== 'Auto' ? `Decoded Output (${detectedFormat})` : 'Decoded Output') : 'Hashed Output'}
+                      ${mode === 'encode' ? 'Encoded Output' : mode === 'decode' ? (encoding === 'Auto' && detectedFormat && detectedFormat !== 'Auto' ? `Decoded Output (${detectedFormat})` : 'Decoded Output') : 'Hashed Output'}
                     </div>
-                    {output && !error && (
-                      <button
-                        onClick={copyOutput}
+                    ${output && !error && (
+                      html`<button
+                        onClick=${copyOutput}
                         className="text-[11px] font-bold bg-white text-blue-600 hover:text-blue-800 px-2 py-1 rounded shadow-sm border border-gray-200 flex items-center gap-1 transition-colors"
                       >
-                        {copiedOutput ? (
-                          <><Icon name="Check" className="w-3 h-3 text-emerald-500" /> Copied</>
+                        ${copiedOutput ? (
+                          html`<${Icon} name="Check" className="w-3 h-3 text-emerald-500" /> Copied`
                         ) : (
-                          <><Icon name="FileText" className="w-3 h-3" /> Copy</>
+                          html`<${Icon} name="FileText" className="w-3 h-3" /> Copy`
                         )}
-                      </button>
+                      </button>`
                     )}
                   </div>
                   <div className="w-full flex-1 p-4 overflow-auto font-mono text-sm leading-relaxed select-text">
-                    {error ? (
-                      <div className="text-red-500 text-center mt-10 italic">Waiting for valid input...</div>
+                    ${error ? (
+                      html`<div className="text-red-500 text-center mt-10 italic">Waiting for valid input...</div>`
                     ) : !input ? (
-                      <div className="text-gray-400 text-center mt-10 italic font-sans">Result will appear here</div>
+                      html`<div className="text-gray-400 text-center mt-10 italic font-sans">Result will appear here</div>`
                     ) : (
-                      <span className="text-gray-900 break-all whitespace-pre-wrap">{output}</span>
+                      html`<span data-testid="output" className="text-gray-900 break-all whitespace-pre-wrap">${output}</span>`
                     )}
                   </div>
                 </div>
@@ -720,20 +739,20 @@
             </main>
           </div>
 
-          {/* Toast Message */}
-          {toastMessage && (
-            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium z-50 flex items-center gap-2">
+          <!-- Toast Message -->
+          ${toastMessage && (
+            html`<div className="fixed bottom-6 left-1/2 -translate-x-1/2 bg-gray-900 text-white px-4 py-2 rounded-lg shadow-lg text-sm font-medium z-50 flex items-center gap-2">
               <span className="text-xl">🤷‍♂️</span>
-              <span>{toastMessage}</span>
-            </div>
+              <span>${toastMessage}</span>
+            </div>`
           )}
 
-        </div>
+        </div>`
       );
     }
 
     const root = createRoot(document.getElementById('root'));
-    root.render(<App />);
+    root.render(html`<${App} />`);
   </script>
 </body>
 
