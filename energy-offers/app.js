@@ -27,7 +27,7 @@
     punScen: '12m', punCustom: 0.15,
     smc: 1000, psvScen: '12m', psvCustom: 0.6, reteFix: null, reteVar: null,
     type: 'all', regione: '', durata: 0, eligible: true, search: '',
-    factsKind: 'luce', punRange: '5y',
+    factsKind: 'luce', punRange: '5y', showDual: false,
   };
   let state = Object.assign({}, DEFAULTS);
   try { Object.assign(state, JSON.parse(localStorage.getItem(STORE) || '{}')); } catch (e) { /* stato corrotto: default */ }
@@ -77,7 +77,11 @@
     const scen = opts && opts.scenario;
     if (kind === 'luce') { pr = luceProfile(); idx = scen ? E.punIndex(block.params, scen, opts.custom) : E.punIndex(block.params, state.punScen, state.punCustom); }
     else { pr = gasProfile(); idx = scen ? E.psvIndex(block.params, scen, opts.custom) : E.psvIndex(block.params, state.psvScen, state.psvCustom); }
+    // Offerte vendibili solo insieme all'altra fornitura: fuori dalle classifiche
+    // singole salvo richiesta; il tab Insieme le chiede esplicitamente.
+    const withDual = !!(opts && opts.includeDual) || (!market && state.showDual);
     for (const o of block.offers) {
+      if (o.so === 0 && !withDual) continue;
       if (!market && state.type !== 'all' && o.t !== state.type) continue;
       if (!market && state.durata > 0 && o.t === 'F' && o.d > state.durata) continue;
       if (state.regione && o.r.length && !o.r.includes(state.regione)) continue;
@@ -98,6 +102,7 @@
       ? `<span class="badge F">Fissa${o.d > 0 ? ' ' + o.d + ' mesi' : ''}</span>`
       : `<span class="badge V">Variabile</span>`);
     if (kind === 'luce') b.push(`<span class="badge fasce">${o.m === 'mono' ? 'monoraria' : o.m === 'bi' ? 'bioraria' : 'multioraria'}</span>`);
+    if (o.so === 0) b.push(`<span class="badge dual" title="Si sottoscrive solo insieme all'altra fornitura dello stesso venditore">🔗 solo con ${kind === 'luce' ? 'il gas' : 'la luce'}</span>`);
     if (o.r.length) b.push(`<span class="badge" title="Offerta con restrizione territoriale">📍 ${o.r.length > 10 ? 'quasi tutte' : o.r.length + (o.r.length === 1 ? ' regione' : ' regioni')}</span>`);
     const fix = c.fissoVenditore;
     const susp = DATA[kind].params.suspicious_fix_annual;
@@ -231,7 +236,7 @@
   function syncControls() {
     document.body.dataset.kind = state.kind;
     for (const t of document.querySelectorAll('.tabs button')) t.setAttribute('aria-selected', String(t.dataset.kind === state.kind));
-    const tabIdx = { luce: 0, gas: 1, mercato: 2 }[state.kind] || 0;
+    const tabIdx = { luce: 0, gas: 1, dual: 2, mercato: 3 }[state.kind] || 0;
     document.querySelector('.tab-ink').style.transform = `translateX(${tabIdx * 100}%)`;
 
     // luce
@@ -299,11 +304,13 @@
     // slider compatto agganciato all'header (mobile)
     const ms = $('#miniSlider'), src = state.kind === 'gas' ? smc : kwh;
     ms.min = src.min; ms.max = src.max; ms.step = src.step; ms.value = src.value; setPct(ms);
-    $('#miniVal').textContent = state.kind === 'luce' ? `${nf0.format(state.kwh)} kWh` : `${nf0.format(state.smc)} Smc`;
+    $('#miniVal').textContent = state.kind === 'gas' ? `${nf0.format(state.smc)} Smc` : `${nf0.format(state.kwh)} kWh`;
 
     // riassunto del pannello impostazioni
     const typeTxt = { all: 'tutte', F: 'solo fisse', V: 'solo variabili' }[state.type];
-    const parts = state.kind === 'luce'
+    const parts = state.kind === 'dual'
+      ? [`${String(state.kw).replace('.', ',')} kW`, state.residente ? 'residente' : 'non residente', `PUN ${{ '12m': '12 mesi', last: 'ultimo mese', custom: nf3(state.punCustom) }[state.punScen]}`, `PSV ${{ '12m': '12 mesi', last: 'ultimo mese', custom: nf3(state.psvCustom) }[state.psvScen]}`, typeTxt]
+      : state.kind === 'luce'
       ? [`${String(state.kw).replace('.', ',')} kW`, state.residente ? 'residente' : 'non residente', `PUN ${{ '12m': '12 mesi', last: 'ultimo mese', custom: nf3(state.punCustom) }[state.punScen]}`, typeTxt]
       : [`PSV ${{ '12m': '12 mesi', last: 'ultimo mese', custom: nf3(state.psvCustom) }[state.psvScen]}`, typeTxt];
     if (state.durata) parts.push(`fisso ≤ ${state.durata} mesi`);
@@ -314,6 +321,7 @@
     $('#regione').value = state.regione;
     $('#durata').value = String(state.durata);
     $('#eligible').checked = state.eligible;
+    $('#showDual').checked = state.showDual;
     if (document.activeElement !== $('#search')) $('#search').value = state.search;
   }
 
@@ -330,6 +338,7 @@
         if (window.EnergyMarket) window.EnergyMarket.render();
         return;
       }
+      if (state.kind === 'dual') { renderDual(); return; }
       const res = compute();
       renderSummary(res);
       renderList(res);
@@ -361,6 +370,20 @@
     $('#regione').addEventListener('change', (e) => update({ regione: e.target.value }));
     $('#durata').addEventListener('change', (e) => update({ durata: +e.target.value }));
     $('#eligible').addEventListener('change', (e) => update({ eligible: e.target.checked }));
+    $('#showDual').addEventListener('change', (e) => update({ showDual: e.target.checked }));
+    $('#dualView').addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-k]'); if (!b) return;
+      const k = b.dataset.k, rows = k === 'luce' ? lastDual.L : lastDual.G;
+      const pos = rows.findIndex((r) => r.o.id === +b.dataset.id);
+      if (pos >= 0) openRow(k, rows[pos], pos, rows);
+    });
+    $('#sheetBody').addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-twin]'); if (!b) return;
+      const k = b.dataset.twin;
+      const rows = compute(k, { market: true, includeDual: true }).rows;
+      const pos = rows.findIndex((r) => r.o.id === +b.dataset.id);
+      if (pos >= 0) openRow(k, rows[pos], pos, rows);
+    });
     $('#search').addEventListener('input', (e) => update({ search: e.target.value }));
     $('#more').onclick = () => { shown += PAGE; update({}, { keepPage: true }); };
     const ol = $('#ranking');
@@ -387,6 +410,72 @@
     window.addEventListener('resize', miniToggle);
   }
   const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
+
+  /* ---------------- tab Insieme (luce + gas) ---------------- */
+
+  let lastDual = { L: [], G: [] };
+  function renderDual() {
+    const L = compute('luce', { includeDual: true }).rows;
+    const G = compute('gas', { includeDual: true }).rows;
+    lastDual = { L, G };
+    const res = E.dualRanking(L, G);
+    const box = $('#dualView');
+    if (!res.separate || !res.vendors.length) {
+      box.innerHTML = '<div class="card empty">Nessuna combinazione luce + gas con questi filtri.</div>';
+      return;
+    }
+    const sep = res.separate, top = res.vendors[0];
+    const pairBtn = (r, k) => `<button type="button" data-k="${k}" data-id="${r.o.id}"><span class="k">${k === 'luce' ? '⚡' : '🔥'}</span><span class="n">${esc(r.o.n)}</span><span class="s">${esc(r.o.v || '—')} · ${r.o.t === 'F' ? 'fissa' : 'variabile'}${r.o.so === 0 ? ' · solo in coppia' : ''}</span><span class="e">${eur(r.total)}</span></button>`;
+    const tipoLabel = { dual: '<span class="badge dual">offerta luce+gas</span>', 'dual?': '<span class="badge warn">abbinamento da verificare</span>', separate: '<span class="badge">due offerte singole</span>' };
+    const extra = top.total - sep.total;
+    const sameAsSep = sep.l.o.pv && sep.l.o.pv === sep.g.o.pv;
+    const vendWins = extra < -0.5;           // una coppia dello stesso venditore batte tutto
+    const best = vendWins ? top : sep;
+    let headline, extraTxt;
+    if (vendWins) {
+      headline = 'La combinazione migliore: un solo fornitore';
+      extraTxt = `${top.tipo === 'dual' ? "Un'offerta luce+gas" : 'Un solo fornitore'} batte di <b>${eur(-extra)}</b> l'anno la migliore combinazione di offerte singole (${esc(sep.l.o.v)} + ${esc(sep.g.o.v)}, ${eur(sep.total)}).`;
+    } else {
+      headline = sameAsSep ? 'La combinazione migliore (stesso fornitore)' : 'La combinazione migliore: due fornitori';
+      extraTxt = extra > 0.5
+        ? `Con un solo fornitore la coppia migliore è <b>${esc(top.v)}</b> a ${eur(top.total)}: <b>${eur(extra)} in più all'anno</b>, il prezzo della comodità di avere un solo fornitore.`
+        : `Il fornitore unico più conveniente, <b>${esc(top.v)}</b>, costa come la combinazione migliore: qui la comodità è gratis.`;
+    }
+    // Le coppie dual battono mai le offerte singole dello stesso venditore?
+    const gById = new Map(G.map((r) => [r.o.id, r]));
+    const bestSingle = (rows, pv) => rows.find((r) => r.o.pv === pv && r.o.so !== 0);
+    let nDual = 0, nCheaper = 0, maxGap = 0;
+    for (const l of L) {
+      if (l.o.so !== 0 || l.o.tw == null || !gById.has(l.o.tw)) continue;
+      const g = gById.get(l.o.tw), sl = bestSingle(L, l.o.pv), sg = bestSingle(G, l.o.pv);
+      if (!sl || !sg) continue;
+      nDual++;
+      const gap = l.total + g.total - (sl.total + sg.total);
+      if (gap < -0.5) nCheaper++; else maxGap = Math.max(maxGap, gap);
+    }
+    const dualVerdict = !nDual ? '' : nCheaper === 0
+      ? `<p class="dual-note"><b>Le offerte vendute solo in coppia non convengono:</b> per nessuna delle ${nDual} coppie luce+gas attivabili il prezzo è più basso di quello delle offerte singole dello stesso venditore (fino a ${eur(maxGap)} l'anno in più). Unica eccezione possibile: bonus e sconti dual, che i dati ARERA non quantificano.</p>`
+      : `<p class="dual-note">${nCheaper} delle ${nDual} coppie luce+gas costano meno delle offerte singole dello stesso venditore.</p>`;
+    const vend = res.vendors.slice(0, shown);
+    box.innerHTML =
+      `<section class="card dual-best">
+        <h2>${headline}</h2>
+        <div class="big">${eur(best.total)}<small>all'anno · ${eur(best.total / 12)}/mese</small></div>
+        <div class="pair">${pairBtn(best.l, 'luce')}${pairBtn(best.g, 'gas')}</div>
+        <p>${extraTxt}</p>
+      </section>
+      ${dualVerdict}
+      <p class="dual-note">Stesso fornitore per luce e gas: per ogni venditore la coppia più economica, fra le sue offerte singole e le offerte vendute solo in coppia. Sconti e bonus dual non sono inclusi.</p>
+      <ol class="vendor-list">${vend.map((v, i) => `<li class="vendor">
+        <div class="vendor-head"><span class="rank">${i + 1}</span><span class="vn">${esc(v.v || '—')}</span>
+          <span class="vt"><b>${eur(v.total)}</b><span>${v.total - best.total > 0.5 ? '+' + eur(v.total - best.total) : 'la migliore'}</span></span>
+          <span class="vm">${tipoLabel[v.tipo] || ''}</span></div>
+        <div class="pair">${pairBtn(v.l, 'luce')}${pairBtn(v.g, 'gas')}</div>
+      </li>`).join('')}</ol>` +
+      (res.vendors.length > shown ? `<button class="more" id="moreDual">Mostra altri venditori (${nf0.format(res.vendors.length - shown)})</button>` : '');
+    const md = $('#moreDual');
+    if (md) md.onclick = () => { shown += PAGE; update({}, { keepPage: true }); };
+  }
 
   /* ---------------- dettaglio ---------------- */
 
@@ -522,6 +611,12 @@
     if (o.t === 'F' && o.d > 0) notes.push(`Prezzo fisso per ${o.d} mesi. I dati ARERA non dicono se c'è una penale di uscita anticipata: cercala nella scheda sintetica, sezione "Modalità e oneri per il recesso".`);
     if (state.regione && o.r.length && !o.r.includes(state.regione)) notes.push('Non attivabile nella regione scelta.');
     if (notes.length) out.push(notes.map((n) => `<p class="note warn">${esc(n)}</p>`).join(''));
+    if (o.so === 0) {
+      const other = kind === 'luce' ? 'gas' : 'luce';
+      const twin = o.tw != null ? DATA[other].offers[o.tw] : null;
+      out.push(`<p class="note warn">Si sottoscrive solo insieme ${other === 'gas' ? 'al gas' : 'alla luce'} dello stesso venditore: da sola non è attivabile. ${twin ? `L'offerta gemella è <b>${esc(twin.n)}</b>.` : 'Nei dati ARERA la gemella non è indicata: chiedila al venditore.'} Il confronto della coppia è nel tab Insieme.</p>`
+        + (twin ? `<div class="actions"><button type="button" class="btn" data-twin="${other}" data-id="${twin.id}">Apri l'offerta ${other} gemella</button></div>` : ''));
+    }
 
     out.push(`<section class="d-sec"><h3>Prezzo</h3><table class="tbl">${priceRows(o, kind).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('')}
       <tr><td>Quota fissa venditore</td><td>${eur2(c.fissoVenditore)}/anno</td></tr></table></section>`);

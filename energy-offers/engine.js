@@ -118,5 +118,57 @@
     return { total, energia, fissoVenditore: offer.fx, rete, iva: total - variable - offer.fx };
   }
 
-  return { exciseExemptionKwh, systemLuce, punIndex, costLuce, gasWithIva, psvIndex, costGas };
+  /*
+   * Confronto luce+gas. lRows/gRows: righe {o, total} già filtrate e ordinate per
+   * total crescente, comprese le offerte vendibili solo in coppia (o.so === 0,
+   * con o.tw = id della gemella nell'altra fornitura, se individuata).
+   * Ritorna:
+   *  - separate: migliore luce + miglior gas sottoscrivibili da soli, anche da
+   *    venditori diversi (null se manca una delle due);
+   *  - vendors: per ogni venditore (o.pv) la coppia più economica, fra
+   *    'separate' (sua luce + suo gas venduti singolarmente), 'dual' (coppia
+   *    gemella) e 'dual?' (offerta solo in coppia senza gemella individuata,
+   *    abbinata alla migliore dell'altra fornitura dello stesso venditore).
+   */
+  function dualRanking(lRows, gRows) {
+    const firstSingle = (rows) => rows.find((r) => r.o.so !== 0) || null;
+    const bl = firstSingle(lRows), bg = firstSingle(gRows);
+    const separate = bl && bg ? { l: bl, g: bg, total: bl.total + bg.total } : null;
+    const group = (rows) => {
+      const m = new Map();
+      for (const r of rows) { const k = r.o.pv || r.o.v; if (!m.has(k)) m.set(k, []); m.get(k).push(r); }
+      return m;
+    };
+    const gl = group(lRows), gg = group(gRows);
+    const lById = new Map(lRows.map((r) => [r.o.id, r]));
+    const gById = new Map(gRows.map((r) => [r.o.id, r]));
+    const vendors = [];
+    for (const [pv, lv] of gl) {
+      const gv = gg.get(pv);
+      if (!gv) continue;
+      const cands = [];
+      const sl = firstSingle(lv), sg = firstSingle(gv);
+      if (sl && sg) cands.push({ l: sl, g: sg, tipo: 'separate' });
+      for (const l of lv) {
+        if (l.o.so !== 0) continue;
+        const twin = l.o.tw != null ? gById.get(l.o.tw) : null;
+        if (twin) cands.push({ l, g: twin, tipo: 'dual' });
+        else if (l.o.tw == null) cands.push({ l, g: gv[0], tipo: 'dual?' });
+      }
+      for (const g of gv) {
+        if (g.o.so !== 0) continue;
+        const twin = g.o.tw != null ? lById.get(g.o.tw) : null;
+        if (twin) cands.push({ l: twin, g, tipo: 'dual' });
+        else if (g.o.tw == null) cands.push({ l: lv[0], g, tipo: 'dual?' });
+      }
+      if (!cands.length) continue;
+      for (const c of cands) c.total = c.l.total + c.g.total;
+      cands.sort((a, b) => a.total - b.total);
+      vendors.push(Object.assign({ pv, v: cands[0].l.o.v || cands[0].g.o.v }, cands[0]));
+    }
+    vendors.sort((a, b) => a.total - b.total);
+    return { separate, vendors };
+  }
+
+  return { exciseExemptionKwh, systemLuce, punIndex, costLuce, gasWithIva, psvIndex, costGas, dualRanking };
 });

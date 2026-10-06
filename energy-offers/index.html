@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
   <title>Comparatore luce e gas</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
-  <link rel="stylesheet" href="style.css?v=20261006T100243">
+  <link rel="stylesheet" href="style.css?v=20261006T110826">
 </head>
 <body data-kind="luce">
   <header class="top">
@@ -24,6 +24,9 @@
       </button>
       <button role="tab" id="tab-gas" aria-selected="false" data-kind="gas">
         <span aria-hidden="true">🔥</span> Gas
+      </button>
+      <button role="tab" id="tab-dual" aria-selected="false" data-kind="dual">
+        <span aria-hidden="true">⚡🔥</span> Insieme
       </button>
       <button role="tab" id="tab-mercato" aria-selected="false" data-kind="mercato">
         <span aria-hidden="true">📈</span> Mercato
@@ -163,6 +166,11 @@
             </select>
           </label>
         </div>
+        <label class="switch not-dual">
+          <input type="checkbox" id="showDual">
+          <span class="track" aria-hidden="true"></span>
+          <span>Mostra anche le offerte vendute solo insieme all'altra fornitura</span>
+        </label>
         <label class="switch">
           <input type="checkbox" id="eligible">
           <span class="track" aria-hidden="true"></span>
@@ -181,6 +189,7 @@
         <div class="histo" id="histo" aria-hidden="true"></div>
       </div>
       <ol class="ranking" id="ranking"></ol>
+      <div class="dual-view" id="dualView"></div>
       <button class="more" id="more" hidden>Mostra altre offerte</button>
       <footer class="foot" id="foot"></footer>
     </section>
@@ -247,8 +256,8 @@
     <div class="sheet-body" id="sheetBody"></div>
   </article>
 
-  <script src="engine.js?v=20261006T100243"></script>
-  <script src="app.js?v=20261006T100243"></script>
-  <script src="market.js?v=20261006T100243"></script>
+  <script src="engine.js?v=20261006T110826"></script>
+  <script src="app.js?v=20261006T110826"></script>
+  <script src="market.js?v=20261006T110826"></script>
 </body>
 </html>
