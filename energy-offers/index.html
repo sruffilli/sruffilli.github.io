@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
   <title>Comparatore luce e gas</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
-  <link rel="stylesheet" href="style.css?v=20261006T085556">
+  <link rel="stylesheet" href="style.css?v=20261006T100243">
 </head>
 <body data-kind="luce">
   <header class="top">
@@ -103,6 +103,14 @@
         <input id="f2" class="slider small" type="range" min="0" max="100" step="1">
         <p class="mini-label">F3 · notti, domeniche e festivi <b id="f3Val"></b></p>
         <div class="chips" id="fascePresets"></div>
+        <p class="note pv-note" id="pvNote" hidden>
+          Con il fotovoltaico conta solo l'energia <b>prelevata dalla rete</b>: in alto metti i kWh prelevati
+          che trovi in bolletta, non il consumo totale della casa. Lo split 18/28/54 è misurato su un impianto
+          da 6,5 kWp senza batteria: di giorno i pannelli coprono quasi tutto, dalla rete si preleva la sera
+          e la notte. La sera (F2) oggi è la fascia più cara e la notte (F3) la più economica: con questo profilo
+          le due cose si compensano, e un'offerta multioraria costa più o meno come una monoraria. La classifica
+          ne tiene già conto. L'energia immessa e lo scambio sul posto non dipendono dal venditore.
+        </p>
       </details>
 
       <section class="card only-luce">
@@ -239,8 +247,8 @@
     <div class="sheet-body" id="sheetBody"></div>
   </article>
 
-  <script src="engine.js?v=20261006T085556"></script>
-  <script src="app.js?v=20261006T085556"></script>
-  <script src="market.js?v=20261006T085556"></script>
+  <script src="engine.js?v=20261006T100243"></script>
+  <script src="app.js?v=20261006T100243"></script>
+  <script src="market.js?v=20261006T100243"></script>
 </body>
 </html>

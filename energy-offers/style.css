@@ -484,3 +484,6 @@ body[data-kind="mercato"] .logo::after { content: "📈"; }
   .facts { grid-template-columns: repeat(3, 1fr); }
   .market { padding: 22px 28px 60px; }
 }
+
+.pv-note { margin-top: 10px; }
+.pv-note b { color: var(--text); }

@@ -253,9 +253,14 @@
     const bar = document.querySelectorAll('.fasce-bar span');
     bar[0].style.flexBasis = f1 + '%'; bar[1].style.flexBasis = f2 + '%'; bar[2].style.flexBasis = f3 + '%';
     chips($('#fascePresets'), [
-      { v: '33-31', label: 'Tipica' }, { v: '20-30', label: 'Fuori casa di giorno' },
-      { v: '40-30', label: 'Smart working' }, { v: '25-29', label: 'Sera e weekend' },
+      { v: '33-31', label: 'Tipica' }, { v: '18-28', label: '☀️ Con fotovoltaico' },
+      { v: '20-30', label: 'Fuori casa di giorno' }, { v: '40-30', label: 'Smart working' },
     ], `${f1}-${f2}`, (v) => { const [a, b] = v.split('-').map(Number); update({ f1: a, f2: b }); });
+    // Profilo misurato su 11 bollette di una casa con 6,56 kWp senza batteria:
+    // i pannelli coprono il giorno feriale, dalla rete si preleva sera e notte.
+    const pv = f1 === 18 && f2 === 28;
+    $('#pvNote').hidden = !pv;
+    if (pv) $('#kwhHint').textContent = `≈ ${nf0.format(state.kwh / 12)} kWh al mese prelevati dalla rete`;
 
     if (DATA) {
       const lp = DATA.luce.params;
