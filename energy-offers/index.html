@@ -1,0 +1,188 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
+  <title>Comparatore luce e gas</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
+  <link rel="stylesheet" href="style.css?v=20261006T083059">
+</head>
+<body data-kind="luce">
+  <header class="top">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"></span>
+      <div>
+        <h1>Comparatore luce e gas</h1>
+        <p class="sub" id="dataInfo">Caricamento offerte…</p>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Fornitura">
+      <button role="tab" id="tab-luce" aria-selected="true" data-kind="luce">
+        <span aria-hidden="true">⚡</span> Luce
+      </button>
+      <button role="tab" id="tab-gas" aria-selected="false" data-kind="gas">
+        <span aria-hidden="true">🔥</span> Gas
+      </button>
+      <span class="tab-ink" aria-hidden="true"></span>
+    </nav>
+    <div class="mini" id="mini" aria-hidden="true">
+      <span class="mini-val" id="miniVal"></span>
+      <input id="miniSlider" class="slider small" type="range" tabindex="-1" aria-label="Consumo annuo">
+    </div>
+  </header>
+
+  <main class="layout">
+    <aside class="controls" id="controls" aria-label="Il tuo profilo di consumo">
+
+      <!-- ===== LUCE ===== -->
+      <section class="card hero only-luce">
+        <label class="eyebrow" for="kwh">Consumo annuo</label>
+        <div class="big-value">
+          <input id="kwhNum" class="num" type="number" inputmode="numeric" min="100" max="20000" step="10" aria-label="kWh annui">
+          <span class="unit">kWh/anno</span>
+        </div>
+        <p class="hint" id="kwhHint"></p>
+        <input id="kwh" class="slider" type="range" min="300" max="8000" step="50">
+        <div class="chips" id="kwhPresets"></div>
+      </section>
+
+      <section class="card hero only-gas">
+        <label class="eyebrow" for="smc">Consumo annuo</label>
+        <div class="big-value">
+          <input id="smcNum" class="num" type="number" inputmode="numeric" min="10" max="10000" step="5" aria-label="Smc annui">
+          <span class="unit">Smc/anno</span>
+        </div>
+        <p class="hint" id="smcHint"></p>
+        <input id="smc" class="slider" type="range" min="50" max="3000" step="10">
+        <div class="chips" id="smcPresets"></div>
+      </section>
+
+      <section class="card where">
+        <label class="where-row">
+          <span class="eyebrow">Dove abiti</span>
+          <select id="regione"></select>
+        </label>
+      </section>
+
+      <details class="settings" id="settings">
+        <summary class="card settings-sum">
+          <span class="eyebrow">Profilo e filtri</span>
+          <span class="settings-txt" id="settingsTxt"></span>
+        </summary>
+        <div class="settings-body">
+
+      <section class="card only-luce">
+        <div class="row-between">
+          <span class="eyebrow">Potenza impegnata</span>
+          <label class="switch">
+            <input type="checkbox" id="residente">
+            <span class="track" aria-hidden="true"></span>
+            <span>Residente</span>
+          </label>
+        </div>
+        <div class="chips" id="kwChips"></div>
+      </section>
+
+      <details class="card only-luce" id="fasceBox">
+        <summary>
+          <span class="eyebrow">Fasce orarie</span>
+          <span class="summary-val" id="fasceSummary"></span>
+        </summary>
+        <p class="hint">Serve solo per le offerte bi e multiorarie. Le trovi in bolletta: kWh in F1, F2 e F3.</p>
+        <div class="fasce-bar" aria-hidden="true">
+          <span class="f1"></span><span class="f2"></span><span class="f3"></span>
+        </div>
+        <label class="mini-label" for="f1">F1 · lun-ven 8-19 <b id="f1Val"></b></label>
+        <input id="f1" class="slider small" type="range" min="0" max="100" step="1">
+        <label class="mini-label" for="f2">F2 · lun-ven 7-8 e 19-23, sabato <b id="f2Val"></b></label>
+        <input id="f2" class="slider small" type="range" min="0" max="100" step="1">
+        <p class="mini-label">F3 · notti, domeniche e festivi <b id="f3Val"></b></p>
+        <div class="chips" id="fascePresets"></div>
+      </details>
+
+      <section class="card only-luce">
+        <span class="eyebrow">Prezzo all'ingrosso per le variabili (PUN)</span>
+        <div class="seg" id="punSeg" role="radiogroup"></div>
+        <div class="custom-index" id="punCustomBox">
+          <input id="punCustom" class="slider small" type="range" min="0.05" max="0.40" step="0.005">
+          <p class="hint" id="punCustomVal"></p>
+        </div>
+      </section>
+
+
+      <section class="card only-gas">
+        <span class="eyebrow">Prezzo all'ingrosso per le variabili (PSV)</span>
+        <div class="seg" id="psvSeg" role="radiogroup"></div>
+        <div class="custom-index" id="psvCustomBox">
+          <input id="psvCustom" class="slider small" type="range" min="0.20" max="1.20" step="0.01">
+          <p class="hint" id="psvCustomVal"></p>
+        </div>
+      </section>
+
+      <details class="card only-gas">
+        <summary>
+          <span class="eyebrow">Rete, oneri e accise</span>
+          <span class="summary-val" id="reteSummary"></span>
+        </summary>
+        <p class="hint">Uguali per ogni venditore: cambiano il totale ma non la classifica. I valori di partenza sono medie nazionali; per un totale preciso prendili dalla bolletta.</p>
+        <div class="field-row">
+          <label>Quota fissa <input id="reteFix" type="number" step="0.01" min="0" inputmode="decimal"> €/mese</label>
+          <label>Quota variabile <input id="reteVar" type="number" step="0.001" min="0" inputmode="decimal"> €/Smc</label>
+        </div>
+      </details>
+
+      <!-- ===== FILTRI (comuni) ===== -->
+      <section class="card filters">
+        <span class="eyebrow">Filtri</span>
+        <div class="seg" id="typeSeg" role="radiogroup">
+          <button data-v="all" role="radio">Tutte</button>
+          <button data-v="F" role="radio">Fisse</button>
+          <button data-v="V" role="radio">Variabili</button>
+        </div>
+        <div class="field-row">
+          <label class="grow">Durata del fisso
+            <select id="durata">
+              <option value="0">qualsiasi</option>
+              <option value="12">fino a 12 mesi</option>
+              <option value="24">fino a 24 mesi</option>
+              <option value="36">fino a 36 mesi</option>
+              <option value="60">fino a 60 mesi</option>
+            </select>
+          </label>
+        </div>
+        <label class="switch">
+          <input type="checkbox" id="eligible">
+          <span class="track" aria-hidden="true"></span>
+          <span>Solo offerte attivabili con questo profilo</span>
+        </label>
+        <input id="search" class="search" type="search" placeholder="Cerca offerta o venditore" autocomplete="off">
+      </section>
+        </div>
+      </details>
+    </aside>
+
+    <section class="results" aria-live="polite">
+      <div class="summary card" id="summary">
+        <div class="stats" id="stats"></div>
+        <p class="nudge" id="nudge" hidden></p>
+        <div class="histo" id="histo" aria-hidden="true"></div>
+      </div>
+      <ol class="ranking" id="ranking"></ol>
+      <button class="more" id="more" hidden>Mostra altre offerte</button>
+      <footer class="foot" id="foot"></footer>
+    </section>
+  </main>
+
+  <div class="sheet-backdrop" id="backdrop" hidden></div>
+  <article class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sheetTitle" hidden>
+    <div class="grab" aria-hidden="true"></div>
+    <button class="close" id="sheetClose" aria-label="Chiudi">✕</button>
+    <div class="sheet-body" id="sheetBody"></div>
+  </article>
+
+  <script src="engine.js?v=20261006T083059"></script>
+  <script src="app.js?v=20261006T083059"></script>
+</body>
+</html>
