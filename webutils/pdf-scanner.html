@@ -117,6 +117,7 @@
             <div class="flex-1 overflow-y-auto p-5 space-y-6">
 
                 <!-- Upload Section -->
+                <div>
                 <div class="relative group">
                     <input type="file" id="fileInput" accept="application/pdf"
                         class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
@@ -129,9 +130,22 @@
                                     d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path>
                             </svg>
                         </div>
-                        <p class="text-sm font-medium text-gray-900">Upload PDF</p>
+                        <p class="text-sm font-medium text-gray-900" id="uploadLabel">Upload PDF</p>
                         <p class="text-xs text-gray-500 mt-1">Local processing only</p>
                     </div>
+                </div>
+                <div id="appendControls" class="relative group mt-2 hidden">
+                    <input type="file" id="appendInput" accept="application/pdf" multiple
+                        class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10">
+                    <div
+                        class="border-2 border-dashed border-gray-300 rounded-xl p-3 text-center transition-all group-hover:border-brand-500 group-hover:bg-blue-50 bg-white">
+                        <p class="text-xs font-medium text-gray-900 flex justify-center items-center gap-2">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Append PDF
+                        </p>
+                        <p class="text-[10px] text-gray-500 mt-1">Adds pages at the end</p>
+                    </div>
+                </div>
                 </div>
 
                 <!-- Signature Upload -->
@@ -514,7 +528,8 @@
 
         // --- Application State ---
         const state = {
-            pdfDoc: null,
+            docs: [],  // open pdf.js documents, in the order they were added
+            pages: [], // one { doc, index } per output page, across all docs
             currentPage: 1,
             activePage: null,
             signatures: [],
@@ -538,6 +553,9 @@
         // --- DOM Elements ---
         const els = {
             input: document.getElementById('fileInput'),
+            uploadLabel: document.getElementById('uploadLabel'),
+            appendInput: document.getElementById('appendInput'),
+            appendControls: document.getElementById('appendControls'),
             previewWrapper: document.getElementById('previewWrapper'),
             emptyState: document.getElementById('emptyState'),
             controls: document.getElementById('controls'),
@@ -579,6 +597,7 @@
 
         // --- Event Listeners ---
         els.input.addEventListener('change', loadPDF);
+        els.appendInput.addEventListener('change', appendPDF);
         els.downloadBtn.addEventListener('click', downloadPDF);
         els.sigInput.addEventListener('change', loadSignature);
         els.removeSigBtn.addEventListener('click', deleteSignature);
@@ -652,7 +671,7 @@
             if (state.currentPage > 1) renderPage(state.currentPage - 1); 
         });
         els.nextPageBtn.addEventListener('click', () => { 
-            if (state.pdfDoc && state.currentPage < state.pdfDoc.numPages) renderPage(state.currentPage + 1); 
+            if (state.currentPage < pageCount()) renderPage(state.currentPage + 1);
         });
 
         function updateZoom(newZoom) {
@@ -1040,6 +1059,55 @@
             return canvas;
         }
 
+        const pageCount = () => state.pages.length;
+
+        function getPage(pageNum) {
+            const { doc, index } = state.pages[pageNum - 1];
+            return doc.getPage(index);
+        }
+
+        function updatePageCountBadge() {
+            els.pageCountBadge.innerText = pageCount() ? `${pageCount()} Pages` : "No file";
+        }
+
+        // Opens every file in order; returns the documents that opened, and
+        // reports the ones that did not. Nothing in state changes here.
+        async function openPDFs(files) {
+            const docs = [];
+            for (const file of files) {
+                try {
+                    const data = new Uint8Array(await file.arrayBuffer());
+                    docs.push(await pdfjsLib.getDocument({ data }).promise);
+                } catch (err) {
+                    console.warn('Failed to open PDF:', err);
+                    alert(err && err.name === 'PasswordException'
+                        ? `"${file.name}" is password-protected. Remove the password and try again.`
+                        : `Could not open "${file.name}": it does not look like a valid PDF.`);
+                }
+            }
+            return docs;
+        }
+
+        function addDocs(docs) {
+            for (const doc of docs) {
+                state.docs.push(doc);
+                for (let i = 1; i <= doc.numPages; i++) state.pages.push({ doc, index: i });
+            }
+        }
+
+        async function appendPDF(e) {
+            const files = [...e.target.files];
+            e.target.value = ''; // allow re-selecting the same file
+            if (!files.length || !pageCount()) return;
+
+            els.pageCountBadge.innerText = "Loading...";
+            const docs = await openPDFs(files);
+            const firstNew = pageCount() + 1;
+            addDocs(docs);
+            updatePageCountBadge();
+            if (docs.length) await renderPage(firstNew);
+        }
+
         async function loadPDF(e) {
             const file = e.target.files[0];
             if (!file) return;
@@ -1047,21 +1115,16 @@
 
             els.pageCountBadge.innerText = "Loading...";
 
-            let pdfDoc;
-            try {
-                const data = new Uint8Array(await file.arrayBuffer());
-                pdfDoc = await pdfjsLib.getDocument({ data }).promise;
-            } catch (err) {
-                console.warn('Failed to open PDF:', err);
-                els.pageCountBadge.innerText = state.pdfDoc ? `${state.pdfDoc.numPages} Pages` : "No file";
-                alert(err && err.name === 'PasswordException'
-                    ? "This PDF is password-protected. Remove the password and try again."
-                    : `Could not open "${file.name}": it does not look like a valid PDF.`);
+            const docs = await openPDFs([file]);
+            if (!docs.length) {
+                updatePageCountBadge();
                 return;
             }
 
-            if (state.pdfDoc) state.pdfDoc.destroy();
-            state.pdfDoc = pdfDoc;
+            state.docs.forEach(doc => doc.destroy());
+            state.docs = [];
+            state.pages = [];
+            addDocs(docs);
             state.signatures = [];
 
             els.emptyState.classList.add('hidden');
@@ -1070,24 +1133,26 @@
             els.zoomControls.classList.remove('hidden');
             els.previewControls.classList.remove('hidden');
             els.downloadBtn.disabled = false;
+            els.appendControls.classList.remove('hidden');
+            els.uploadLabel.innerText = 'Replace PDF';
 
             setMode('scanify');
             els.editModeBtn.classList.remove('hidden');
 
-            els.pageCountBadge.innerText = `${state.pdfDoc.numPages} Pages`;
+            updatePageCountBadge();
 
             await renderPage(1);
         }
 
         async function renderPage(pageNum) {
             state.currentPage = pageNum;
-            els.pageIndicator.innerText = `Page ${pageNum} of ${state.pdfDoc.numPages}`;
+            els.pageIndicator.innerText = `Page ${pageNum} of ${pageCount()}`;
             els.prevPageBtn.disabled = pageNum === 1;
-            els.nextPageBtn.disabled = pageNum === state.pdfDoc.numPages;
+            els.nextPageBtn.disabled = pageNum === pageCount();
 
             els.previewWrapper.innerHTML = '';
             
-            const page = await state.pdfDoc.getPage(pageNum);
+            const page = await getPage(pageNum);
             
             const cssViewport = page.getViewport({ scale: 1.0 });
             const renderViewport = page.getViewport({ scale: PREVIEW_SCALE });
@@ -1346,7 +1411,7 @@
         }
 
         async function downloadPDF() {
-            if (!state.pdfDoc) return;
+            if (!pageCount()) return;
 
             els.statusArea.classList.remove('hidden');
             els.downloadBtn.disabled = true;
@@ -1354,7 +1419,7 @@
 
             // PDF points are 1/72 inch.
             const scale = parseInt(els.dpiSelect.value, 10) / 72;
-            const total = state.pdfDoc.numPages;
+            const total = pageCount();
             let pdf = null;
 
             // A plain loop, not requestAnimationFrame: rAF is paused in
@@ -1363,7 +1428,7 @@
                 for (let pageNum = 1; pageNum <= total; pageNum++) {
                     updateStatus(pageNum, total);
 
-                    const pageData = await state.pdfDoc.getPage(pageNum);
+                    const pageData = await getPage(pageNum);
                     // Output page keeps the source page's size and orientation.
                     const size = pageData.getViewport({ scale: 1 });
                     const viewport = pageData.getViewport({ scale });
