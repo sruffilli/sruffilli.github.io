@@ -104,6 +104,11 @@
     if (kind === 'luce') b.push(`<span class="badge fasce">${o.m === 'mono' ? 'monoraria' : o.m === 'bi' ? 'bioraria' : 'multioraria'}</span>`);
     if (o.so === 0) b.push(`<span class="badge dual" title="Si sottoscrive solo insieme all'altra fornitura dello stesso venditore">🔗 solo con ${kind === 'luce' ? 'il gas' : 'la luce'}</span>`);
     if (o.r.length) b.push(`<span class="badge" title="Offerta con restrizione territoriale">📍 ${o.r.length > 10 ? 'quasi tutte' : o.r.length + (o.r.length === 1 ? ' regione' : ' regioni')}</span>`);
+    // <PROVINCIA>/<COMUNE> restringono oltre la regione (o anche senza alcuna
+    // <REGIONE>, il caso che il badge sopra non vedeva affatto): nessun
+    // selettore per provincia/comune qui, solo l'avviso — stesso limite del
+    // --regione lato CLI (apps/energy-monitor/AGENTS.md).
+    else if ((o.pr && o.pr.length) || (o.cm && o.cm.length)) b.push(`<span class="badge" title="Offerta ristretta a provincia/comune specifici, non filtrabile qui">📍 zona ristretta</span>`);
     const fix = c.fissoVenditore;
     const susp = DATA[kind].params.suspicious_fix_annual;
     if (fix > 0 && fix < susp) b.push(`<span class="badge warn" title="Quota fissa sospetta">⚠ quota fissa</span>`);
@@ -204,6 +209,12 @@
       nudge.innerHTML = `La prima è attivabile solo in ${esc(where)}. <button type="button" id="nudgeBtn">Scegli dove abiti</button> per vedere solo le offerte valide per te.`;
       nudge.hidden = false;
       $('#nudgeBtn').onclick = () => { const s = $('#regione'); s.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => s.focus(), 350); };
+    } else if ((top.pr && top.pr.length) || (top.cm && top.cm.length)) {
+      // Stesso avviso della regione, ma senza bottone: qui non c'è un
+      // selettore provincia/comune da aprire, solo l'avviso che la prima
+      // potrebbe non essere attivabile dove abiti.
+      nudge.innerHTML = `La prima è limitata a una provincia/comune specifici (non filtrabile qui): verifica la scheda prima di attivarla.`;
+      nudge.hidden = false;
     } else nudge.hidden = true;
     st.title = `Migliore: ${nf3(totals[0] / unit)} €/${state.kind === 'luce' ? 'kWh' : 'Smc'} tutto compreso`;
     // istogramma 2°-98° percentile
@@ -610,6 +621,7 @@
     }
     if (o.t === 'F' && o.d > 0) notes.push(`Prezzo fisso per ${o.d} mesi. I dati ARERA non dicono se c'è una penale di uscita anticipata: cercala nella scheda sintetica, sezione "Modalità e oneri per il recesso".`);
     if (state.regione && o.r.length && !o.r.includes(state.regione)) notes.push('Non attivabile nella regione scelta.');
+    if ((o.pr && o.pr.length) || (o.cm && o.cm.length)) notes.push('Offerta ristretta a una provincia/comune specifici (vedi "Dove" sotto): nessun filtro qui, verifica che il tuo comune sia incluso prima di attivarla.');
     if (notes.length) out.push(notes.map((n) => `<p class="note warn">${esc(n)}</p>`).join(''));
     if (o.so === 0) {
       const other = kind === 'luce' ? 'gas' : 'luce';
@@ -633,7 +645,11 @@
       out.push(`<section class="d-sec"><h3>Condizioni contrattuali</h3>${d.condizioni.map((x) =>
         `<p class="desc"><b>${esc(x.tipo)}${x.lim ? ' · limitante' : ''}</b><br>${esc(x.desc || '')}</p>`).join('')}</section>`);
     }
-    const regs = o.r.length ? o.r.map((r) => DATA.regioni[r] || r).join(', ') : 'tutta Italia';
+    let regs = o.r.length ? o.r.map((r) => DATA.regioni[r] || r).join(', ') : 'tutta Italia';
+    // <PROVINCIA>/<COMUNE> (cod. ISTAT, nessuna tabella nomi qui) si sommano
+    // alla regione: codici grezzi, come per --scheda in offer_search.py.
+    if (o.pr && o.pr.length) regs += ` · solo provincia ${o.pr.join(', ')}`;
+    if (o.cm && o.cm.length) regs += ` · solo comune ${o.cm.join(', ')}`;
     const lim = [];
     if (o.cmin > 0 || o.cmax > 0) lim.push(`consumo ${o.cmin ? 'da ' + nf0.format(o.cmin) : ''}${o.cmax ? ' fino a ' + nf0.format(o.cmax) : ''} ${kind === 'luce' ? 'kWh' : 'Smc'}/anno`);
     if (o.pmin > 0 || o.pmax > 0) lim.push(`potenza ${o.pmin ? 'da ' + o.pmin : ''}${o.pmax ? ' fino a ' + o.pmax : ''} kW`);
