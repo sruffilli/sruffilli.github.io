@@ -47,6 +47,15 @@
 
   /* ---------------- calcolo ---------------- */
 
+  // Soglia delle fisse implausibili (studio 2022-2026, time_machine.drop_implausible):
+  // materia sotto metà del minimo fra media 12 mesi e ultimo mese dell'indice
+  // (luce × perdite). Gli snapshot storici la portano già calcolata.
+  function oddFloor(kind, P) {
+    if (P.implausible_floor) return P.implausible_floor * (P.implausible_ratio || 0.5);
+    if (kind === 'luce') return 0.5 * Math.min(P.pun_12m.mono, P.pun_last.mono) * P.lambda;
+    return 0.5 * Math.min(P.psv_12m, P.psv_last.value);
+  }
+
   // Modo effettivo: "poi" solo se lo snapshot ha il senno di poi.
   const tmPoi = (kind) => TM.on && TM.mode === 'poi' && !!(DATA[kind] && DATA[kind].params_hindsight);
   const idxOf = (kind, P) => (kind === 'luce' ? E.punIndex(P, '12m') : E.psvIndex(P, '12m'));
@@ -102,7 +111,7 @@
     const withDual = !!(opts && opts.includeDual) || (!market && state.showDual);
     // Macchina del tempo: fisse con la materia sotto metà dell'ingrosso di allora
     // (una sola componente pubblicata come prezzo), come time_machine.py.
-    const floor = TM.on ? (block.params.implausible_floor || 0) * (block.params.implausible_ratio || 0) : 0;
+    const floor = oddFloor(kind, block.params);
     let hiddenOdd = 0, odd = 0;
     for (const o of block.offers) {
       if (o.so === 0 && !withDual) continue;
@@ -114,7 +123,8 @@
       const c = costOf(kind, o, P, pr, idx);
       const row = { o, c, total: c.total };
       if (floor && o.t === 'F' && c.energia / (kind === 'luce' ? pr.kwh : pr.smc) < floor) {
-        if (!TM.showOdd) { hiddenOdd++; continue; }
+        // nella macchina del tempo nascoste (bottone "Mostra"), oggi solo marcate
+        if (TM.on && !TM.showOdd) { hiddenOdd++; continue; }
         row.odd = true; odd++;
       }
       if (Palt) row.alt = costOf(kind, o, Palt, pr, idxAlt).total;   // l'altro modo, per il delta
@@ -129,8 +139,12 @@
   function badges(o, c, kind) {
     const b = [];
     b.push(o.t === 'F'
-      ? `<span class="badge F">Fissa${o.d > 0 ? ' ' + o.d + ' mesi' : ''}</span>`
-      : `<span class="badge V">Variabile</span>`);
+      ? `<span class="badge F" title="${esc(o.d > 12
+          ? `Prezzo bloccato per ${o.d} mesi. Nei dati 2022-2026 i fissi oltre i 12 mesi hanno battuto il rinnovo annuale solo se firmati prima di un rialzo.`
+          : 'Prezzo dell\'energia bloccato per la durata indicata. Oneri, rete e imposte cambiano comunque ogni trimestre.')}">Fissa${o.d > 0 ? ' ' + o.d + ' mesi' : ''}</span>`
+      : `<span class="badge V" title="Prezzo legato all'indice all'ingrosso del mese (PUN o PSV) più uno spread fisso">Variabile</span>`);
+    const left = daysLeft(o);
+    if (left != null && left <= 7) b.push(`<span class="badge warn" title="Si può sottoscrivere fino al ${esc(o.al.split('-').reverse().join('/'))}. Nel 2026 più della metà dei prezzi fissi è cambiata entro il mese, quasi sempre al rialzo: confronta e firma lo stesso giorno.">⏳ ${left === 0 ? 'scade oggi' : left === 1 ? 'ancora 1 giorno' : `ancora ${left} giorni`}</span>`);
     if (kind === 'luce') b.push(`<span class="badge fasce">${o.m === 'mono' ? 'monoraria' : o.m === 'bi' ? 'bioraria' : 'multioraria'}</span>`);
     if (o.so === 0) b.push(`<span class="badge dual" title="Si sottoscrive solo insieme all'altra fornitura dello stesso venditore">🔗 solo con ${kind === 'luce' ? 'il gas' : 'la luce'}</span>`);
     if (o.r.length) b.push(`<span class="badge" title="Offerta con restrizione territoriale">📍 ${o.r.length > 10 ? 'quasi tutte' : o.r.length + (o.r.length === 1 ? ' regione' : ' regioni')}</span>`);
@@ -141,9 +155,17 @@
     else if ((o.pr && o.pr.length) || (o.cm && o.cm.length)) b.push(`<span class="badge" title="Offerta ristretta a provincia/comune specifici, non filtrabile qui">📍 zona ristretta</span>`);
     const fix = c.fissoVenditore;
     const susp = DATA[kind].params.suspicious_fix_annual;
-    if (fix > 0 && fix < susp) b.push(`<span class="badge warn" title="Quota fissa sospetta">⚠ quota fissa</span>`);
+    if (fix > 0 && fix < susp) b.push(`<span class="badge warn" title="Quota fissa sospetta: a volte è un errore di unità (€/mese scritto come €/anno)">⚠ quota fissa</span>`);
     if (o.t === 'F' && o.d > 0) b.push(`<span class="badge" title="Penale di recesso non pubblicata nei dati ARERA">❓ recesso</span>`);
     return b.join('');
+  }
+
+  // Giorni alla scadenza del listino (DATA_FINE): solo per le offerte di oggi.
+  function daysLeft(o) {
+    if (TM.on || !o.al) return null;
+    const end = new Date(o.al + 'T23:59:59'), now = new Date();
+    const d = Math.floor((end - now) / 86400000);
+    return d >= 0 ? d : null;
   }
 
   function renderList(res) {
@@ -187,7 +209,7 @@
         `<span class="name" title="${esc(r.o.n)}">${esc(r.o.n)}</span>` +
         `<span class="price"><b>${eur(r.total)}</b>${TM.on ? tmAltLine(r, kind) : `<span>${eur(r.total / 12)}/mese</span>`}` +
         `<em>${i === 0 ? 'la più economica' : '+' + eur(delta)}</em></span>` +
-        `<span class="meta">${esc(r.o.v || '—')} ${r.odd ? `<span class="badge bad" title="La materia è sotto metà dell'ingrosso di allora: quasi sempre è una sola componente pubblicata come prezzo">⚠ prezzo implausibile</span>` : ''}${badges(r.o, r.c, kind)}</span>` +
+        `<span class="meta">${esc(r.o.v || '—')} ${r.odd ? `<span class="badge bad" title="Il prezzo dell'energia è sotto metà del prezzo all'ingrosso: quasi sempre è una sola componente pubblicata come prezzo. Verifica la scheda del venditore.">⚠ prezzo implausibile</span>` : ''}${badges(r.o, r.c, kind)}</span>` +
         `<span class="bar"><i style="width:${(12 + 88 * (r.total - best) / span).toFixed(1)}%"></i></span>`;
       el.setAttribute('aria-label', `${i + 1}°, ${r.o.n}, ${eur(r.total)} all'anno`);
       if (fresh && first.size) el.classList.add('enter');
@@ -268,10 +290,46 @@
     bindOdd();
   }
 
+  // "Fisso o variabile?": la regola dei due controlli dello studio 2022-2026,
+  // sulle offerte di oggi con regione e profilo scelti (non i filtri di tipo).
+  function renderSignal() {
+    const box = $('#fvSignal');
+    const kind = state.kind;
+    if (TM.on || (kind !== 'luce' && kind !== 'gas')) { box.hidden = true; return; }
+    const P = DATA[kind].params;
+    const ratio = kind === 'luce' ? P.pun_last.mono / P.pun_12m.mono : P.psv_last.value / P.psv_12m;
+    // senza regione scelta solo offerte nazionali; mai quelle limitate a provincia/comune
+    const plain = (rows) => rows.filter((r) => !r.odd && (state.regione || !r.o.r.length)
+      && !(r.o.pr && r.o.pr.length) && !(r.o.cm && r.o.cm.length));
+    const r12 = plain(compute(kind, { market: true, scenario: '12m' }).rows);
+    const rLast = plain(compute(kind, { market: true, scenario: 'last' }).rows);
+    const f = r12.find((r) => r.o.t === 'F'), v12 = r12.find((r) => r.o.t === 'V'), vl = rLast.find((r) => r.o.t === 'V');
+    if (!f || !v12 || !vl) { box.hidden = true; return; }
+    const s = E.fixVarSignal(ratio, f.total, v12.total, vl.total);
+    const idx = kind === 'luce' ? 'PUN' : 'PSV';
+    const last = monthLabel(kind === 'luce' ? P.pun_last.month : P.psv_last.month);
+    const r = ratio.toLocaleString('it-IT', { maximumFractionDigits: 2 });
+    let head, body;
+    if (s.regime === 'calm') {
+      head = 'Mercato calmo: fisso e variabile quasi si equivalgono';
+      body = `Il ${idx} di ${last} è ${r} volte la media dei 12 mesi. In queste condizioni, nei dati 2022-2026, la scelta tra fisso e variabile valeva circa 20 € l'anno: decidi sulle condizioni del contratto.`;
+    } else {
+      const dir = s.regime === 'up' ? 'più economiche' : 'più care';
+      head = s.choice === 'F' ? 'Il segnale indica il fisso' : 'Il segnale indica il variabile';
+      body = `Il ${idx} di ${last} è ${r} volte la media dei 12 mesi su cui è calcolata la classifica, che quindi mostra le variabili ${dir} di quanto probabilmente saranno. Al ${idx} di ${last} la variabile migliore costerebbe ${eur(vl.total)} invece di ${eur(v12.total)}; la fissa migliore costa ${eur(f.total)}`
+        + (s.premium > E.PREMIUM_CAP ? `, cioè il ${Math.round(s.premium * 100)}% in più della variabile in classifica: nel 2022 fissare con un premio così è costato caro.` : '.');
+    }
+    box.className = 'fv-signal ' + s.regime + ' ' + (s.regime === 'calm' ? '' : s.choice);
+    const where = state.regione ? `in ${DATA.regioni[state.regione] || state.regione}` : 'in tutta Italia';
+    box.innerHTML = `<b>${esc(head)}</b><span>${body} Offerte attivabili ${esc(where)}, al consumo scelto. <a href="analisi.html">Perché? L'analisi di 58 mesi di offerte</a></span>`;
+    box.hidden = false;
+  }
+
   function renderSummary(res) {
     const rows = res.rows;
     const st = $('#stats');
     renderVerdict(res);
+    renderSignal();
     if (!rows.length) { st.innerHTML = ''; $('#histo').innerHTML = ''; return; }
     const totals = rows.map((r) => r.total);
     const med = totals[Math.floor(totals.length / 2)];
@@ -318,7 +376,7 @@
 
   function seg(container, items, current, onPick) {
     container.innerHTML = items.map((it) =>
-      `<button type="button" role="radio" data-v="${it.v}" aria-checked="${it.v === current}">${esc(it.label)}${it.small ? `<small>${esc(it.small)}</small>` : ''}</button>`).join('');
+      `<button type="button" role="radio" data-v="${it.v}" aria-checked="${it.v === current}"${it.title ? ` title="${esc(it.title)}"` : ''}>${esc(it.label)}${it.small ? `<small>${esc(it.small)}</small>` : ''}</button>`).join('');
     container.onclick = (e) => { const b = e.target.closest('button'); if (b) onPick(b.dataset.v); };
   }
 
@@ -360,14 +418,14 @@
     if (DATA) {
       const lp = DATA.luce.params;
       seg($('#punSeg'), [
-        { v: '12m', label: 'Media 12 mesi', small: nf3(lp.pun_12m.mono) + ' €/kWh' },
-        { v: 'last', label: 'Ultimo mese', small: `${monthLabel(lp.pun_last.month)} · ${nf3(lp.pun_last.mono)}` },
+        { v: '12m', label: 'Media 12 mesi', small: nf3(lp.pun_12m.mono) + ' €/kWh', title: "Media dei 12 mesi chiusi, il metodo del Portale ARERA. Quando i prezzi all'ingrosso salgono fa sembrare le variabili più economiche, quando scendono più care." },
+        { v: 'last', label: 'Ultimo mese', small: `${monthLabel(lp.pun_last.month)} · ${nf3(lp.pun_last.mono)}`, title: "Prezzo dell'ultimo mese chiuso. Nei dati 2022-2026 ha previsto i 12 mesi successivi meglio della media: è il controllo da fare prima di scegliere tra fisso e variabile." },
         { v: 'custom', label: 'A scelta', small: nf3(state.punCustom) },
       ], state.punScen, (v) => update({ punScen: v }));
       const gp = DATA.gas.params;
       seg($('#psvSeg'), [
-        { v: '12m', label: 'Media 12 mesi', small: nf3(gp.psv_12m) + ' €/Smc' },
-        { v: 'last', label: 'Ultimo mese', small: `${monthLabel(gp.psv_last.month)} · ${nf3(gp.psv_last.value)}` },
+        { v: '12m', label: 'Media 12 mesi', small: nf3(gp.psv_12m) + ' €/Smc', title: "Media dei 12 mesi chiusi, il metodo del Portale ARERA. Quando i prezzi all'ingrosso salgono fa sembrare le variabili più economiche, quando scendono più care." },
+        { v: 'last', label: 'Ultimo mese', small: `${monthLabel(gp.psv_last.month)} · ${nf3(gp.psv_last.value)}`, title: "Prezzo dell'ultimo mese chiuso. Nei dati 2022-2026 ha previsto i 12 mesi successivi meglio della media: è il controllo da fare prima di scegliere tra fisso e variabile." },
         { v: 'custom', label: 'A scelta', small: nf3(state.psvCustom) },
       ], state.psvScen, (v) => update({ psvScen: v }));
       $('#reteFix').value = state.reteFix ?? gp.rete_fix_monthly;
@@ -772,6 +830,7 @@
     const ser = L.params.pun_series;
     $('#foot').innerHTML =
       (DATA.warnings && DATA.warnings.length ? `<div class="warnbox">Dati non del tutto aggiornati: ${DATA.warnings.map(esc).join(' · ')}</div>` : '') +
+      `<p><a href="analisi.html">Fisso o variabile: cosa insegnano 58 mesi di offerte luce e gas</a>, l'analisi del mercato 2022-2026 fatta con questi dati.</p>` +
       `<p>Costo annuo IVA inclusa, calcolato con lo stesso modello di <code>check_offers.py</code>: energia, quota fissa del venditore, dispacciamento, rete, oneri di sistema, accise, IVA e, per i residenti, canone RAI. Le variabili usano il PUN o il PSV scelto sopra. Non sono inclusi sconti, bonus e penali di recesso.</p>` +
       `<p>Fonti: offerte <a href="https://www.ilportaleofferte.it/portaleOfferte/it/open-data.page" target="_blank" rel="noopener">Portale Offerte ARERA</a> (${esc(L.source_xml)}, ${esc(G.source_xml)}); PUN GME, media ${ser.length > 1 ? `${monthLabel(ser[ser.length - 12] ? ser[ser.length - 12][0] : ser[0][0])} – ${monthLabel(ser[ser.length - 1][0])}` : ''}; PSV: ${esc(G.params.psv_sources)}; parametri regolati ${esc(L.params.params_source)}. I costi di rete del gas sono medie nazionali, modificabili.</p>`;
     // regioni

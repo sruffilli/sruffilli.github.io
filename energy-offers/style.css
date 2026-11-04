@@ -667,3 +667,24 @@ body.tm-on .tm-only { display: inline; }
 }
 .tm-odd { display: block; margin-top: 6px; font-size: 12px; color: var(--muted); }
 .tm-odd button { border: 0; background: none; padding: 0; color: var(--text); font-weight: 700; text-decoration: underline; }
+
+/* ---------- link all'analisi e segnale fisso/variabile ---------- */
+.an-btn {
+  margin-left: auto; flex: none; display: inline-flex; align-items: center; gap: 6px;
+  border: 1px solid var(--line); border-radius: 99px; padding: 4px 12px 4px 6px;
+  background: var(--card); color: var(--text); font-weight: 700; font-size: 13px; text-decoration: none;
+}
+.an-btn:hover { border-color: color-mix(in srgb, var(--accent) 45%, var(--line)); }
+.an-ico { font-size: 16px; }
+.an-btn + .tm-btn { margin-left: 8px; }
+body.tm-on .an-btn { display: none; }
+body.tm-on .an-btn + .tm-btn { margin-left: auto; }
+.fv-signal { margin: 10px 0 0; font-size: 13px; line-height: 1.5; padding: 9px 11px; border-radius: 12px;
+  background: var(--bg-2); border-left: 3px solid var(--muted); }
+.fv-signal[hidden] { display: none; }
+.fv-signal b { display: block; margin-bottom: 2px; }
+.fv-signal a { color: inherit; font-weight: 700; }
+.fv-signal.up.F, .fv-signal.down.F { border-left-color: var(--good); }
+.fv-signal.up.V, .fv-signal.down.V { border-left-color: var(--warn); }
+@media (max-width: 599px) { .an-btn-txt { display: none; } .an-btn { padding: 4px 6px; } }
+@media (min-width: 960px) { .an-btn { margin: 0 0 0 18px; } .an-btn + .tm-btn { margin-left: 8px; } }

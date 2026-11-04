@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
   <title>Comparatore luce e gas</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
-  <link rel="stylesheet" href="style.css?v=20261104T102601">
+  <link rel="stylesheet" href="style.css?v=20261104T121846">
 </head>
 <body data-kind="luce">
   <header class="top">
@@ -17,6 +17,9 @@
         <h1>Comparatore luce e gas</h1>
         <p class="sub" id="dataInfo">Caricamento offerte…</p>
       </div>
+      <a class="an-btn" id="anBtn" href="analisi.html" title="Fisso o variabile? Cosa insegnano 58 mesi di offerte, 2022-2026">
+        <span class="an-ico" aria-hidden="true">📊</span><span class="an-btn-txt">L'analisi</span>
+      </a>
       <button type="button" class="tm-btn" id="tmBtn" hidden title="Le offerte dei mesi passati, dal 2022">
         <span class="tm-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg></span>
         <span class="tm-btn-txt">Macchina del tempo</span>
@@ -208,6 +211,7 @@
     <section class="results" aria-live="polite">
       <div class="summary card" id="summary">
         <div class="stats" id="stats"></div>
+        <p class="fv-signal" id="fvSignal" hidden></p>
         <p class="nudge" id="nudge" hidden></p>
         <p class="tm-note-m" id="tmNoteM"></p>
         <p class="tm-verdict" id="tmVerdict" hidden></p>
@@ -281,8 +285,8 @@
     <div class="sheet-body" id="sheetBody"></div>
   </article>
 
-  <script src="engine.js?v=20261104T102601"></script>
-  <script src="app.js?v=20261104T102601"></script>
-  <script src="market.js?v=20261104T102601"></script>
+  <script src="engine.js?v=20261104T121846"></script>
+  <script src="app.js?v=20261104T121846"></script>
+  <script src="market.js?v=20261104T121846"></script>
 </body>
 </html>

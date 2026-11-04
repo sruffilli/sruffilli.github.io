@@ -185,5 +185,25 @@
     return { separate, vendors };
   }
 
-  return { exciseExemptionKwh, systemLuce, punIndex, costLuce, gasWithIva, psvIndex, regDeltaAnnual, costGas, dualRanking };
+  /*
+   * Segnale fisso/variabile dello studio di mercato 2022-2026 (analisi.html).
+   * ratio = indice dell'ultimo mese / media 12 mesi. bestF = totale della fissa
+   * migliore; bestV12 / bestVLast = totale della variabile migliore all'indice
+   * medio 12 mesi (quello della classifica) e a quello dell'ultimo mese.
+   * Regola dei due controlli, backtest 2022-01 -> 2025-10: fisso se batte la
+   * variabile all'indice dell'ultimo mese E costa al massimo il 10% in più
+   * della variabile in classifica. Soglie di regime 1,2 e 0,83: oltre 1,2 i 12
+   * mesi successivi sono stati più cari della media nell'81% dei casi (PUN 2006-2025).
+   * Ritorna { regime: 'up'|'down'|'calm', choice: 'F'|'V', premium, bias }.
+   */
+  const SIGNAL_UP = 1.2, SIGNAL_DOWN = 0.83, PREMIUM_CAP = 0.10;
+  function fixVarSignal(ratio, bestF, bestV12, bestVLast) {
+    const regime = ratio > SIGNAL_UP ? 'up' : ratio < SIGNAL_DOWN ? 'down' : 'calm';
+    const premium = bestV12 > 0 ? (bestF - bestV12) / bestV12 : 0;
+    const choice = bestF < bestVLast && premium <= PREMIUM_CAP ? 'F' : 'V';
+    return { regime, choice, premium, bias: bestVLast - bestV12 };
+  }
+
+  return { exciseExemptionKwh, systemLuce, punIndex, costLuce, gasWithIva, psvIndex, regDeltaAnnual, costGas, dualRanking,
+           fixVarSignal, SIGNAL_UP, SIGNAL_DOWN, PREMIUM_CAP };
 });
