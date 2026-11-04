@@ -531,3 +531,139 @@ body[data-kind="dual"] .not-dual { display: none; }
 .vendor-head .vt b { display: block; font-size: 18px; font-weight: 800; }
 .vendor-head .vt span { font-size: 12px; color: var(--muted); }
 .dual-note { font-size: 12.5px; color: var(--muted); margin: 10px 2px; }
+
+/* ---------- macchina del tempo ---------- */
+/* Modalità ben distinta: barra a gradiente sotto l'header, orologio che pulsa
+   con le lancette che girano all'indietro, sfondo tinto, filo colorato sotto
+   l'header. Tutto spento da prefers-reduced-motion (regola globale sopra). */
+:root { --tm-a: #7c5cff; --tm-b: #e2557a; --tm-c: #f2a900; }
+
+.tm-btn {
+  margin-left: auto; flex: none; display: inline-flex; align-items: center; gap: 7px;
+  border: 1px solid color-mix(in srgb, var(--tm-a) 35%, var(--line)); border-radius: 99px;
+  padding: 4px 12px 4px 4px; background: var(--card); color: var(--text);
+  font-weight: 700; font-size: 13px; box-shadow: 0 4px 14px color-mix(in srgb, var(--tm-a) 18%, transparent);
+  transition: transform .2s, box-shadow .2s;
+}
+.tm-btn[hidden] { display: none; }
+.tm-btn:hover { transform: translateY(-1px); box-shadow: 0 6px 20px color-mix(in srgb, var(--tm-b) 28%, transparent); }
+.tm-ico {
+  width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: #fff;
+  background: conic-gradient(from 200deg, var(--tm-a), var(--tm-b), var(--tm-c), var(--tm-a));
+  animation: tm-glow 2.8s ease-in-out infinite;
+}
+.tm-ico svg { width: 17px; height: 17px; fill: currentColor; }
+.tm-btn:hover .tm-ico svg { animation: tm-rewind 1.1s cubic-bezier(.4, 0, .2, 1); }
+body.tm-on .tm-btn { display: none; }
+
+.tm-bar { display: none; }
+body.tm-on .tm-bar {
+  position: relative; overflow: hidden;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 14px;
+  margin-top: 10px; padding: 10px 14px; border-radius: 16px;
+  border: 1px solid color-mix(in srgb, var(--tm-a) 40%, var(--line));
+  background: linear-gradient(115deg,
+    color-mix(in srgb, var(--tm-a) 18%, var(--card)),
+    color-mix(in srgb, var(--tm-b) 12%, var(--card)) 55%,
+    color-mix(in srgb, var(--tm-c) 16%, var(--card)));
+  animation: tm-in .45s cubic-bezier(.2, .8, .2, 1) both;
+}
+/* riflesso che scorre lento sulla barra */
+body.tm-on .tm-bar::after {
+  content: ""; position: absolute; inset: 0; pointer-events: none;
+  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .22) 50%, transparent 70%);
+  transform: translateX(-100%); animation: tm-sheen 5.5s ease-in-out infinite;
+}
+.tm-orb { position: relative; width: 46px; height: 46px; flex: none; display: grid; place-items: center; color: #fff; }
+.tm-orb::before, .tm-orb::after { content: ""; position: absolute; border-radius: 50%;
+  background: conic-gradient(from 0deg, var(--tm-a), var(--tm-b), var(--tm-c), var(--tm-a)); }
+.tm-orb::before { inset: -6px; filter: blur(10px); animation: tm-pulse 2.4s ease-in-out infinite; }
+.tm-orb::after { inset: 0; animation: tm-spin 7s linear infinite; }
+.tm-orb svg { position: relative; z-index: 1; width: 28px; height: 28px; filter: drop-shadow(0 1px 1px rgba(0, 0, 0, .25)); }
+.tm-hands path { transform-box: view-box; transform-origin: 12px 12px; }
+.tm-hands .h-min { animation: tm-rewind 2.4s linear infinite; }
+.tm-hands .h-hour { animation: tm-rewind 28.8s linear infinite; }
+
+.tm-head { display: flex; flex-direction: column; min-width: 0; }
+.tm-eyebrow { font-size: 11px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase;
+  background: linear-gradient(90deg, var(--tm-a), var(--tm-b)); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.tm-head b { font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tm-nav { display: flex; align-items: center; gap: 4px; }
+.tm-nav button, .tm-exit {
+  border: 1px solid var(--line); background: var(--card); color: var(--text);
+  border-radius: 10px; font-weight: 700;
+}
+.tm-nav button { width: 32px; height: 34px; font-size: 18px; line-height: 1; }
+.tm-nav button:disabled { opacity: .35; cursor: default; }
+.tm-nav select { height: 34px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); color: var(--text); font: inherit; font-weight: 650; padding: 0 8px; }
+.tm-mode { flex: 1 1 260px; max-width: 420px; }
+.tm-mode [aria-disabled="true"] { opacity: .45; cursor: not-allowed; }
+.tm-exit { padding: 8px 12px; margin-left: auto; }
+.tm-exit::before { content: "↩ "; }
+.tm-note { flex-basis: 100%; margin: 0; font-size: 12.5px; color: var(--muted); position: relative; z-index: 1; }
+.tm-note b { color: var(--text); }
+.tm-warn { color: var(--warn); font-weight: 700; }
+.tm-bar > * { position: relative; z-index: 1; }
+
+body.tm-on { background: color-mix(in srgb, var(--bg) 90%, var(--tm-a)); }
+body.tm-on .top { border-bottom: 0; box-shadow: 0 2px 0 0 color-mix(in srgb, var(--tm-b) 60%, transparent); }
+body.tm-on .top::after {
+  content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 2px;
+  background: linear-gradient(90deg, var(--tm-a), var(--tm-b), var(--tm-c), var(--tm-a));
+  background-size: 200% 100%; animation: tm-flow 6s linear infinite;
+}
+body.tm-on .no-tm { display: none !important; }
+body.tm-on .tabs { grid-template-columns: repeat(3, 1fr); }
+body.tm-on .tab-ink { width: calc((100% - 8px) / 3); }
+.tm-only { display: none; }
+body.tm-on .tm-only { display: inline; }
+
+.offer .price .tm-alt { display: block; font-size: 11.5px; color: var(--muted); font-weight: 650; }
+.offer .price .tm-alt.up { color: var(--bad); }
+.offer .price .tm-alt.down { color: var(--good); }
+.tm-verdict { margin: 10px 0 0; font-size: 13px; line-height: 1.5; padding: 9px 11px; border-radius: 12px;
+  background: color-mix(in srgb, var(--tm-a) 9%, transparent); border-left: 3px solid var(--tm-a); }
+.tm-verdict[hidden] { display: none; }
+
+@keyframes tm-rewind { to { transform: rotate(-360deg); } }
+@keyframes tm-spin { to { transform: rotate(360deg); } }
+@keyframes tm-pulse { 0%, 100% { opacity: .35; transform: scale(.9); } 50% { opacity: .9; transform: scale(1.12); } }
+@keyframes tm-glow { 0%, 100% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--tm-b) 0%, transparent); }
+  50% { box-shadow: 0 0 12px 2px color-mix(in srgb, var(--tm-b) 45%, transparent); } }
+@keyframes tm-sheen { 0%, 55% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
+@keyframes tm-flow { to { background-position: 200% 0; } }
+@keyframes tm-in { from { opacity: 0; transform: translateY(-6px) scale(.98); } }
+
+@media (prefers-color-scheme: dark) {
+  body.tm-on { background: color-mix(in srgb, var(--bg) 88%, var(--tm-a)); }
+  body.tm-on .tm-bar::after { background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .08) 50%, transparent 70%); }
+}
+/* spiegazione dei due modi: nella barra su desktop, nel riepilogo su telefono */
+.tm-note-m { display: none; }
+@media (max-width: 959px) {
+  body.tm-on .tm-bar { gap: 8px 10px; padding: 8px 10px; }
+  body.tm-on .tm-bar .tm-note { display: none; }
+  body.tm-on .tm-note-m { display: block; margin: 10px 0 0; font-size: 12.5px; color: var(--muted); }
+  .tm-note-m b { color: var(--text); }
+  .tm-orb { width: 38px; height: 38px; }
+  .tm-orb svg { width: 24px; height: 24px; }
+  .tm-head { flex: 1; }
+  .tm-exit { order: 1; padding: 7px 10px; font-size: 13px; }
+  .tm-nav { order: 2; flex: 1 1 100%; min-width: 0; }
+  .tm-nav select { flex: 1; min-width: 0; width: 0; }
+  .tm-mode { order: 3; flex: 1 1 100%; max-width: none; }
+  /* scorrendo, come lo slider compatto: resta solo la riga con titolo e uscita */
+  body.tm-on .top.show-mini .tm-nav, body.tm-on .top.show-mini .tm-mode { display: none; }
+}
+@media (max-width: 599px) {
+  .tm-btn-txt { display: none; }
+  .tm-btn { padding: 4px; }
+}
+@media (min-width: 960px) {
+  body.tm-on .top { flex-wrap: wrap; }
+  body.tm-on .tm-bar { flex-basis: 100%; }
+  body.tm-on .controls { top: 196px; max-height: calc(100vh - 210px); }
+  .tm-btn { margin: 0 0 0 18px; }
+}
+.tm-odd { display: block; margin-top: 6px; font-size: 12px; color: var(--muted); }
+.tm-odd button { border: 0; background: none; padding: 0; color: var(--text); font-weight: 700; text-decoration: underline; }

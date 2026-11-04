@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
   <title>Comparatore luce e gas</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
-  <link rel="stylesheet" href="style.css?v=20261102T063030">
+  <link rel="stylesheet" href="style.css?v=20261104T102601">
 </head>
 <body data-kind="luce">
   <header class="top">
@@ -17,6 +17,10 @@
         <h1>Comparatore luce e gas</h1>
         <p class="sub" id="dataInfo">Caricamento offerte…</p>
       </div>
+      <button type="button" class="tm-btn" id="tmBtn" hidden title="Le offerte dei mesi passati, dal 2022">
+        <span class="tm-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0 0 13 21a9 9 0 0 0 0-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg></span>
+        <span class="tm-btn-txt">Macchina del tempo</span>
+      </button>
     </div>
     <nav class="tabs" role="tablist" aria-label="Fornitura">
       <button role="tab" id="tab-luce" aria-selected="true" data-kind="luce">
@@ -28,7 +32,7 @@
       <button role="tab" id="tab-dual" aria-selected="false" data-kind="dual">
         <span aria-hidden="true">⚡🔥</span> Insieme
       </button>
-      <button role="tab" id="tab-mercato" aria-selected="false" data-kind="mercato">
+      <button role="tab" id="tab-mercato" class="no-tm" aria-selected="false" data-kind="mercato">
         <span aria-hidden="true">📈</span> Mercato
       </button>
       <span class="tab-ink" aria-hidden="true"></span>
@@ -37,6 +41,25 @@
       <span class="mini-val" id="miniVal"></span>
       <input id="miniSlider" class="slider small" type="range" tabindex="-1" aria-label="Consumo annuo">
     </div>
+    <section class="tm-bar" id="tmBar" aria-label="Macchina del tempo">
+      <span class="tm-orb" aria-hidden="true">
+        <svg class="tm-hands" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round">
+          <circle cx="12" cy="12" r="9"/><path class="h-hour" d="M12 12V8"/><path class="h-min" d="M12 12V5.5"/>
+        </svg>
+      </span>
+      <div class="tm-head">
+        <span class="tm-eyebrow">Macchina del tempo</span>
+        <b id="tmTitle"></b>
+      </div>
+      <div class="tm-nav">
+        <button type="button" id="tmPrev" aria-label="Mese precedente">‹</button>
+        <select id="tmMonth" aria-label="Mese"></select>
+        <button type="button" id="tmNext" aria-label="Mese successivo">›</button>
+      </div>
+      <div class="seg tm-mode" id="tmMode" role="radiogroup" aria-label="Prezzi"></div>
+      <button type="button" class="tm-exit" id="tmExit">Torna a oggi</button>
+      <p class="tm-note" id="tmNote"></p>
+    </section>
   </header>
 
   <main class="layout">
@@ -116,7 +139,7 @@
         </p>
       </details>
 
-      <section class="card only-luce">
+      <section class="card only-luce no-tm">
         <span class="eyebrow">Prezzo all'ingrosso per le variabili (PUN)</span>
         <div class="seg" id="punSeg" role="radiogroup"></div>
         <div class="custom-index" id="punCustomBox">
@@ -126,7 +149,7 @@
       </section>
 
 
-      <section class="card only-gas">
+      <section class="card only-gas no-tm">
         <span class="eyebrow">Prezzo all'ingrosso per le variabili (PSV)</span>
         <div class="seg" id="psvSeg" role="radiogroup"></div>
         <div class="custom-index" id="psvCustomBox">
@@ -140,7 +163,7 @@
           <span class="eyebrow">Rete, oneri e accise</span>
           <span class="summary-val" id="reteSummary"></span>
         </summary>
-        <p class="hint">Uguali per ogni venditore: cambiano il totale ma non la classifica. I valori di partenza sono medie nazionali; per un totale preciso prendili dalla bolletta.</p>
+        <p class="hint">Uguali per ogni venditore: cambiano il totale ma non la classifica. I valori di partenza sono medie nazionali; per un totale preciso prendili dalla bolletta.<span class="tm-only"> Nella macchina del tempo sono i valori di oggi: a ogni mese passato si aggiunge la variazione delle componenti ARERA di allora (oneri azzerati e UG2 negativa nel 2022-23).</span></p>
         <div class="field-row">
           <label>Quota fissa <input id="reteFix" type="number" step="0.01" min="0" inputmode="decimal"> €/mese</label>
           <label>Quota variabile <input id="reteVar" type="number" step="0.001" min="0" inputmode="decimal"> €/Smc</label>
@@ -186,6 +209,8 @@
       <div class="summary card" id="summary">
         <div class="stats" id="stats"></div>
         <p class="nudge" id="nudge" hidden></p>
+        <p class="tm-note-m" id="tmNoteM"></p>
+        <p class="tm-verdict" id="tmVerdict" hidden></p>
         <div class="histo" id="histo" aria-hidden="true"></div>
       </div>
       <ol class="ranking" id="ranking"></ol>
@@ -256,8 +281,8 @@
     <div class="sheet-body" id="sheetBody"></div>
   </article>
 
-  <script src="engine.js?v=20261102T063030"></script>
-  <script src="app.js?v=20261102T063030"></script>
-  <script src="market.js?v=20261102T063030"></script>
+  <script src="engine.js?v=20261104T102601"></script>
+  <script src="app.js?v=20261104T102601"></script>
+  <script src="market.js?v=20261104T102601"></script>
 </body>
 </html>

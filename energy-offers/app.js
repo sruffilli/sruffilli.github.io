@@ -6,6 +6,8 @@
   const STORE = 'energy-offers-v1';
   const PAGE = 40;
   const MESI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
+  const MESI_LUNGHI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto',
+    'settembre', 'ottobre', 'novembre', 'dicembre'];
 
   const nf0 = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 0 });
   const nf2 = new Intl.NumberFormat('it-IT', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
@@ -34,12 +36,21 @@
   state.search = '';
 
   let DATA = null;
+  let LIVE = null;               // offerte di oggi, da ripristinare uscendo dalla macchina del tempo
+  // Macchina del tempo: DATA diventa lo snapshot history/YYYY-MM/offers.json, con
+  // due set di parametri: params ("allora") e params_hindsight ("col senno di poi").
+  const TM = { on: false, month: null, mode: 'then', index: null, cache: new Map(), showOdd: false };
   let shown = PAGE;
   let lastRows = [];
   const nodes = new Map();       // `${kind}-${id}` → <li>
   const detailCache = new Map(); // `${kind}-${shard}` → Promise<dict>
 
   /* ---------------- calcolo ---------------- */
+
+  // Modo effettivo: "poi" solo se lo snapshot ha il senno di poi.
+  const tmPoi = (kind) => TM.on && TM.mode === 'poi' && !!(DATA[kind] && DATA[kind].params_hindsight);
+  const idxOf = (kind, P) => (kind === 'luce' ? E.punIndex(P, '12m') : E.psvIndex(P, '12m'));
+  const costOf = (kind, o, P, pr, idx) => (kind === 'luce' ? E.costLuce(o, P, pr, idx) : E.costGas(o, P, pr, idx));
 
   function luceProfile() {
     const f1 = state.f1 / 100, f2 = state.f2 / 100;
@@ -75,11 +86,24 @@
     const rows = [];
     let pr, idx;
     const scen = opts && opts.scenario;
+    let P = block.params, Palt = null, idxAlt = null;
     if (kind === 'luce') { pr = luceProfile(); idx = scen ? E.punIndex(block.params, scen, opts.custom) : E.punIndex(block.params, state.punScen, state.punCustom); }
     else { pr = gasProfile(); idx = scen ? E.psvIndex(block.params, scen, opts.custom) : E.psvIndex(block.params, state.psvScen, state.psvCustom); }
+    if (TM.on) {
+      // indice fissato dal modo: "allora" = media dei 12 mesi prima, "poi" = effettivo dopo
+      const poi = tmPoi(kind);
+      P = poi ? block.params_hindsight : block.params;
+      Palt = poi ? block.params : block.params_hindsight;
+      idx = idxOf(kind, P);
+      if (Palt) idxAlt = idxOf(kind, Palt);
+    }
     // Offerte vendibili solo insieme all'altra fornitura: fuori dalle classifiche
     // singole salvo richiesta; il tab Insieme le chiede esplicitamente.
     const withDual = !!(opts && opts.includeDual) || (!market && state.showDual);
+    // Macchina del tempo: fisse con la materia sotto metà dell'ingrosso di allora
+    // (una sola componente pubblicata come prezzo), come time_machine.py.
+    const floor = TM.on ? (block.params.implausible_floor || 0) * (block.params.implausible_ratio || 0) : 0;
+    let hiddenOdd = 0, odd = 0;
     for (const o of block.offers) {
       if (o.so === 0 && !withDual) continue;
       if (!market && state.type !== 'all' && o.t !== state.type) continue;
@@ -87,11 +111,17 @@
       if (state.regione && o.r.length && !o.r.includes(state.regione)) continue;
       if (state.eligible && !(kind === 'luce' ? eligibleLuce(o, pr) : eligibleGas(o, pr))) continue;
       if (q && !(o.n.toLowerCase().includes(q) || o.v.includes(q))) continue;
-      const c = kind === 'luce' ? E.costLuce(o, block.params, pr, idx) : E.costGas(o, block.params, pr, idx);
-      rows.push({ o, c, total: c.total });
+      const c = costOf(kind, o, P, pr, idx);
+      const row = { o, c, total: c.total };
+      if (floor && o.t === 'F' && c.energia / (kind === 'luce' ? pr.kwh : pr.smc) < floor) {
+        if (!TM.showOdd) { hiddenOdd++; continue; }
+        row.odd = true; odd++;
+      }
+      if (Palt) row.alt = costOf(kind, o, Palt, pr, idxAlt).total;   // l'altro modo, per il delta
+      rows.push(row);
     }
     rows.sort((a, b) => a.total - b.total);
-    return { rows, pr, idx };
+    return { rows, pr, idx, hiddenOdd, odd };
   }
 
   /* ---------------- render lista ---------------- */
@@ -155,9 +185,9 @@
       el.innerHTML =
         `<span class="rank">${i + 1}</span>` +
         `<span class="name" title="${esc(r.o.n)}">${esc(r.o.n)}</span>` +
-        `<span class="price"><b>${eur(r.total)}</b><span>${eur(r.total / 12)}/mese</span>` +
+        `<span class="price"><b>${eur(r.total)}</b>${TM.on ? tmAltLine(r, kind) : `<span>${eur(r.total / 12)}/mese</span>`}` +
         `<em>${i === 0 ? 'la più economica' : '+' + eur(delta)}</em></span>` +
-        `<span class="meta">${esc(r.o.v || '—')} ${badges(r.o, r.c, kind)}</span>` +
+        `<span class="meta">${esc(r.o.v || '—')} ${r.odd ? `<span class="badge bad" title="La materia è sotto metà dell'ingrosso di allora: quasi sempre è una sola componente pubblicata come prezzo">⚠ prezzo implausibile</span>` : ''}${badges(r.o, r.c, kind)}</span>` +
         `<span class="bar"><i style="width:${(12 + 88 * (r.total - best) / span).toFixed(1)}%"></i></span>`;
       el.setAttribute('aria-label', `${i + 1}°, ${r.o.n}, ${eur(r.total)} all'anno`);
       if (fresh && first.size) el.classList.add('enter');
@@ -191,15 +221,63 @@
     more.textContent = `Mostra altre ${Math.min(PAGE, rows.length - shown)} (di ${nf0.format(rows.length)})`;
   }
 
+  // Riga secondaria della macchina del tempo: il prezzo nell'altro modo e il delta poi − allora.
+  function tmAltLine(r, kind) {
+    if (r.alt == null) return `<span class="tm-alt">col senno di poi: non ancora</span>`;
+    const poi = tmPoi(kind);
+    const then = poi ? r.alt : r.total, after = poi ? r.total : r.alt, d = after - then;
+    const cls = d > 0.5 ? 'up' : d < -0.5 ? 'down' : '';
+    return `<span class="tm-alt ${cls}">${poi ? 'allora ' + eur(then) : 'poi ' + eur(after)} · ${d >= 0 ? '+' : '−'}${eur(Math.abs(d))}</span>`;
+  }
+
+  // Nella scheda: l'altro prezzo e il delta, sempre "poi − allora".
+  function tmDetailLine(row, kind) {
+    const poi = tmPoi(kind);
+    const then = poi ? row.alt : row.total, after = poi ? row.total : row.alt, d = after - then;
+    const dTxt = `${d >= 0 ? '+' : '−'}${eur(Math.abs(d))}`;
+    return `<div class="d-rank">${poi ? `Allora, sulla carta: <b>${eur(then)}</b> · col senno di poi ${dTxt}`
+      : `Col senno di poi: <b>${eur(after)}</b> (${dTxt})`}</div>`;
+  }
+
+  function renderVerdict(res) {
+    const box = $('#tmVerdict');
+    const rows = res.rows.filter((r) => !r.odd);
+    if (!TM.on || !rows.length || state.kind === 'dual') { box.hidden = true; return; }
+    box.hidden = false;
+    const kind = state.kind;
+    const nOdd = res.hiddenOdd || res.odd;
+    const oddTxt = nOdd ? ` <span class="tm-odd">${nOdd === 1 ? 'Una fissa ha' : nOdd + ' fisse hanno'} un prezzo sotto metà dell'ingrosso di allora, quasi sempre una sola componente pubblicata come prezzo: ${res.hiddenOdd ? (nOdd === 1 ? 'è nascosta' : 'sono nascoste') : 'sono marcate ⚠ e fuori da questo confronto'}. <button type="button" id="tmOddBtn">${res.hiddenOdd ? 'Mostra' : 'Nascondi'}</button></span>` : '';
+    const bindOdd = () => { const b = $('#tmOddBtn'); if (b) b.onclick = () => { TM.showOdd = !TM.showOdd; update({}); }; };
+    if (rows[0].alt == null) {
+      box.innerHTML = 'Col senno di poi non si può ancora dire: nessun mese di fornitura dopo questo snapshot è chiuso.' + oddTxt;
+      bindOdd();
+      return;
+    }
+    const poi = tmPoi(kind);
+    const thenOf = (r) => (poi ? r.alt : r.total), poiOf = (r) => (poi ? r.total : r.alt);
+    const first = rows.reduce((a, r) => (thenOf(r) < thenOf(a) ? r : a));
+    const bestPoi = rows.reduce((a, r) => (poiOf(r) < poiOf(a) ? r : a));
+    const tipo = (r) => (r.o.t === 'F' ? 'fissa' : 'variabile');
+    const d = poiOf(first) - thenOf(first);
+    let txt = `La prima di allora, <b>${esc(first.o.n)}</b> (${tipo(first)}), costava ${eur(thenOf(first))} sulla carta e <b>${eur(poiOf(first))}</b> col senno di poi (${d >= 0 ? '+' : '−'}${eur(Math.abs(d))}).`;
+    if (bestPoi !== first) {
+      const rankThen = rows.filter((r) => thenOf(r) < thenOf(bestPoi)).length + 1;
+      txt += ` Col senno di poi la migliore era <b>${esc(bestPoi.o.n)}</b> (${tipo(bestPoi)}, ${rankThen}ª allora): ${eur(poiOf(bestPoi))}, ${eur(poiOf(first) - poiOf(bestPoi))} in meno.`;
+    } else txt += ' Ed era anche la migliore col senno di poi.';
+    box.innerHTML = txt + oddTxt;
+    bindOdd();
+  }
+
   function renderSummary(res) {
     const rows = res.rows;
     const st = $('#stats');
+    renderVerdict(res);
     if (!rows.length) { st.innerHTML = ''; $('#histo').innerHTML = ''; return; }
     const totals = rows.map((r) => r.total);
     const med = totals[Math.floor(totals.length / 2)];
     const unit = state.kind === 'luce' ? state.kwh : state.smc;
     st.innerHTML =
-      `<div class="stat best"><b>${eur(totals[0])}</b><span>migliore</span></div>` +
+      `<div class="stat best"><b>${eur(totals[0])}</b><span>${TM.on ? (tmPoi(state.kind) ? 'migliore, poi' : 'migliore, allora') : 'migliore'}</span></div>` +
       `<div class="stat"><b>${eur(med)}</b><span>mediana</span></div>` +
       `<div class="stat"><b>${nf0.format(rows.length)}</b><span>offerte</span></div>`;
     const nudge = $('#nudge');
@@ -278,6 +356,7 @@
     $('#pvNote').hidden = !pv;
     if (pv) $('#kwhHint').textContent = `≈ ${nf0.format(state.kwh / 12)} kWh al mese prelevati dalla rete`;
 
+    if (DATA) syncTimeMachine();
     if (DATA) {
       const lp = DATA.luce.params;
       seg($('#punSeg'), [
@@ -319,13 +398,19 @@
 
     // riassunto del pannello impostazioni
     const typeTxt = { all: 'tutte', F: 'solo fisse', V: 'solo variabili' }[state.type];
+    if (TM.on) {
+      const lbl = TM.mode === 'poi' ? 'prezzi col senno di poi' : 'prezzi di allora';
+      const typeTxt0 = { all: 'tutte', F: 'solo fisse', V: 'solo variabili' }[state.type];
+      $('#settingsTxt').textContent = (state.kind === 'gas' ? [lbl, typeTxt0]
+        : [`${String(state.kw).replace('.', ',')} kW`, state.residente ? 'residente' : 'non residente', lbl, typeTxt0]).join(' · ');
+    }
     const parts = state.kind === 'dual'
       ? [`${String(state.kw).replace('.', ',')} kW`, state.residente ? 'residente' : 'non residente', `PUN ${{ '12m': '12 mesi', last: 'ultimo mese', custom: nf3(state.punCustom) }[state.punScen]}`, `PSV ${{ '12m': '12 mesi', last: 'ultimo mese', custom: nf3(state.psvCustom) }[state.psvScen]}`, typeTxt]
       : state.kind === 'luce'
       ? [`${String(state.kw).replace('.', ',')} kW`, state.residente ? 'residente' : 'non residente', `PUN ${{ '12m': '12 mesi', last: 'ultimo mese', custom: nf3(state.punCustom) }[state.punScen]}`, typeTxt]
       : [`PSV ${{ '12m': '12 mesi', last: 'ultimo mese', custom: nf3(state.psvCustom) }[state.psvScen]}`, typeTxt];
     if (state.durata) parts.push(`fisso ≤ ${state.durata} mesi`);
-    $('#settingsTxt').textContent = parts.join(' · ');
+    if (!TM.on) $('#settingsTxt').textContent = parts.join(' · ');
 
     // filtri
     for (const b of document.querySelectorAll('#typeSeg button')) b.setAttribute('aria-checked', String(b.dataset.v === state.type));
@@ -491,6 +576,7 @@
   /* ---------------- dettaglio ---------------- */
 
   function loadDetails(kind, id) {
+    if (!DATA.detail_shards) return Promise.resolve(null);   // snapshot storico: schede non archiviate
     const shard = id % DATA.detail_shards;
     const key = `${kind}-${shard}`;
     if (!detailCache.has(key)) {
@@ -520,7 +606,9 @@
     loadDetails(kind, id).then((d) => {
       const rest = $('#dRest'); if (!rest) return;
       rest.className = '';
-      rest.innerHTML = d ? detailRest(row, d, kind) : '<p class="note">Dettagli non disponibili.</p>';
+      rest.innerHTML = d ? detailRest(row, d, kind)
+        : TM.on ? detailRest(row, {}, kind) + '<p class="note">Per i mesi passati la scheda completa del venditore (voci, sconti, condizioni) non è archiviata: restano prezzi e totali.</p>'
+        : '<p class="note">Dettagli non disponibili.</p>';
     }).catch(() => { const rest = $('#dRest'); if (rest) rest.innerHTML = '<p class="note warn">Non riesco a caricare i dettagli. Riprova.</p>'; });
   }
 
@@ -570,7 +658,7 @@
       ['Materia gas', c.energia, 'var(--c-energia)'],
       ['Quota fissa venditore', c.fissoVenditore, 'var(--c-fisso)'],
       ['Rete, oneri e accise', c.rete, 'var(--c-rete)'],
-      ['IVA (10% / 22%)', c.iva, 'var(--c-iva)'],
+      [TM.on ? 'IVA' : 'IVA (10% / 22%)', c.iva, 'var(--c-iva)'],
     ];
   }
 
@@ -584,7 +672,8 @@
         <h2 id="sheetTitle">${esc(o.n)}</h2>
         <div class="vendor">${esc(o.v || 'venditore non indicato')}</div>
       </header>
-      <div class="d-total"><b>${eur(row.total)}</b><span>all'anno · ${eur(row.total / 12)}/mese</span></div>
+      <div class="d-total"><b>${eur(row.total)}</b><span>all'anno · ${eur(row.total / 12)}/mese${TM.on ? (tmPoi(kind) ? ' · col senno di poi' : ' · allora') : ''}</span></div>
+      ${TM.on && row.alt != null ? tmDetailLine(row, kind) : ''}
       <div class="d-rank">${pos + 1}° su ${nf0.format(rows.length)} con i filtri attuali${pos > 0 ? ` · +${eur(row.total - rows[0].total)} rispetto alla prima` : ''}</div>
       <div class="stack">${pos_.map((p) => `<i style="width:${(100 * p[1] / sumPos).toFixed(2)}%;background:${p[2]}" title="${esc(p[0])}"></i>`).join('')}</div>
       <div class="legend">${parts.map((p) => `<span class="k" style="--c:${p[2]}">${esc(p[0])}</span><span class="v">${eur2(p[1])}</span>`).join('')}
@@ -592,14 +681,14 @@
   }
 
   function priceRows(o, kind) {
-    const P = DATA[kind].params;
+    const P = tmPoi(kind) ? DATA[kind].params_hindsight : DATA[kind].params;
     if (kind === 'gas') {
       if (o.t === 'F') return [['Prezzo gas fisso', nf4(o.p) + ' €/Smc']].concat(o.sb ? [['Oneri di bilanciamento', nf4(o.sb) + ' €/Smc']] : []);
-      const psv = E.psvIndex(P, state.psvScen, state.psvCustom);
+      const psv = TM.on ? idxOf('gas', P) : E.psvIndex(P, state.psvScen, state.psvCustom);
       return [['Spread sul PSV', '+' + nf4(o.p) + ' €/Smc'], ['PSV usato', nf4(psv) + ' €/Smc'],
         ['Prezzo risultante', nf4(psv + o.p + (o.sb || 0)) + ' €/Smc']].concat(o.sb ? [['di cui bilanciamento', nf4(o.sb) + ' €/Smc']] : []);
     }
-    const idx = E.punIndex(P, state.punScen, state.punCustom);
+    const idx = TM.on ? idxOf('luce', P) : E.punIndex(P, state.punScen, state.punCustom);
     const L = P.lambda;
     const lab = o.m === 'mono' ? [['Monoraria', 0]] : o.m === 'bi' ? [['F1', 0], ['F2 e F3', 1]] : [['F1', 0], ['F2', 1], ['F3', 2]];
     if (o.t === 'F') return lab.map(([l, i]) => [`Prezzo ${l}`, nf4(o.p[i]) + ' €/kWh']);
@@ -676,6 +765,7 @@
 
   function footer() {
     const L = DATA.luce, G = DATA.gas;
+    if (TM.on) { footerTM(); return; }
     const gen = new Date(DATA.generated_at);
     const genTxt = isNaN(gen) ? DATA.generated_at : gen.toLocaleString('it-IT', { dateStyle: 'medium', timeStyle: 'short' });
     $('#dataInfo').textContent = `${nf0.format(L.offers.length)} offerte luce · ${nf0.format(G.offers.length)} gas · aggiornato ${genTxt}`;
@@ -691,6 +781,105 @@
     sel.value = state.regione;
   }
 
+  /* ---------------- macchina del tempo ---------------- */
+
+  const monthName = (m) => { const [y, mm] = m.split('-'); return `${MESI_LUNGHI[+mm - 1]} ${y}`; };
+  const winLabel = (w) => (w ? `${monthLabel(w[0].split('-').reverse().map(Number).join('/'))} – ${monthLabel(w[1].split('-').reverse().map(Number).join('/'))}` : '');
+  const dayLabel = (d) => new Date(d + 'T12:00:00').toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  function syncTimeMachine() {
+    document.body.classList.toggle('tm-on', TM.on);
+    if (!TM.on || !TM.index) return;
+    const months = TM.index.months, i = months.findIndex((x) => x.m === TM.month);
+    const meta = DATA.time_machine;
+    $('#tmTitle').textContent = `Le offerte del ${dayLabel(meta.day)}`;
+    $('#tmMonth').value = TM.month;
+    $('#tmPrev').disabled = i <= 0;
+    $('#tmNext').disabled = i < 0 || i >= months.length - 1;
+    const k = state.kind === 'gas' ? 'gas' : 'luce';
+    const B = DATA[k], H = B.params_hindsight;
+    const ix = (P) => (k === 'luce' ? `PUN ${nf3(P.pun_12m.mono)}` : `PSV ${nf3(P.psv_12m)}`);
+    seg($('#tmMode'), [
+      { v: 'then', label: 'Allora', small: ix(B.params) },
+      { v: 'poi', label: 'Col senno di poi', small: H ? ix(H) + (H.months < 12 ? ` · ${H.months}/12` : '') : 'non ancora' },
+    ], tmPoi(k) ? 'poi' : 'then', (v) => { if (v === 'poi' && !H) return; TM.mode = v; update({}); });
+    const poiBtn = $('#tmMode').querySelector('[data-v="poi"]');
+    if (!H) poiBtn.setAttribute('aria-disabled', 'true');
+    const parts = [`<b>Allora</b>: la classifica di quel giorno, con l'indice medio dei 12 mesi prima (${esc(winLabel(B.params.window))}) e gli oneri di allora.`];
+    if (H) {
+      parts.push(`<b>Col senno di poi</b>: quanto sarebbe costata davvero, con l'indice effettivo dei mesi di fornitura (${esc(winLabel(H.window))}) e i loro oneri e IVA.`);
+      if (H.months < 12) parts.push(`<span class="tm-warn">Parziale: solo ${H.months} mesi su 12 sono già chiusi.</span>`);
+    } else parts.push('Col senno di poi non è ancora calcolabile: nessun mese di fornitura è chiuso.');
+    $('#tmNote').innerHTML = parts.join(' ');
+    $('#tmNoteM').innerHTML = parts.join(' ');   // su telefono la spiegazione sta nel riepilogo
+  }
+
+  function footerTM() {
+    const L = DATA.luce, G = DATA.gas, meta = DATA.time_machine;
+    $('#dataInfo').textContent = `🕰️ ${nf0.format(L.offers.length)} offerte luce · ${nf0.format(G.offers.length)} gas · Portale Offerte del ${dayLabel(meta.day)}`;
+    $('#foot').innerHTML =
+      `<p>Macchina del tempo: le offerte pubblicate sul Portale Offerte ARERA il ${esc(dayLabel(meta.day))}, con lo stesso modello di costo di oggi. <b>Allora</b> usa il PUN/PSV medio dei 12 mesi chiusi prima e i parametri regolati di quel mese. <b>Col senno di poi</b> usa il PUN/PSV effettivo dei 12 mesi di fornitura e la media dei loro parametri regolati e dell'IVA (gas al 5% fino a dicembre 2023). Sconti, bonus e penali non sono inclusi.</p>` +
+      `<p>Fonti: ${esc(L.source_xml)}, ${esc(G.source_xml)}; PUN GME; PSV: ${esc(G.params.psv_sources)}; parametri luce: ${esc(L.params.params_source)}; gas: CSV parametri ARERA del periodo sul forfait nazionale di oggi.</p>`;
+  }
+
+  function setData(d) {
+    DATA = d;
+    nodes.clear();
+    detailCache.clear();
+    $('#ranking').innerHTML = '';
+    shown = PAGE;
+    footer();
+  }
+
+  function loadSnapshot(m) {
+    if (!TM.cache.has(m)) {
+      TM.cache.set(m, fetch(`history/${m}/offers.json?v=${encodeURIComponent(TM.index.generated_at)}`)
+        .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+        .catch((e) => { TM.cache.delete(m); throw e; }));
+    }
+    return TM.cache.get(m);
+  }
+
+  function enterTM(m) {
+    $('#dataInfo').textContent = `Carico le offerte di ${monthName(m)}…`;
+    return loadSnapshot(m).then((d) => {
+      TM.on = true; TM.month = m;
+      if (state.kind === 'mercato') state.kind = 'luce';
+      setData(d);
+      history.replaceState(history.state, '', '#tm=' + m);
+      update({});
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }).catch((e) => { $('#dataInfo').textContent = `Non riesco a caricare ${monthName(m)} (${e.message}).`; });
+  }
+
+  function exitTM() {
+    TM.on = false; TM.month = null;
+    setData(LIVE);
+    history.replaceState(history.state, '', location.pathname + location.search);
+    update({});
+  }
+
+  function initTimeMachine(ix) {
+    if (!ix || !Array.isArray(ix.months) || !ix.months.length) return;
+    TM.index = ix;
+    const byYear = new Map();
+    for (const x of ix.months) { const y = x.m.slice(0, 4); if (!byYear.has(y)) byYear.set(y, []); byYear.get(y).push(x); }
+    $('#tmMonth').innerHTML = [...byYear].map(([y, ms]) => `<optgroup label="${y}">${ms.map((x) =>
+      `<option value="${x.m}">${monthName(x.m)}${x.hl < 12 ? ' · senno di poi parziale' : ''}</option>`).join('')}</optgroup>`).join('');
+    const step = (k) => { const i = ix.months.findIndex((x) => x.m === TM.month) + k; if (i >= 0 && i < ix.months.length) enterTM(ix.months[i].m); };
+    $('#tmMonth').addEventListener('change', (e) => enterTM(e.target.value));
+    $('#tmPrev').onclick = () => step(-1);
+    $('#tmNext').onclick = () => step(1);
+    $('#tmExit').onclick = exitTM;
+    // di partenza: il mese più recente con il senno di poi completo
+    const start = (ix.months.filter((x) => x.hl === 12 && x.hg === 12).pop() || ix.months[ix.months.length - 1]).m;
+    const btn = $('#tmBtn');
+    btn.hidden = false;
+    btn.onclick = () => enterTM(start);
+    const m = (location.hash.match(/^#tm=(\d{4}-\d{2})$/) || [])[1];
+    if (m && ix.months.some((x) => x.m === m)) enterTM(m);
+  }
+
   window.EnergyApp = {
     data: () => DATA, state: () => state, update, compute, openRow, badges,
     fmt: { nf0, nf2, nf3, nf4, eur, eur2, esc, monthLabel },
@@ -702,9 +891,13 @@
     .then((r) => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then((d) => {
       DATA = d;
+      LIVE = d;
       footer();
       update({});
       if (window.EnergyMarket) window.EnergyMarket.ready();
+      // Macchina del tempo: c'è solo se è stato pubblicato l'indice degli snapshot.
+      fetch('history/index.json', { cache: 'no-cache' })
+        .then((r) => (r.ok ? r.json() : null)).then(initTimeMachine).catch(() => {});
     })
     .catch((e) => {
       $('#dataInfo').textContent = 'Non riesco a caricare le offerte.';

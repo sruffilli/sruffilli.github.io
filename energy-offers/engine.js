@@ -106,13 +106,28 @@
 
   /*
    * profile: { smc, reteFix (€/mese), reteVar (€/Smc) }
+   * params.reg_delta (solo snapshot storici): correzione delle regolate del periodo.
    * Ritorna { total, energia, fissoVenditore, rete, iva }.
    */
+  // Scaglioni annui (Smc) di UG2 e τ3, come time_machine.GAS_BANDS_SMC.
+  const GAS_BANDS_SMC = [120, 480, 1560, 5000, 80000, 200000];
+
+  // Variazione €/anno delle regolate gas di un periodo passato rispetto al
+  // forfait di oggi (macchina del tempo): quota fissa + quota variabile, con la
+  // parte per scaglione ripartita sul consumo. Replica
+  // time_machine.gas_reg_delta_annual; assente (offerte di oggi) = 0.
+  function regDeltaAnnual(delta, smc) {
+    if (!delta) return 0;
+    let v = delta.var_flat * smc, lo = 0;
+    GAS_BANDS_SMC.forEach((hi, i) => { v += delta.var_bands[i] * Math.max(0, Math.min(smc, hi) - lo); lo = hi; });
+    return delta.fix_annual + v;
+  }
+
   function costGas(offer, params, profile, psv) {
     const smc = profile.smc;
     let energia = offer.t === 'F' ? offer.p * smc : (psv + offer.p) * smc;
     if (offer.sb > 0) energia += offer.sb * smc;
-    const rete = profile.reteFix * 12 + profile.reteVar * smc;
+    const rete = profile.reteFix * 12 + profile.reteVar * smc + regDeltaAnnual(params.reg_delta, smc);
     const variable = energia + rete;
     const total = gasWithIva(params, variable, smc, offer.fx);
     return { total, energia, fissoVenditore: offer.fx, rete, iva: total - variable - offer.fx };
@@ -170,5 +185,5 @@
     return { separate, vendors };
   }
 
-  return { exciseExemptionKwh, systemLuce, punIndex, costLuce, gasWithIva, psvIndex, costGas, dualRanking };
+  return { exciseExemptionKwh, systemLuce, punIndex, costLuce, gasWithIva, psvIndex, regDeltaAnnual, costGas, dualRanking };
 });
