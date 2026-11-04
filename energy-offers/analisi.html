@@ -80,6 +80,28 @@ th,td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--rule);vertic
 th{color:var(--muted);font-weight:600}
 td.num{white-space:nowrap}
 .note{font-size:16px;color:var(--muted);border-top:1px solid var(--rule);padding-top:18px;margin-top:44px}
+.live{display:inline-block;margin-left:6px;font-size:12px;font-weight:600;color:var(--c3);
+border:1px solid var(--c3);border-radius:99px;padding:0 8px;vertical-align:2px;white-space:nowrap}
+.wbody{min-height:40px}
+.wctl,.wtext,.wnote,.wcard-head{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wctl{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;font-size:15px;margin:6px 0 8px}
+.wseg{display:inline-flex;border:1px solid var(--rule);border-radius:6px;overflow:hidden}
+.wseg button{border:0;background:none;padding:6px 14px;font:inherit;color:var(--soft);cursor:pointer}
+.wseg button[aria-pressed="true"]{background:var(--box);color:var(--ink);font-weight:650}
+.wrange{display:flex;align-items:center;gap:10px;flex:1 1 260px}
+.wrange input{flex:1;accent-color:var(--c1);min-width:0}
+.wval{min-width:140px;font-variant-numeric:tabular-nums;font-weight:600;color:var(--ink)}
+.wnav{display:inline-flex;align-items:center;gap:4px}
+.wnav select{font:inherit;padding:4px 6px;border:1px solid var(--rule);border-radius:6px;background:var(--bg);color:var(--ink)}
+.wnav button{border:1px solid var(--rule);background:var(--bg);color:var(--ink);border-radius:6px;width:30px;height:30px;
+font:inherit;cursor:pointer}
+.wtext{font-size:15px;line-height:1.5;color:var(--soft);margin:8px 0 0}
+.wnote{font-size:14px;line-height:1.5;color:var(--muted);margin:6px 0 0}
+.wcard{margin:4px 0 20px}
+.wcard-head{font-size:16px;margin:0 0 2px;color:var(--ink)}
+svg .b4{fill:var(--c4)}
+svg .ann.strong{fill:var(--ink);font-weight:600}
+svg .dt.c3{fill:var(--c3)}
 </style>
 </head>
 <body>
@@ -88,7 +110,7 @@ td.num{white-space:nowrap}
 <p class="kicker">Energia di casa · analisi dei dati</p>
 <h1>Fisso o variabile: cosa insegnano 58 mesi di offerte luce e gas</h1>
 <p class="sub">Abbiamo rifatto i conti su ogni offerta domestica del mercato libero, da gennaio 2022 a ottobre 2026. Due volte: come la vedevi il giorno della firma e come è andata davvero.</p>
-<p class="meta">4 novembre 2026 · 15 minuti di lettura</p>
+<p class="meta">4 novembre 2026 · 17 minuti di lettura</p>
 </header>
 
 <p>Chi deve rinnovare un contratto di luce o gas si fa quasi sempre tre domande. Meglio un prezzo fisso o variabile? Quando conviene cambiare? Quanto si risparmia davvero? Per rispondere abbiamo analizzato tutte le offerte del Portale Offerte di ARERA degli ultimi 58 mesi. La risposta breve sta in tre righe.</p>
@@ -131,7 +153,7 @@ td.num{white-space:nowrap}
 
 <p>Nell'agosto 2022 il PUN ha toccato 0,543 euro al kWh, dieci volte la media del 2019. Nel 2023 i prezzi sono scesi, e il 2024 e il 2025 sono stati anni calmi. Il 2026 ha riaperto la salita: a ottobre il PUN valeva 0,231 euro, più del doppio di un anno prima, e il PSV 2,7 volte un anno prima.</p>
 
-<figure id="prezzi">
+<figure id="prezzi" data-last="2026-10">
 <div class="fig-title">Il prezzo all&#x27;ingrosso di luce e gas, media mensile</div>
 <div class="legend"><span class="lg"><span class="sw c1 line"></span>PUN (luce), dal 2005</span><span class="lg"><span class="sw c2 line"></span>PSV (gas), dal 2020</span></div>
 <div class="chart chart-d"><svg viewBox="0 0 680 496" width="100%" role="img" aria-label="Prezzo all&#x27;ingrosso mensile di luce (PUN) e gas (PSV)" xmlns="http://www.w3.org/2000/svg"><text class="pt" x="4.0" y="15.0" font-size="14">PUN, elettricità · €/kWh</text>
@@ -617,6 +639,15 @@ td.num{white-space:nowrap}
 
 <p>Il vincitore cambia con il mercato. Un fisso firmato prima di un rialzo, a inizio 2022 o nel 2026, ha fatto risparmiare centinaia di euro. Un fisso firmato vicino al picco del 2022, o all'inizio del calo del 2023, è costato fino a 954 euro in più sulla luce e 2.730 sul gas. Negli anni calmi la scelta valeva circa 20 euro.</p>
 
+<p>Puoi rifare il confronto per qualunque mese dal gennaio 2022. Il grafico qui sotto prende le offerte di quel giorno e le prezza due volte, come il resto dell'analisi.</p>
+
+<figure class="widget" id="w-mese">
+<div class="fig-title">Fisso o variabile in un mese a scelta <span class="live">interattivo, dati aggiornati</span></div>
+<div class="legend"><span class="lg"><span class="sw c1"></span>allora, come la vedevi il giorno della firma</span><span class="lg"><span class="sw c2"></span>col senno di poi, nei 12 mesi dopo</span></div>
+<div class="wbody"><p class="wnote">Questo grafico interattivo legge le offerte del comparatore. Lo trovi nella <a href="https://tools.ruffilli.it/energy-offers/analisi.html">versione pubblicata dell'articolo</a>.</p></div>
+<figcaption>Cosa guardare: quale delle due barre arancioni è più corta. Offerte del primo giorno del mese scelto, utente tipo, offerte nazionali. Per i mesi recenti il senno di poi è parziale.</figcaption>
+</figure>
+
 <h2>La classifica del portale sbaglia quando il mercato gira</h2>
 
 <p>Dentro lo stesso tipo di offerta la classifica funziona. La fissa più economica del giorno è stata la più economica anche col senno di poi in 46 mesi su 46, e lo stesso vale per la variabile.</p>
@@ -855,6 +886,15 @@ td.num{white-space:nowrap}
 <polyline class="ln c1" points="46.0,381.7 51.6,387.2 57.3,382.2 62.9,394.1 68.6,392.3 74.2,392.1 79.9,392.1 85.5,390.7 91.2,390.1 96.8,395.7 102.5,395.0 108.1,391.3 113.8,391.4 119.4,390.8 125.1,313.8 130.7,321.7 136.4,327.3 142.0,329.1 147.7,330.1 153.3,356.5 159.0,316.2 164.6,337.9 170.3,388.7 175.9,389.1 181.6,387.7 187.2,384.8 192.9,379.7 198.5,384.2 204.2,385.4 209.8,380.0 215.5,380.0 221.1,378.9 226.8,380.5 232.4,388.3 238.1,387.1 243.7,382.7 249.4,383.6 255.0,388.1 260.7,386.9 266.3,381.4 272.0,381.2 277.6,382.7 283.3,384.2 288.9,378.6 294.6,376.2 300.2,377.8 305.9,375.4 311.5,376.0 317.2,379.0 322.8,380.2 328.5,383.0 334.1,385.8 339.8,386.8 345.4,388.3 351.1,387.3 356.7,389.4 362.4,389.5 368.0,386.7" />
 <polyline class="ln c3" points="46.0,406.2 51.6,414.6 57.3,413.9 62.9,413.5 68.6,415.2 74.2,416.0 79.9,412.4 85.5,412.4 91.2,412.0 96.8,416.1 102.5,414.6 108.1,414.6 113.8,414.2 119.4,416.3 125.1,382.0 130.7,413.2 136.4,411.1 142.0,412.0 147.7,413.2 153.3,413.4 159.0,346.3 164.6,364.8 170.3,414.1 175.9,411.1 181.6,414.3 187.2,415.8 192.9,408.3 198.5,412.2 204.2,413.2 209.8,408.5 215.5,408.5 221.1,409.9 226.8,410.0 232.4,417.4 238.1,416.7 243.7,411.8 249.4,408.7 255.0,414.3 260.7,413.3 266.3,406.6 272.0,408.5 277.6,414.6 283.3,414.2 288.9,413.8 294.6,410.1 300.2,411.7 305.9,413.9 311.5,413.7 317.2,418.7 322.8,417.9 328.5,417.6 334.1,413.9 339.8,415.9 345.4,417.4 351.1,418.0 356.7,418.7 362.4,420.5 368.0,417.4" /></svg></div>
 <figcaption>Cosa guardare: la linea verde resta quasi sempre sotto i 100 euro, la blu sta intorno ai 200 euro per la luce e ai 350 per il gas. Nel 2023 le distanze si gonfiano: molti fissi cari in vetrina e, in cima, alcune offerte sospette a prezzi molto bassi. Classifica del portale al primo del mese, solo offerte nazionali.</figcaption>
+</figure>
+
+<p>Il grafico seguente fa lo stesso conto sulle offerte di oggi. Sposta il consumo per vedere quanto vale cercare nel tuo caso.</p>
+
+<figure class="widget" id="w-cercare">
+<div class="fig-title">Quanto paghi in più della migliore offerta, ai tuoi consumi <span class="live">interattivo, dati aggiornati</span></div>
+<div class="legend"><span class="lg"><span class="sw c3"></span>10ª offerta</span><span class="lg"><span class="sw c1"></span>offerta mediana</span><span class="lg"><span class="sw c2"></span>una su quattro costa più di così</span><span class="lg"><span class="sw c4"></span>una su dieci costa più di così</span></div>
+<div class="wbody"><p class="wnote">Questo grafico interattivo legge le offerte del comparatore. Lo trovi nella <a href="https://tools.ruffilli.it/energy-offers/analisi.html">versione pubblicata dell'articolo</a>.</p></div>
+<figcaption>Cosa guardare: come cambiano le barre spostando il consumo. Offerte nazionali di oggi, vendibili da sole, al prezzo all'ingrosso medio dei 12 mesi come nella classifica del portale.</figcaption>
 </figure>
 
 <p>La decima offerta costa poco più della prima: circa 50 euro l'anno sulla luce e 95 sul gas, e nel 2026 circa 40 per entrambe. Inseguire il primo posto vale qualche decina di euro. Cercare ha fatto perdere soldi solo in 5 mesi su 46 per la luce e 7 per il gas, tutti tra settembre 2022 e agosto 2023, quando la classifica premiava fissi calcolati sui prezzi della crisi.</p>
@@ -2119,6 +2159,13 @@ td.num{white-space:nowrap}
 
 <p>Confronta il costo annuo ai tuoi consumi, mai il solo prezzo al kWh. Il punto di pareggio tra due offerte è la differenza di quota fissa divisa per la differenza di prezzo: 60 euro di quota in più e 0,029 euro al kWh in meno pareggiano a circa 2.100 kWh. Sotto i 2.000 kWh o i 500 Smc l'anno conviene una quota bassa o nulla. Per la luce guarda prima la quota, per il gas il ricarico.</p>
 
+<figure class="widget" id="w-pareggio">
+<div class="fig-title">Quota fissa bassa o prezzo basso? Dipende da quanto consumi <span class="live">interattivo, dati aggiornati</span></div>
+<div class="legend"><span class="lg"><span class="sw c3 line"></span>migliore offerta con quota fissa fino a 3 € al mese</span><span class="lg"><span class="sw c1 line"></span>migliore offerta con quota fissa più alta</span></div>
+<div class="wbody"><p class="wnote">Questo grafico interattivo legge le offerte del comparatore. Lo trovi nella <a href="https://tools.ruffilli.it/energy-offers/analisi.html">versione pubblicata dell'articolo</a>.</p></div>
+<figcaption>Cosa guardare: il punto in cui le due linee si incrociano. A sinistra conviene la quota bassa, a destra il prezzo basso. Offerte nazionali di oggi, al prezzo all'ingrosso medio dei 12 mesi.</figcaption>
+</figure>
+
 <h3>Prima di firmare fai sei controlli</h3>
 <ol>
 <li>Se la prima offerta costa oltre il 20% meno della seconda, cerca l'errore: prezzo sbagliato, zona limitata o vendita solo insieme all'altra fornitura.</li>
@@ -2133,8 +2180,17 @@ td.num{white-space:nowrap}
 
 <p>A novembre 2026 entrambi i segnali indicano il fisso. Il PUN di ottobre, 0,231 euro al kWh, vale 1,57 volte la media dei 12 mesi prima. Il PSV, 0,945 euro allo Smc, vale 1,72 volte la sua. Le migliori fisse non hanno ancora seguito: il miglior fisso nazionale della luce, circa 0,115 euro al kWh, vale il 45% del PUN di ottobre con le perdite di rete.</p>
 
+<p>Il grafico seguente rifà il conto sulle offerte del comparatore, aggiornate ogni settimana. Se lo leggi più avanti, può dire una cosa diversa da questo paragrafo.</p>
+
+<figure class="widget" id="w-oggi">
+<div class="fig-title">Il segnale di oggi, calcolato sulle offerte del comparatore <span class="live">interattivo, dati aggiornati</span></div>
+<div class="legend"><span class="lg"><span class="sw c3"></span>fissa migliore</span><span class="lg"><span class="sw c1"></span>variabile, come in classifica</span><span class="lg"><span class="sw c2"></span>variabile al prezzo dell&#x27;ultimo mese</span><span class="lg"><span class="sw up"></span>zona del fisso</span><span class="lg"><span class="sw down"></span>zona del variabile</span></div>
+<div class="wbody"><p class="wnote">Questo grafico interattivo legge le offerte del comparatore. Lo trovi nella <a href="https://tools.ruffilli.it/energy-offers/analisi.html">versione pubblicata dell'articolo</a>.</p></div>
+<figcaption>Cosa guardare: il punto sulla barra del segnale e la distanza tra le due variabili. Se il punto è nella zona del fisso e la fissa costa meno della variabile al prezzo dell'ultimo mese, la regola dei due controlli indica il fisso.</figcaption>
+</figure>
+
 <table>
-<thead><tr><th>Segnale</th><th>Regola</th><th>Oggi</th></tr></thead>
+<thead><tr><th>Segnale</th><th>Regola</th><th>4 novembre 2026</th></tr></thead>
 <tbody>
 <tr><td>Ultimo mese diviso per la media di 12 mesi</td><td>sopra 1,2 conviene il fisso, sotto 0,83 il variabile</td><td class="num">luce 1,57<br>gas 1,72</td></tr>
 <tr><td>Miglior fisso diviso per l'ultimo mese all'ingrosso</td><td>sotto 0,8 i fissi saranno ritoccati presto</td><td class="num">luce 0,45<br>gas 0,59</td></tr>
@@ -2167,5 +2223,7 @@ td.num{white-space:nowrap}
 <p class="note">Questo articolo descrive il mercato in generale e non è una consulenza personale. Prima di cambiare fornitore confronta le offerte ai tuoi consumi sul <a href="./">comparatore luce e gas</a>, che usa lo stesso modello di costo e con la macchina del tempo mostra le offerte di ogni mese dal 2022, oppure sul <a href="https://www.ilportaleofferte.it/">Portale Offerte di ARERA</a>. Dati: Portale Offerte, gennaio 2022 - ottobre 2026; parametri regolati ARERA; prezzi all'ingrosso PUN e PSV.</p>
 
 </main>
+<script src="engine.js?v=20261104T123042"></script>
+<script src="analisi.js?v=20261104T123042"></script>
 </body>
 </html>
