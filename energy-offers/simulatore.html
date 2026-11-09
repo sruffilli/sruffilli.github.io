@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="it">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
+  <title>Simulatore bolletta luce e gas</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>">
+  <link rel="stylesheet" href="style.css?v=20261109T112334">
+</head>
+<body data-kind="luce" class="sim-page">
+  <header class="top">
+    <div class="brand">
+      <span class="logo" aria-hidden="true"></span>
+      <div>
+        <h1>Simulatore bolletta</h1>
+        <p class="sub" id="dataInfo">Caricamento…</p>
+      </div>
+      <a class="an-btn" href="index.html" title="Torna alla classifica delle offerte">
+        <span class="an-ico" aria-hidden="true">←</span><span class="an-btn-txt">Classifica</span>
+      </a>
+    </div>
+    <nav class="tabs two" role="tablist" aria-label="Fornitura">
+      <button role="tab" aria-selected="true" data-kind="luce"><span aria-hidden="true">⚡</span> Luce</button>
+      <button role="tab" aria-selected="false" data-kind="gas"><span aria-hidden="true">🔥</span> Gas</button>
+      <span class="tab-ink" aria-hidden="true"></span>
+    </nav>
+  </header>
+
+  <main class="layout sim" id="sim">
+    <aside class="controls" id="simControls" aria-label="Le voci della bolletta"></aside>
+
+    <section class="results sim-results">
+      <div class="card sim-summary">
+        <div class="sim-offer" id="simOffer"></div>
+        <div id="simTotal"></div>
+        <p class="sr-only" id="simLive" aria-live="polite"></p>
+        <div class="actions sim-actions">
+          <button type="button" class="btn" id="simResetAll">Ripristina tutto</button>
+          <button type="button" class="btn" id="simCopy">Copia link</button>
+        </div>
+      </div>
+
+      <section class="card sim-receipt-card">
+        <h3 class="eyebrow">Voce per voce</h3>
+        <table class="tbl sim-tbl"><tbody id="simReceipt"></tbody></table>
+      </section>
+
+      <section class="card sim-chart-card">
+        <div class="seg small-seg" id="simAxis" role="radiogroup" aria-label="Asse del grafico"></div>
+        <div class="sim-chart" id="simChart"></div>
+        <p class="hint" id="simChartCap"></p>
+      </section>
+
+      <footer class="foot" id="simFoot"></footer>
+    </section>
+  </main>
+
+  <button type="button" class="sim-bar" id="simBar" aria-label="Vai al totale"></button>
+
+  <script src="engine.js?v=20261109T112334"></script>
+  <script src="sim.js?v=20261109T112334"></script>
+</body>
+</html>

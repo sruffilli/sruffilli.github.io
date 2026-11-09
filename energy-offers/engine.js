@@ -29,20 +29,26 @@
   }
 
   // Voci regolate luce (identiche per ogni venditore), IVA esclusa.
+  // fixAnnual è la somma di trasportoFix + potenza + oneriFix: le tre parti
+  // servono al simulatore (simulatore.html) per mostrare ogni voce da sola.
   function systemLuce(sys, kw, kwh, residente) {
     const fix = sys.fix_components;
-    let fixAnnual = (fix[0] + fix[1] * kw + fix[2] * kw + fix[3]) * 12;
-    if (!residente) fixAnnual += sys.non_resident_fix_annual;
+    const trasportoFix = fix[0] * 12;
+    const potenza = (fix[1] + fix[2]) * kw * 12;
+    let oneriFix = fix[3] * 12;
+    if (!residente) oneriFix += sys.non_resident_fix_annual;
+    const fixAnnual = trasportoFix + potenza + oneriFix;
     const varAnnual = sys.var_per_kwh * kwh;
-    let excise;
+    let excise, exemptKwh = 0;
     if (residente) {
-      const exempt = exciseExemptionKwh(kwh / 12, kw);
-      excise = sys.excise.resident * Math.max(0, kwh - exempt * 12);
+      exemptKwh = Math.min(kwh, exciseExemptionKwh(kwh / 12, kw) * 12);
+      excise = sys.excise.resident * (kwh - exemptKwh);
     } else {
       excise = sys.excise.non_resident * kwh;
     }
     const dispbt = sys.dispbt_annual;
-    return { fixAnnual, varAnnual, excise, dispbt, total: fixAnnual + varAnnual + excise + dispbt };
+    return { fixAnnual, trasportoFix, potenza, oneriFix, varAnnual, excise, exemptKwh, dispbt,
+             total: fixAnnual + varAnnual + excise + dispbt };
   }
 
   // Indici PUN per fascia da usare per le variabili: media 12 mesi, ultimo

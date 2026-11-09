@@ -735,7 +735,19 @@
       <div class="d-rank">${pos + 1}° su ${nf0.format(rows.length)} con i filtri attuali${pos > 0 ? ` · +${eur(row.total - rows[0].total)} rispetto alla prima` : ''}</div>
       <div class="stack">${pos_.map((p) => `<i style="width:${(100 * p[1] / sumPos).toFixed(2)}%;background:${p[2]}" title="${esc(p[0])}"></i>`).join('')}</div>
       <div class="legend">${parts.map((p) => `<span class="k" style="--c:${p[2]}">${esc(p[0])}</span><span class="v">${eur2(p[1])}</span>`).join('')}
-        <span class="k tot" style="--c:transparent">Totale annuo</span><span class="v tot">${eur2(row.total)}</span></div>`;
+        <span class="k tot" style="--c:transparent">Totale annuo</span><span class="v tot">${eur2(row.total)}</span></div>
+      ${simLink(kind, o, 'sim-link', '🧮 Simula la bolletta voce per voce →')}`;
+  }
+
+  // Link al simulatore (simulatore.html) con offerta e profilo pre-caricati.
+  // Solo per le offerte di oggi: gli snapshot storici hanno parametri di allora.
+  function simLink(kind, o, cls, label) {
+    if (TM.on || !window.EnergySim) return '';
+    const st = kind === 'luce'
+      ? { kwh: state.kwh, kw: state.kw, residente: state.residente, f1: state.f1, f2: state.f2, punScen: state.punScen, punCustom: state.punCustom }
+      : { smc: state.smc, psvScen: state.psvScen, psvCustom: state.psvCustom, reteFix: state.reteFix, reteVar: state.reteVar };
+    const href = 'simulatore.html#' + window.EnergySim.offerHash(kind, o, st, String(DATA.generated_at || '').slice(0, 10));
+    return `<a class="${cls}" href="${esc(href)}">${esc(label)}</a>`;
   }
 
   function priceRows(o, kind) {
@@ -813,6 +825,8 @@
     const links = [];
     const uo = safeUrl(d.url_offerta), us = safeUrl(d.url_sito);
     if (uo) links.push(`<a class="btn primary" href="${esc(uo)}" target="_blank" rel="noopener noreferrer">Pagina dell'offerta</a>`);
+    const sl = simLink(kind, o, 'btn', 'Simula la bolletta');
+    if (sl) links.push(sl);
     if (us && us !== uo) links.push(`<a class="btn" href="${esc(us)}" target="_blank" rel="noopener noreferrer">Sito del venditore</a>`);
     links.push(`<a class="btn" href="https://www.ilportaleofferte.it/portaleOfferte/" target="_blank" rel="noopener noreferrer">Portale Offerte ARERA</a>`);
     out.push(`<div class="actions">${links.join('')}</div>`);
