@@ -47,7 +47,7 @@
 
   /* ---------------- calcolo ---------------- */
 
-  // Soglia delle fisse implausibili (studio 2022-2026, time_machine.drop_implausible):
+  // Soglia delle fisse implausibili (studio 2022-2026):
   // materia sotto metà del minimo fra media 12 mesi e ultimo mese dell'indice
   // (luce × perdite). Gli snapshot storici la portano già calcolata.
   function oddFloor(kind, P) {
@@ -110,7 +110,7 @@
     // singole salvo richiesta; il tab Insieme le chiede esplicitamente.
     const withDual = !!(opts && opts.includeDual) || (!market && state.showDual);
     // Macchina del tempo: fisse con la materia sotto metà dell'ingrosso di allora
-    // (una sola componente pubblicata come prezzo), come time_machine.py.
+    // (una sola componente pubblicata come prezzo).
     const floor = oddFloor(kind, block.params);
     let hiddenOdd = 0, odd = 0;
     for (const o of block.offers) {
@@ -150,8 +150,8 @@
     if (o.r.length) b.push(`<span class="badge" title="Offerta con restrizione territoriale">📍 ${o.r.length > 10 ? 'quasi tutte' : o.r.length + (o.r.length === 1 ? ' regione' : ' regioni')}</span>`);
     // <PROVINCIA>/<COMUNE> restringono oltre la regione (o anche senza alcuna
     // <REGIONE>, il caso che il badge sopra non vedeva affatto): nessun
-    // selettore per provincia/comune qui, solo l'avviso — stesso limite del
-    // --regione lato CLI (apps/energy-monitor/AGENTS.md).
+    // selettore per provincia/comune qui, solo l'avviso: il comparatore non
+    // chiede mai provincia o comune dell'utente.
     else if ((o.pr && o.pr.length) || (o.cm && o.cm.length)) b.push(`<span class="badge" title="Offerta ristretta a provincia/comune specifici, non filtrabile qui">📍 zona ristretta</span>`);
     const fix = c.fissoVenditore;
     const susp = DATA[kind].params.suspicious_fix_annual;
@@ -411,8 +411,8 @@
       { v: '33-31', label: 'Tipica' }, { v: '18-28', label: '☀️ Con fotovoltaico' },
       { v: '20-30', label: 'Fuori casa di giorno' }, { v: '40-30', label: 'Smart working' },
     ], `${f1}-${f2}`, (v) => { const [a, b] = v.split('-').map(Number); update({ f1: a, f2: b }); });
-    // Profilo misurato su 11 bollette di una casa con 6,56 kWp senza batteria:
-    // i pannelli coprono il giorno feriale, dalla rete si preleva sera e notte.
+    // Profilo di una casa con fotovoltaico senza batteria: i pannelli coprono il
+    // giorno feriale, dalla rete si preleva sera e notte.
     const pv = f1 === 18 && f2 === 28;
     $('#pvNote').hidden = !pv;
     if (pv) $('#kwhHint').textContent = `≈ ${nf0.format(state.kwh / 12)} kWh al mese prelevati dalla rete`;
@@ -809,7 +809,7 @@
     }
     let regs = o.r.length ? o.r.map((r) => DATA.regioni[r] || r).join(', ') : 'tutta Italia';
     // <PROVINCIA>/<COMUNE> (cod. ISTAT, nessuna tabella nomi qui) si sommano
-    // alla regione: codici grezzi, come per --scheda in offer_search.py.
+    // alla regione: si mostrano i codici grezzi.
     if (o.pr && o.pr.length) regs += ` · solo provincia ${o.pr.join(', ')}`;
     if (o.cm && o.cm.length) regs += ` · solo comune ${o.cm.join(', ')}`;
     const lim = [];

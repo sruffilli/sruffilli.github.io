@@ -1,6 +1,7 @@
 /* market.js — tab "Mercato": grafici PUN/PSV (SVG fatto a mano) e curiosità sulle offerte.
  *
- * I dati delle serie arrivano da offers.json → market (web_export.build_market).
+ * I dati delle serie arrivano da offers.json → market (PUN dall'API Esiti GME, PSV
+ * dai prezzi pubblicati da ARERA).
  * Le curiosità sono calcolate qui, con engine.js e sul profilo dell'utente,
  * tramite le funzioni che app.js espone in window.EnergyApp.
  */

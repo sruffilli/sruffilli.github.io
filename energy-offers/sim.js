@@ -8,8 +8,8 @@
  * l'engine restituisce.
  *
  * Il core (parseHash, buildHash, offerHash, evalLuce, evalGas, sweep) è puro e
- * gira anche in node: tests/test_web_export.py::TestSimulator lo confronta con
- * engine.js. app.js usa offerHash per il link "Simula la bolletta" della scheda.
+ * gira anche in node, dove un test lo confronta con engine.js. app.js usa
+ * offerHash per il link "Simula la bolletta" della scheda.
  *
  * Stato nell'hash dell'URL: le chiavi semplici sono il punto di partenza (l'offerta
  * e il profilo con cui si è aperto il simulatore), quelle con prefisso "e." le

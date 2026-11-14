@@ -2,19 +2,19 @@
  * analisi.js — i grafici interattivi dell'articolo "Fisso o variabile" (analisi.html).
  *
  * Leggono i dati veri del comparatore che stanno accanto alla pagina:
- * offers.json (offerte di oggi, PUN/PSV, serie di mercato) e history/ (i 58
+ * offers.json (offerte di oggi, PUN/PSV, serie di mercato) e history/ (gli
  * snapshot mensili della macchina del tempo), e fanno i conti con engine.js,
  * lo stesso motore della classifica. Si aggiornano quindi a ogni pubblicazione.
  *
- * I grafici usano una copia fedele del Panel di
- * data/energy/market-study-2026-11/article/build.py: stesse classi CSS, stessi
- * margini, stesse larghezze (680 px desktop, 380 px telefono). Chi cambia uno
- * dei due deve cambiare anche l'altro, o i grafici vivi stonano con quelli fissi.
+ * I grafici usano una copia fedele del Panel che disegna i grafici statici
+ * dell'articolo: stesse classi CSS, stessi margini, stesse larghezze (680 px
+ * desktop, 380 px telefono). Chi cambia uno dei due deve cambiare anche l'altro,
+ * o i grafici vivi stonano con quelli fissi.
  *
  * Senza i dati accanto (pagina aperta da sola) ogni widget mostra un rimando
  * alla versione pubblicata, e il resto dell'articolo resta leggibile.
  *
- * In node esporta le funzioni di calcolo per i test (tests/test_web_time_machine.py).
+ * In node esporta le funzioni di calcolo per i test.
  */
 (function (root, factory) {
   const api = factory(root.EnergyEngine || (typeof require === 'function' ? require('./engine.js') : null));
@@ -32,7 +32,7 @@
   const STD = { kwh: 2700, smc: 1400 };
   const LOW_FEE = 36;
 
-  /* ---------------- formattazione, come build.py ---------------- */
+  /* ---------------- formattazione, come i grafici statici ---------------- */
 
   function it(x, d) {
     d = d || 0;
@@ -52,7 +52,7 @@
   // chiavi 'M/YYYY' dei parametri (pun_last.month) → 'YYYY-MM'
   const isoMonth = (k) => { const [m, y] = String(k).split('/'); return `${y}-${String(m).padStart(2, '0')}`; };
 
-  /* ---------------- SVG: copia del Panel di build.py ---------------- */
+  /* ---------------- SVG: copia del Panel dei grafici statici ---------------- */
 
   class Panel {
     constructor(W, H, xr, yr, o) {
@@ -250,7 +250,7 @@
                   months: block.params_hindsight ? block.params_hindsight.months : 0 };
     if (block.params_hindsight) {
       const poi = rankOffers(block, kind, amount, block.params_hindsight);
-      // stesse offerte di "allora", prezzate col senno di poi (come time_machine.py)
+      // stesse offerte di "allora", prezzate col senno di poi
       const tot = (r) => r && poi.find((x) => x.o.id === r.o.id);
       out.poi = { F: tot(out.then.F), V: tot(out.then.V), bestF: best(poi, 'F'), bestV: best(poi, 'V') };
     }
@@ -286,7 +286,7 @@
     const phone = W < 500;
     const fs = phone ? 12 : 13;
     const lastYear = +pun[pun.length - 1][0].slice(0, 4);
-    const xEnd = tyear(pun[pun.length - 1][0]) + 1 / 12;   // come build.py: (2005, 2026 + 10/12) con ottobre ultimo
+    const xEnd = tyear(pun[pun.length - 1][0]) + 1 / 12;   // come i grafici statici: l'asse finisce un mese dopo l'ultimo dato
     const H1 = phone ? 250 : 260;
     const a = new Panel(W, H1, [2005, xEnd], [0, 0.6], { ml: 44, fs });
     a.title('PUN, elettricità · €/kWh');

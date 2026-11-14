@@ -26,11 +26,12 @@
   const PDFJS_DIR = 'vendor/pdfjs-4.10.38/';
   const PDFJS = './' + PDFJS_DIR + 'pdf.min.mjs';
   const PDFJS_WORKER = PDFJS_DIR + 'pdf.worker.min.mjs';
-  // Asset dell'OCR: li scrive web_export.py (OCR_VERSION), non stanno nel repo.
+  // Asset dell'OCR: non sono tra i sorgenti, li aggiunge l'export del sito in una
+  // cartella versionata (come pdf.js).
   const OCR_DIR = 'vendor/ocr-v1/';
   const OCR_PDF_PAGES = 3;          // il riepilogo ARERA sta nelle prime pagine
   const OCR_MAX_IMAGES = 4;
-  const OCR_LONG_SIDE = 2000;       // px: come le foto della prova (150-300 dpi danno lo stesso)
+  const OCR_LONG_SIDE = 2000;       // px: un A4 a 150-300 dpi dà la stessa lettura
 
   const FIELD_ORDER = ['kwh', 'smc', 'kw', 'residente', 'regione'];
   const FIELD_LABEL = { kwh: 'Consumo luce', smc: 'Consumo gas', kw: 'Potenza impegnata', residente: 'Residenza', regione: 'Regione' };
@@ -86,7 +87,7 @@
   const $ = (s) => doc.querySelector(s);
   const pick = $('#billPick'), input = $('#billFile'), statusEl = $('#billStatus'), panel = $('#billPanel');
   if (!pick || !input) return api;
-  // stesso timbro di versione di questo script (web_export.py aggiunge ?v=…): il
+  // stesso timbro di versione di questo script (l'export aggiunge ?v=…): il
   // worker ocr.js e questa pagina restano della stessa versione
   const STAMP = (() => {
     try { return new URL(doc.currentScript.src).searchParams.get('v') || 'dev'; } catch (e) { return 'dev'; }
@@ -337,7 +338,7 @@
         }
         // Tutte le pagine, sempre: niente stop anticipato quando i campi ci sono già.
         // I controlli che scartano un valore stanno spesso più avanti (A2A gas: la
-        // casella annua a pag. 1 non ha date, il suo periodo del 2022 è a pag. 3).
+        // casella annua a pag. 1 non ha date, il suo periodo è a pag. 3).
         res = win.EnergyBill.parseBill(pages, { ocr: true });
         if (cancelled) return;
         worker.terminate(); worker = null;

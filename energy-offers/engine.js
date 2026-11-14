@@ -1,11 +1,10 @@
 /*
  * engine.js — costo annuo delle offerte luce e gas, IVA inclusa.
  *
- * Replica 1:1 le formule di check_offers.py (calc_system_annual_luce,
- * _excise_exemption_kwh, parse_offers, _calc_gas_iva, parse_gas_offers).
- * La parità è verificata da tests/test_web_export.py, che esegue questo file
- * con node e confronta i totali col motore Python: se cambi una formula qui,
- * cambiala anche là (o il test fallisce).
+ * Replica 1:1 le formule del motore Python del comparatore (voci regolate luce,
+ * esenzione accisa, offerte luce, IVA gas, offerte gas). Un test esegue questo
+ * file con node e confronta i totali col motore Python: se cambi una formula
+ * qui, cambiala anche là (o il test fallisce).
  *
  * Funziona sia nel browser (window.EnergyEngine) sia in node (module.exports).
  */
@@ -115,13 +114,12 @@
    * params.reg_delta (solo snapshot storici): correzione delle regolate del periodo.
    * Ritorna { total, energia, fissoVenditore, rete, iva }.
    */
-  // Scaglioni annui (Smc) di UG2 e τ3, come time_machine.GAS_BANDS_SMC.
+  // Scaglioni annui (Smc) delle componenti tariffarie gas UG2 e τ3 (ARERA).
   const GAS_BANDS_SMC = [120, 480, 1560, 5000, 80000, 200000];
 
   // Variazione €/anno delle regolate gas di un periodo passato rispetto al
   // forfait di oggi (macchina del tempo): quota fissa + quota variabile, con la
-  // parte per scaglione ripartita sul consumo. Replica
-  // time_machine.gas_reg_delta_annual; assente (offerte di oggi) = 0.
+  // parte per scaglione ripartita sul consumo. Assente (offerte di oggi) = 0.
   function regDeltaAnnual(delta, smc) {
     if (!delta) return 0;
     let v = delta.var_flat * smc, lo = 0;

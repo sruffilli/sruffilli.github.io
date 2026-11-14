@@ -3,9 +3,9 @@
  *
  * PaddleOCR: detector PP-OCRv3 mobile + riconoscitore PP-OCRv5 latin mobile, in
  * onnxruntime-web (WASM, un thread: GitHub Pages non manda COOP/COEP). Porta in JS
- * la pipeline misurata in data/research/energy-bill-ocr/paddle_ocr.py: stesse
- * soglie (0,3 / 0,6), stesso unclip (1,6), stessa altezza di riconoscimento (48),
- * canali in ordine BGR come cv2.imread, con cui i modelli sono stati esportati.
+ * la pipeline Python di PaddleOCR: soglie 0,3 / 0,6, unclip 1,6, altezza di
+ * riconoscimento 48, canali in ordine BGR come cv2.imread, con cui i modelli sono
+ * stati esportati.
  *
  * Un solo file con due ruoli:
  *  - libreria pura (UMD: window.EnergyOcr / module.exports), testata in node;
@@ -28,13 +28,13 @@
 })(typeof self !== 'undefined' ? self : this, function () {
   'use strict';
 
-  const DET_MAX_SIDE = 960;     // misurato: 960 e 1600 equivalenti, 960 più veloce
+  const DET_MAX_SIDE = 960;     // un lato più grande (1600) non legge meglio ed è più lento
   const DET_THRESHOLD = 0.3;
   const BOX_THRESHOLD = 0.6;
   const UNCLIP_RATIO = 1.6;
   const REC_HEIGHT = 48;
   const REC_MIN_WIDTH = 16;
-  // Come paddle_ocr.py e il NormalizeImage di PaddleOCR: l'immagine è BGR (cv2.imread)
+  // Come il NormalizeImage di PaddleOCR: l'immagine è BGR (cv2.imread)
   // e media/deviazione si applicano nell'ordine dell'array, quindi al canale 0 (B)
   // va 0,485. Non è la media ImageNet "girata" in BGR: è quella con cui il modello
   // è stato addestrato ed esportato.
@@ -229,7 +229,7 @@
 
   // Ritaglio di un quadrilatero (alto-sx, alto-dx, basso-dx, basso-sx) → tensore 1×3×48×nw
   // BGR normalizzato in [-1, 1]. Un riquadro alto e stretto (≥ 1,5) si ruota di 90° in
-  // senso antiorario, come np.rot90 in paddle_ocr.py.
+  // senso antiorario, come np.rot90 nella pipeline Python.
   function cropTensor(rgba, w, h, quad) {
     const [p0, p1, , p3] = quad;
     const bw = Math.max(Math.hypot(p1[0] - p0[0], p1[1] - p0[1]), Math.hypot(quad[2][0] - quad[3][0], quad[2][1] - quad[3][1]));
@@ -267,7 +267,7 @@
     return s;
   }
 
-  // Dizionario del riconoscitore: 'blank' + 502 righe di dict.txt + spazio (come paddle_ocr.py).
+  // Dizionario del riconoscitore: 'blank' + 502 righe di dict.txt + spazio (come PaddleOCR).
   function charsFromDict(text) {
     return ['blank'].concat(text.split('\n').slice(0, 502), [' ']);
   }

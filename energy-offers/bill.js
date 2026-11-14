@@ -1,6 +1,5 @@
 /*
  * bill.js — da testo di bolletta (estratto da pdf.js) a valori del form.
- * Vedi docs/bill-import.md per il contratto e le regole.
  *
  * Funziona sia nel browser (window.EnergyBill) sia in node (module.exports).
  */
@@ -16,9 +15,9 @@
     // Il testo ruotato di una pagina diritta (strisce legali verticali a margine)
     // si scarta: la sua "larghezza" è un'altezza e verrebbe incollato alle righe
     // orizzontali, magari con CAP e provincia della sede del venditore. Su una
-    // pagina con /Rotate 90 il testo "ruotato" è quasi tutto: lo si tiene tutto,
-    // come prima (righe imprecise, ma non una falsa "scansione"; due bollette
-    // del corpus sono così e non danno campi: lacuna nota).
+    // pagina con /Rotate 90 il testo "ruotato" è quasi tutto: lo si tiene tutto
+    // (le righe si formano sull'asse sbagliato e non danno campi, ma la pagina non
+    // passa per una falsa "scansione").
     const upright = (t) => Math.abs(t[1]) <= Math.abs(t[0]) && Math.abs(t[2]) <= Math.abs(t[3]);
     const all = ((textContent && textContent.items) || []).filter(
       (it) => it && typeof it.str === 'string' && it.transform);
@@ -205,7 +204,7 @@
   // Contesto di un candidato: da 2 righe sopra l'etichetta a 2 righe sotto il valore.
   // Qui si cercano i periodi che dicono se l'annuo è vecchio (dropStale) e se è
   // recente (ocrAnnual): l'etichetta stessa può portare il periodo
-  // ("Consumo annuo dal 07.12.2022 al 07.12.2023").
+  // ("Consumo annuo dal gg.mm.aaaa al gg.mm.aaaa").
   const context = (lines, label, value) => lines.slice(Math.max(0, label - 2), value + 3);
 
   // Cerca il consumo annuo con unità `unitRe` (KWH_UNIT / SMC_UNIT).
@@ -310,7 +309,8 @@
   const STALE_DAYS = 100;
 
   // Un consumo annuo il cui periodo finisce molto prima dell'ultimo periodo del
-  // documento è vecchio (caso A2A gas: casella "Consumo annuo" ferma a 3 anni prima).
+  // documento è vecchio: una casella "Consumo annuo" può restare ferma su un periodo
+  // di anni prima (layout A2A gas).
   function dropStale(cands, entries, warnings, key) {
     const latest = documentLatestPeriodEnd(entries);
     if (latest === null) return cands;
@@ -319,9 +319,9 @@
       const lines = (c.rangeLines || []).concat(c.ctx || []);
       // Tutti i periodi plausibili (<= 400 giorni) delle righe del candidato: basta
       // che UNO sia vecchio. Il periodo dell'annuo non è sempre il primo: con le
-      // colonne invertite viene prima quello della spesa annua, e l'OCR di una A2A
-      // gas mette "149 Smc determinata dal 24.12.2025 …" (spesa) e sotto
-      // "determinato dal 07.12.2022 al 07.12.2023" (consumo).
+      // colonne invertite viene prima quello della spesa annua: l'OCR può dare
+      // "N Smc determinata dal … al …" (periodo della spesa) e sotto
+      // "determinato dal … al …" (periodo del consumo).
       const rs = [];
       lines.forEach((l) => rangesIn(l).forEach((r) => { if (r.end >= r.start && r.end - r.start <= 400) rs.push(r); }));
       if (rs.some((r) => latest - r.end > STALE_DAYS)) staleValues.push(c.value);
@@ -415,7 +415,7 @@
   const SUPPLY_LABEL = /(?:indirizzo|punto|luogo|sito|ubicazione)\s+(?:di\s+|della\s+|del\s+)?fornitura|dati\s+(?:della\s+)?fornitura|forniamo\s+energia\s+in|la\s+fornitura\s+di\s+[^:]{0,40}\s+è\s+in/gi;
   const COMPANY_LINE = /sede\s+legale|società/i;
   // Prime due cifre del CAP → province possibili. Generata da comuni-json
-  // (github.com/matteocontrini/comuni-json, dati ISTAT, 7904 comuni) il 14/11/2026,
+  // (github.com/matteocontrini/comuni-json, dati ISTAT, 7904 comuni),
   // più le vecchie sarde (OT OG CI VS). Una sigla che il CAP non ammette è una
   // lettura sbagliata (OCR) o una sigla presa dalla riga sbagliata: nessun valore.
   const CAP_PROVINCES = {
@@ -608,9 +608,9 @@
   // OCR: un consumo annuo vale solo se nel suo contesto (dall'etichetta al valore, ±2
   // righe) c'è un periodo annuo (300-400 giorni) concluso negli ultimi 18 mesi, o
   // «ultimi 12 mesi», e NESSUN periodo annuo più vecchio: periodi in conflitto =
-  // nessun valore. Il caso da evitare è la casella A2A gas ferma al 2022-23: in foto
-  // della sola pag. 1 si legge «CONSUMO ANNUO / 149 Smc» senza date, e nient'altro
-  // sulla pagina dice che è vecchia (il testo del PDF ha anche la pag. 3).
+  // nessun valore. Il caso da evitare è una casella annua ferma su un periodo vecchio
+  // (layout A2A gas): in foto della sola pag. 1 si legge «CONSUMO ANNUO / N Smc» senza
+  // date, e nient'altro sulla pagina dice che è vecchia (il periodo sta a pag. 3).
   const FRESH_DAYS = 548;
   function ocrAnnual(key, hit, cands, warnings, today) {
     if (!hit) return hit;
