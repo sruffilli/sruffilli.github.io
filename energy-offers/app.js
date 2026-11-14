@@ -848,7 +848,7 @@
     $('#foot').innerHTML =
       (DATA.warnings && DATA.warnings.length ? `<div class="warnbox">Dati non del tutto aggiornati: ${DATA.warnings.map(esc).join(' · ')}</div>` : '') +
       `<p><a href="analisi.html">Fisso o variabile: cosa insegnano 58 mesi di offerte luce e gas</a>, l'analisi del mercato 2022-2026 fatta con questi dati.</p>` +
-      `<p>Costo annuo IVA inclusa, calcolato con lo stesso modello di <code>check_offers.py</code>: energia, quota fissa del venditore, dispacciamento, rete, oneri di sistema, accise, IVA e, per i residenti, canone RAI. Le variabili usano il PUN o il PSV scelto sopra. Non sono inclusi sconti, bonus e penali di recesso.</p>` +
+      `<p>Costo annuo IVA inclusa, somma di: energia, quota fissa del venditore, dispacciamento, rete, oneri di sistema, accise, IVA e, per i residenti, canone RAI. Le variabili usano il PUN o il PSV scelto sopra. Non sono inclusi sconti, bonus e penali di recesso.</p>` +
       `<p>Fonti: offerte <a href="https://www.ilportaleofferte.it/portaleOfferte/it/open-data.page" target="_blank" rel="noopener">Portale Offerte ARERA</a> (${esc(L.source_xml)}, ${esc(G.source_xml)}); PUN GME, media ${ser.length > 1 ? `${monthLabel(ser[ser.length - 12] ? ser[ser.length - 12][0] : ser[0][0])} – ${monthLabel(ser[ser.length - 1][0])}` : ''}; PSV: ${esc(G.params.psv_sources)}; parametri regolati ${esc(L.params.params_source)}. I costi di rete del gas sono medie nazionali, modificabili.</p>`;
     // regioni
     const sel = $('#regione');
