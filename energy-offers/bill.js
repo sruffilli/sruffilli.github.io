@@ -257,7 +257,12 @@
         // Righe successive: la prima che porta un'unità deve portarne una sola.
         for (let k = 1; k <= WINDOW && e.i + k < lines.length; k++) {
           const l = lines[e.i + k];
-          if (/spesa\s+annu/i.test(l) && k > 1) break;
+          // "Spesa annua …" chiude la ricerca, tranne dentro una tabella "Tot. consumo":
+          // due colonne fuse la mettono fra l'intestazione e i valori.
+          if (/spesa\s+annu/i.test(l) && k > 1) {
+            if (/tot(?:ale|\.)\s*consumo/i.test(lines[e.i + k - 1] || '') && !unitTokens(l, unitRe).length) continue;
+            break;
+          }
           // "Consumo fatturato: 348 kWh" è il consumo del periodo, non l'annuo. Qui ci
           // si ferma senza valore: saltare la riga e cercare oltre prenderebbe il
           // consumo del periodo quando due colonne si fondono in una riga (OCR di una
@@ -273,9 +278,12 @@
               ctx: context(lines, e.i, e.i + k) });
           } else if (unitRe === KWH_UNIT && toks.length >= 4 &&
                      Math.abs(toks[0] + toks[1] + toks[2] - toks[3]) <= 1 &&
-                     /totale\s+consumo/i.test(lines[e.i + k - 1] || '') &&
-                     /ultimi\s+12\s+mesi/i.test((lines[e.i + k + 1] || '') + ' ' + (lines[e.i + k + 2] || ''))) {
-            // Enel: tabella "F1 F2 F3 Totale consumo" sotto "Consumo annuo" (somma ultimi 12 mesi).
+                     /tot(?:ale|\.)\s*consumo/i.test((lines[e.i + k - 1] || '') + ' ' + (lines[e.i + k - 2] || '')) &&
+                     (/ultimi\s+12\s+mesi/i.test((lines[e.i + k + 1] || '') + ' ' + (lines[e.i + k + 2] || '')) ||
+                      rangesIn(e.line).some((r) => r.end - r.start >= 300 && r.end - r.start <= 400))) {
+            // Enel: tabella "F1 F2 F3 Totale consumo" (o "Tot. consumo") sotto "Consumo annuo",
+            // con F1+F2+F3 = totale; vale se la tabella dice "ultimi 12 mesi" o se l'etichetta
+            // porta un periodo di un anno ("Consumo annuo (dal 01/09/2023 al 31/08/2024)").
             cands.push({ value: toks[3], page: e.page, line: l, rangeLines: [], ctx: context(lines, e.i, e.i + k) });
           }
           break;
@@ -351,6 +359,27 @@
         // Etichetta a fine riga: il valore chiude una delle righe successive. Una riga
         // che nomina un'altra potenza (disponibile, prelevata, massima, di picco)
         // chiude la ricerca PRIMA di leggerne il valore.
+        // Riga di intestazioni ("POD: POTENZA IMPEGNATA: INDIRIZZO DI FORNITURA:") con i
+        // valori nella riga sotto, nello stesso ordine: il kW può stare a metà riga. Vale
+        // solo se quella riga porta un unico valore in kW; con più valori non si sceglie.
+        if (/^\s*:\s*(?:[^\d:]{2,40}:\s*)+$/.test(after)) {
+          for (let k = 1; k <= 2 && e.i + k < lines.length; k++) {
+            const l = lines[e.i + k];
+            if (/disponibil|prelevat|massim|potenza\s+(?:di\s+)?picco/i.test(l)) return;
+            const re = new RegExp('(?:^|[^\\d.,])(' + NUM + ')\\s*kW(?![hH])', 'gi');
+            const found = [];
+            let t;
+            while ((t = re.exec(l))) found.push(t);
+            if (found.length > 1) return;
+            if (found.length === 1) {
+              const v = found[0];
+              if (spaceThousands(l.slice(0, v.index + v[0].indexOf(v[1])), v[1])) return;
+              cands.push({ value: parseItalianNumber(v[1]), page: e.page, line: l });
+              return;
+            }
+          }
+          return;
+        }
         if (/^\s*:?\s*$/.test(after)) {
           for (let k = 1; k <= 3 && e.i + k < lines.length; k++) {
             const l = lines[e.i + k];
@@ -399,6 +428,16 @@
         }
         for (let k = 1; k <= 4 && e.i + k < e.lines.length; k++) {
           const l = e.lines[e.i + k];
+          // Valore spezzato su due righe da una colonna stretta: "DOMESTICO NON" e sotto
+          // "RESIDENTE" (a inizio o a fine riga, se due colonne si fondono). Senza questo il
+          // "NON" si perde e resta solo un eventuale "domestico residente" altrove.
+          const split = /\bdomestic[oa](\s+non)?\s*$/i.exec(l);
+          const next = e.lines[e.i + k + 1] || '';
+          const rest = split && (/^\s*(non\s+)?residente\b/i.exec(next) || /\b(non\s+)?residente\s*$/i.exec(next));
+          if (rest) {
+            cands.push({ value: !(split[1] || rest[1]), page: e.page, line: l, note: 'continua nella riga dopo: «' + next + '»' });
+            break;
+          }
           const v = RESIDENCE_VALUE.exec(l);
           if (v && (v.index === 0 || /domestic[oa]\s+(non\s+)?residente\s*$/i.test(l))) {
             cands.push({ value: !v[1], page: e.page, line: l });
@@ -497,6 +536,23 @@
           const text = k === 0 ? l.slice(m.index + m[0].length) : l;
           const found = provinceInLine(text);
           if (found === null) break;            // sigla ambigua: meglio nessun valore
+          // La prima riga con un CAP è l'indirizzo di fornitura: senza sigla lì, la regione
+          // manca. Cercare oltre prenderebbe la sigla di un altro indirizzo (destinatario,
+          // recapito) che due colonne fuse mettono nella riga sotto.
+          if (!found && /\b\d{5}\b/.test(text)) {
+            // ...salvo la riga dopo, se continua lo stesso indirizzo: lo STESSO CAP con la
+            // sigla (lo stesso CAP vale la stessa provincia, qualunque blocco la porti), o
+            // comune e sigla senza alcun CAP ("… - 47034 -" e sotto "COMUNE (XX)"), purché
+            // il CAP ammetta quella sigla.
+            const cap = text.match(/\b\d{5}\b/)[0];
+            const nextLine = e.lines[e.i + k + 1] || '';
+            const again = provinceInLine(nextLine);
+            const caps = nextLine.match(/\b\d{5}\b/g) || [];
+            const continues = again && capAllows(cap, again.sigla) &&
+              (again.cap === cap || (!caps.length && again.cap === null));
+            if (continues) cands.push({ sigla: again.sigla, cap, value: PROVINCE_TO_REGION[again.sigla], page: e.page, line: nextLine });
+            break;
+          }
           if (found) { cands.push({ sigla: found.sigla, cap: found.cap, value: PROVINCE_TO_REGION[found.sigla], page: e.page, line: l }); break; }
         }
       }

@@ -220,7 +220,7 @@
   }
 
   // Offerta dell'OCR: mai automatica, perché scarica ~25 MB e sul telefono è lenta.
-  async function offerOcr(source, intro) {
+  async function offerOcr(source, intro, warnings) {
     clearPanel();
     let manifest;
     try { manifest = await loadOcrManifest(); } catch (e) {
@@ -230,6 +230,7 @@
     status('');
     const mb = Math.round(manifest.total_bytes / 1e6);
     panel.appendChild(el('p', null, intro));
+    for (const w of warnings || []) panel.appendChild(el('p', 'bill-warn', w));
     if (source.kind === 'images' && source.files.length === 1) {
       panel.appendChild(el('p', 'bill-warn', 'Con una sola foto alcuni controlli non si possono fare (per esempio se il consumo annuo è aggiornato): se puoi, scegli le foto delle prime 2 o 3 pagine insieme.'));
     }
@@ -387,6 +388,13 @@
       if (res.scanned) {
         pick.disabled = false;
         offerOcr({ kind: 'pdf', file }, 'Questo PDF non contiene testo: sembra una bolletta scansionata o fotografata.');
+        return;
+      }
+      // Testo presente ma nessun dato: la bolletta può essere un'immagine dentro un PDF
+      // che ha solo poche scritte (un timbro, le note di una guida).
+      if (!Object.keys(res.fields).length) {
+        pick.disabled = false;
+        offerOcr({ kind: 'pdf', file }, 'Nel testo di questo PDF non ho trovato dati: forse la bolletta è un’immagine.', res.warnings);
         return;
       }
       if (truncated) (res.warnings = res.warnings || []).push(`Il PDF ha molte pagine: ho letto solo le prime ${MAX_PAGES}.`);
