@@ -7,7 +7,7 @@
   <meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
   <title>Comparatore luce e gas</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>⚡</text></svg>">
-  <link rel="stylesheet" href="style.css?v=20261114T063045">
+  <link rel="stylesheet" href="style.css?v=20261114T153350">
 </head>
 <body data-kind="luce">
   <header class="top">
@@ -70,6 +70,19 @@
 
   <main class="layout">
     <aside class="controls" id="controls" aria-label="Il tuo profilo di consumo">
+
+      <!-- ===== BOLLETTA (letta nel browser, vedi bill-upload.js) ===== -->
+      <section class="card bill" id="bill" aria-label="Leggi la bolletta">
+        <div class="bill-head">
+          <button type="button" class="bill-pick" id="billPick">
+            <span aria-hidden="true">📄</span> Leggi la bolletta (PDF o foto)
+          </button>
+          <span class="bill-priv">La bolletta resta sul tuo dispositivo</span>
+        </div>
+        <input type="file" id="billFile" accept="application/pdf,.pdf,image/*" multiple hidden>
+        <p class="bill-status" id="billStatus" role="status" aria-live="polite" hidden></p>
+        <div class="bill-panel" id="billPanel" hidden></div>
+      </section>
 
       <!-- ===== LUCE ===== -->
       <section class="card hero only-luce">
@@ -288,9 +301,11 @@
     <div class="sheet-body" id="sheetBody"></div>
   </article>
 
-  <script src="engine.js?v=20261114T063045"></script>
-  <script src="sim.js?v=20261114T063045"></script>
-  <script src="app.js?v=20261114T063045"></script>
-  <script src="market.js?v=20261114T063045"></script>
+  <script src="engine.js?v=20261114T153350"></script>
+  <script src="sim.js?v=20261114T153350"></script>
+  <script src="app.js?v=20261114T153350"></script>
+  <script src="bill.js?v=20261114T153350"></script>
+  <script src="bill-upload.js?v=20261114T153350"></script>
+  <script src="market.js?v=20261114T153350"></script>
 </body>
 </html>

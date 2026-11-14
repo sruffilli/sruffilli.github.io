@@ -395,7 +395,10 @@
       { v: 1500, label: 'Single', small: '1.500' }, { v: 2200, label: 'Coppia', small: '2.200' },
       { v: 2700, label: 'Famiglia', small: '2.700' }, { v: 4000, label: 'Famiglia numerosa', small: '4.000' },
     ], state.kwh, (v) => update({ kwh: +v }));
-    chips($('#kwChips'), [1.5, 3, 4.5, 6, 10].map((k) => ({ v: k, label: nf0.format(k) === String(k) ? k + ' kW' : String(k).replace('.', ',') + ' kW' })),
+    // potenza letta da una bolletta (3,3 · 16,5…): fuori dai preset, ha il suo chip
+    const kwList = [1.5, 3, 4.5, 6, 10];
+    if (state.kw > 0 && !kwList.includes(state.kw)) { kwList.push(state.kw); kwList.sort((a, b) => a - b); }
+    chips($('#kwChips'), kwList.map((k) => ({ v: k, label: nf0.format(k) === String(k) ? k + ' kW' : String(k).replace('.', ',') + ' kW' })),
       state.kw, (v) => update({ kw: +v }));
     $('#residente').checked = state.residente;
     const f1 = state.f1, f2 = state.f2, f3 = Math.max(0, 100 - f1 - f2);

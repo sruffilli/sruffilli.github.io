@@ -1,0 +1,30 @@
+{
+ "version": "ocr-v1",
+ "total_bytes": 25221654,
+ "files": {
+  "det.onnx": {
+   "bytes": 2429873,
+   "sha256": "ee40e80071ba3a320d4efda75f3e22047a7d049e9bf7bcaaf9daea23fc21b935"
+  },
+  "dict.txt": {
+   "bytes": 1634,
+   "sha256": "3c0a8a79b612653c25f765271714f71281e4e955962c153e272b7b8c1d2b13ff"
+  },
+  "ort-wasm-simd-threaded.mjs": {
+   "bytes": 24738,
+   "sha256": "30ed0b5cd1182ede931fea448afb567d4dc705ec957af09f108a2be5f770dac3"
+  },
+  "ort-wasm-simd-threaded.wasm": {
+   "bytes": 14848852,
+   "sha256": "4b884c203b0fa48d057be3332c65513ff85aa3c5bddd6946acc0fab7ecda001d"
+  },
+  "ort.wasm.min.mjs": {
+   "bytes": 53725,
+   "sha256": "c21d9c326d453a4a61398270c804d5979e118540597cb0c07f7b3d64e6098234"
+  },
+  "rec.onnx": {
+   "bytes": 7862832,
+   "sha256": "614ffc2d6d3902d360fad7f1b0dd455ee45e877069d14c4e51a99dc4ef144409"
+  }
+ }
+}

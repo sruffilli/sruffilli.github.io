@@ -771,3 +771,34 @@ body.sim-bar-on .sim-bar { transform: none; }
 @media (max-width: 959px) { .sim-page .layout { padding-bottom: 90px; } }
 .an-btn + .an-btn { margin-left: 8px; }
 @media (min-width: 960px) { .an-btn + .an-btn { margin-left: 8px; } }
+
+/* lettura bolletta (bill-upload.js): tutto nel browser */
+.bill { padding: 10px 14px; }
+.bill-head { display: flex; align-items: center; justify-content: space-between; gap: 8px 12px; flex-wrap: wrap; }
+.bill-pick {
+  border: 1px solid var(--line); background: var(--bg-2); border-radius: 99px;
+  padding: 7px 14px; font-size: 13.5px; font-weight: 650; color: var(--text);
+}
+.bill-pick:hover { border-color: var(--accent); }
+.bill-pick:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bill-pick[disabled] { opacity: .6; cursor: progress; }
+.bill-priv { font-size: 12px; color: var(--muted); }
+.bill-status { margin: 8px 0 0; font-size: 13px; color: var(--muted); }
+.bill-status.err { color: var(--bad); }
+.bill-panel { margin-top: 10px; border-top: 1px solid var(--line); padding-top: 10px; }
+.bill-panel h3 { margin: 0 0 6px; font-size: 14px; }
+.bill-rows { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.bill-row label { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: start; cursor: pointer; }
+.bill-row input { grid-row: 1 / span 2; margin-top: 3px; width: 18px; height: 18px; accent-color: var(--accent); }
+.bill-row b { font-size: 14px; }
+.bill-src { grid-column: 2; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.bill-row.missing { color: var(--muted); font-size: 13px; padding-left: 28px; }
+.bill-warn { margin: 8px 0 0; font-size: 12.5px; color: var(--warn); }
+.bill-ocr-note { margin: 0 0 8px; font-size: 12.5px; color: var(--ink-2, var(--muted)); background: var(--bg-2); border-left: 3px solid var(--warn); padding: 6px 10px; border-radius: 6px; }
+.bill-progress { width: 100%; height: 8px; accent-color: var(--accent); }
+.bill-actions { display: flex; gap: 8px; margin-top: 12px; }
+.bill-actions button { border: 1px solid var(--line); background: var(--bg-2); border-radius: 99px; padding: 7px 16px; font-size: 13.5px; font-weight: 650; }
+.bill-actions .primary { background: var(--accent-soft); color: var(--accent-ink); box-shadow: inset 0 0 0 1.5px var(--accent); border-color: transparent; }
+.bill-actions button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.bill-actions button[disabled] { opacity: .5; cursor: not-allowed; }
+body[data-kind="mercato"] .bill { display: none; }

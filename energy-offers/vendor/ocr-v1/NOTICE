@@ -1,0 +1,8 @@
+OCR (beta) del comparatore: asset di terze parti, invariati.
+
+onnxruntime-web 1.31.1 — MIT License, Copyright (c) Microsoft Corporation.
+  https://github.com/microsoft/onnxruntime  (ort.wasm.min.mjs, ort-wasm-simd-threaded.*)
+PaddleOCR PP-OCRv3 mobile det + PP-OCRv5 latin mobile rec — Apache License 2.0,
+  Copyright (c) PaddlePaddle Authors. https://github.com/PaddlePaddle/PaddleOCR
+  ONNX: https://huggingface.co/monkt/paddleocr-onnx (Apache-2.0), revisione 7b02d0a3.
+Hash SHA-256 in manifest.json.
