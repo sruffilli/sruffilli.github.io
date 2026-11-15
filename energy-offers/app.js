@@ -121,7 +121,7 @@
       if (o.so === 0 && !withDual) continue;
       if (!market && state.type !== 'all' && o.t !== state.type) continue;
       if (!market && state.durata > 0 && o.t === 'F' && o.d > state.durata) continue;
-      if (state.regione && o.r.length && !o.r.includes(state.regione)) continue;
+      if (state.regione && E.zoneAvailability(o, state.regione, DATA).state === 'none') continue;
       if (state.eligible && !(kind === 'luce' ? eligibleLuce(o, pr) : eligibleGas(o, pr))) continue;
       if (q && !(o.n.toLowerCase().includes(q) || o.v.includes(q))) continue;
       const c = costOf(kind, o, P, pr, idx);
@@ -151,11 +151,15 @@
     if (left != null && left <= 7) b.push(`<span class="badge warn" title="Si può sottoscrivere fino al ${esc(o.al.split('-').reverse().join('/'))}. Nel 2026 più della metà dei prezzi fissi è cambiata entro il mese, quasi sempre al rialzo: confronta e firma lo stesso giorno.">⏳ ${left === 0 ? 'scade oggi' : left === 1 ? 'ancora 1 giorno' : `ancora ${left} giorni`}</span>`);
     if (kind === 'luce') b.push(`<span class="badge fasce">${o.m === 'mono' ? 'monoraria' : o.m === 'bi' ? 'bioraria' : 'multioraria'}</span>`);
     if (o.so === 0) b.push(`<span class="badge dual" title="Si sottoscrive solo insieme all'altra fornitura dello stesso venditore">🔗 solo con ${kind === 'luce' ? 'il gas' : 'la luce'}</span>`);
-    if (o.r.length) b.push(`<span class="badge" title="Offerta con restrizione territoriale">📍 ${o.r.length > 10 ? 'quasi tutte' : o.r.length + (o.r.length === 1 ? ' regione' : ' regioni')}</span>`);
-    // <PROVINCIA>/<COMUNE> restringono oltre la regione (o anche senza alcuna
-    // <REGIONE>, il caso che il badge sopra non vedeva affatto): nessun
-    // selettore per provincia/comune, solo l'avviso con i nomi.
-    else {
+    // Regione scelta: valida in tutta la regione = nessun avviso; solo in una
+    // parte = l'avviso con i nomi (nessun selettore per provincia/comune).
+    // Senza regione: regioni elencate e zone sommate, come nella scheda.
+    if (state.regione) {
+      const part = E.zonePartial(o, state.regione, DATA);
+      if (part) b.push(`<span class="badge" title="${esc(`Offerta ristretta: ${part}. Il comparatore non chiede provincia o comune: verifica la scheda.`)}">📍 zona ristretta</span>`);
+    } else if (o.r.length) {
+      b.push(`<span class="badge" title="${esc(`Offerta con restrizione territoriale: ${zoneWhere(o)}`)}">📍 ${o.r.length > 10 ? 'quasi tutte' : o.r.length + (o.r.length === 1 ? ' regione' : ' regioni')}</span>`);
+    } else {
       const zone = E.zoneRestriction(o, DATA);
       if (zone) b.push(`<span class="badge" title="${esc(`Offerta ristretta: ${zone}. Il comparatore non chiede provincia o comune: verifica la scheda.`)}">📍 zona ristretta</span>`);
     }
@@ -165,6 +169,12 @@
     const rb = E.recessoBadge(o);
     if (rb) b.push(`<span class="badge${rb.cls ? ' ' + rb.cls : ''}" title="${esc(rb.title)}">${esc(rb.text)}</span>`);
     return b.join('');
+  }
+
+  // Dove si vende l'offerta, a parole: regioni elencate, più province e comuni.
+  function zoneWhere(o) {
+    return [o.r.length ? o.r.map((r) => DATA.regioni[r] || r).join(', ') : null, E.zoneRestriction(o, DATA)]
+      .filter(Boolean).join(', ') || null;
   }
 
   // Giorni alla scadenza del listino (DATA_FINE): solo per le offerte di oggi.
@@ -307,9 +317,11 @@
     if (TM.on || (kind !== 'luce' && kind !== 'gas')) { box.hidden = true; return; }
     const P = DATA[kind].params;
     const ratio = kind === 'luce' ? P.pun_last.mono / P.pun_12m.mono : P.psv_last.value / P.psv_12m;
-    // senza regione scelta solo offerte nazionali; mai quelle limitate a provincia/comune
-    const plain = (rows) => rows.filter((r) => !r.odd && (state.regione || !r.o.r.length)
-      && !(r.o.pr && r.o.pr.length) && !(r.o.cm && r.o.cm.length));
+    // con la regione scelta solo le offerte valide in tutta la regione (anche se elencano zone
+    // altrove), mai quelle valide solo in una parte; senza regione solo quelle senza alcuna zona
+    const plain = (rows) => rows.filter((r) => !r.odd && (state.regione
+      ? E.zoneAvailability(r.o, state.regione, DATA).state === 'whole'
+      : !r.o.r.length && !(r.o.pr && r.o.pr.length) && !(r.o.cm && r.o.cm.length)));
     const r12 = plain(compute(kind, { market: true, scenario: '12m' }).rows);
     const rLast = plain(compute(kind, { market: true, scenario: 'last' }).rows);
     const f = r12.find((r) => r.o.t === 'F'), v12 = r12.find((r) => r.o.t === 'V'), vl = rLast.find((r) => r.o.t === 'V');
@@ -330,8 +342,8 @@
     }
     box.className = 'fv-signal ' + s.regime + ' ' + (s.regime === 'calm' ? '' : s.choice);
     const scope = state.regione
-      ? `Il segnale è calcolato sulle offerte attivabili in ${esc(DATA.regioni[state.regione] || state.regione)} (escluse quelle limitate a una provincia o a un comune), con il profilo inserito sopra.`
-      : 'Il segnale è calcolato solo sulle offerte valide in tutta Italia, con il profilo inserito sopra; scegliendo una regione si aggiungono quelle valide solo lì.';
+      ? `Il segnale è calcolato sulle offerte attivabili ovunque in ${esc(DATA.regioni[state.regione] || state.regione)}, con il profilo inserito sopra; restano fuori quelle limitate ad alcune province o comuni.`
+      : 'Il segnale è calcolato solo sulle offerte senza limiti di zona, con il profilo inserito sopra; scegliendo una regione si aggiungono quelle attivabili ovunque in quella regione.';
     box.innerHTML = `<b>${esc(head)}</b><span>${body} ${scope} <a href="analisi.html">Perché? L'analisi di 58 mesi di offerte</a></span>`;
     box.hidden = false;
   }
@@ -341,7 +353,7 @@
     const st = $('#stats');
     renderVerdict(res);
     renderSignal();
-    if (!rows.length) { st.innerHTML = ''; $('#histo').innerHTML = ''; return; }
+    if (!rows.length) { st.innerHTML = ''; $('#histo').innerHTML = ''; $('#nudge').hidden = true; return; }
     const totals = rows.map((r) => r.total);
     const med = totals[Math.floor(totals.length / 2)];
     const unit = state.kind === 'luce' ? state.kwh : state.smc;
@@ -351,15 +363,17 @@
       `<div class="stat"><b>${nf0.format(rows.length)}</b><span>offerte</span></div>`;
     const nudge = $('#nudge');
     const top = rows[0].o;
+    const topPart = state.regione ? E.zonePartial(top, state.regione, DATA) : null;
     if (!state.regione && top.r.length) {
-      const where = top.r.length === 1 ? (DATA.regioni[top.r[0]] || top.r[0]) : `${top.r.length} regioni`;
+      const extra = E.zoneRestriction(top, DATA);
+      const where = (top.r.length === 1 ? (DATA.regioni[top.r[0]] || top.r[0]) : `${top.r.length} regioni`) + (extra ? `, ${extra}` : '');
       nudge.innerHTML = `La prima è attivabile solo in ${esc(where)}. <button type="button" id="nudgeBtn">Scegli dove abiti</button> per vedere solo le offerte valide per te.`;
       nudge.hidden = false;
       $('#nudgeBtn').onclick = () => { const s = $('#regione'); s.scrollIntoView({ behavior: scrollBehavior(), block: 'center' }); setTimeout(() => s.focus(), 350); };
-    } else if (E.zoneRestriction(top, DATA)) {
+    } else if (state.regione ? topPart : E.zoneRestriction(top, DATA)) {
       // Stesso avviso della regione, ma senza bottone: qui non c'è un
       // selettore provincia/comune da aprire.
-      nudge.innerHTML = `La prima è ristretta: ${esc(E.zoneRestriction(top, DATA))}. Qui non si sceglie provincia o comune: verifica la scheda prima di attivarla.`;
+      nudge.innerHTML = `La prima è ristretta: ${esc(state.regione ? topPart : E.zoneRestriction(top, DATA))}. Qui non si sceglie provincia o comune: verifica la scheda prima di attivarla.`;
       nudge.hidden = false;
     } else nudge.hidden = true;
     st.title = `Migliore: ${nf3(totals[0] / unit)} €/${state.kind === 'luce' ? 'kWh' : 'Smc'} tutto compreso`;
@@ -792,8 +806,10 @@
     }
     const recNote = E.recessoNote(o, d.recesso);
     if (recNote) notes.push(recNote);
-    if (state.regione && o.r.length && !o.r.includes(state.regione)) notes.push('Non attivabile nella regione scelta.');
-    const zoneNote = E.zoneRestriction(o, DATA);
+    const avail = state.regione ? E.zoneAvailability(o, state.regione, DATA) : null;
+    if (avail && avail.state === 'none') notes.push('Non attivabile nella regione scelta.');
+    const zoneNote = state.regione ? E.zonePartial(o, state.regione, DATA)
+      : (E.zoneRestriction(o, DATA) ? zoneWhere(o) : null);
     if (zoneNote) notes.push(`Offerta ristretta: ${zoneNote}. Il comparatore non chiede provincia o comune: verifica di essere incluso prima di attivarla.`);
     if (notes.length) out.push(notes.map((n) => `<p class="note warn">${esc(n)}</p>`).join(''));
     if (o.so === 0) {
@@ -826,10 +842,8 @@
       out.push(`<section class="d-sec"><h3>Condizioni contrattuali</h3>${conds.map((x) =>
         `<p class="desc"><b>${esc(x.tipo)}${x.lim ? ' · limitante' : ''}</b><br>${esc(x.desc || '')}</p>`).join('')}</section>`);
     }
-    // Regioni, poi provincia/comune; "tutta Italia" solo senza nessuna restrizione.
-    const zone = E.zoneRestriction(o, DATA);
-    const regs = [o.r.length ? o.r.map((r) => DATA.regioni[r] || r).join(', ') : null, zone]
-      .filter(Boolean).join(' · ') || 'tutta Italia';
+    // Regioni, più province e comuni; "tutta Italia" solo senza nessuna zona.
+    const regs = zoneWhere(o) || 'tutta Italia';
     const lim = [];
     if (o.cmin > 0 || o.cmax > 0) lim.push(`consumo ${o.cmin ? 'da ' + nf0.format(o.cmin) : ''}${o.cmax ? ' fino a ' + nf0.format(o.cmax) : ''} ${kind === 'luce' ? 'kWh' : 'Smc'}/anno`);
     if (o.pmin > 0 || o.pmax > 0) lim.push(`potenza ${o.pmin ? 'da ' + o.pmin : ''}${o.pmax ? ' fino a ' + o.pmax : ''} kW`);

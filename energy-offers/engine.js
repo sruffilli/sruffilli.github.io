@@ -208,12 +208,42 @@
     return { regime, choice, premium, bias: bestVLast - bestV12 };
   }
 
-  /* Restrizione a provincia/comune di un'offerta, a parole: "solo provincia di
-     Trento (TN, Trentino-Alto Adige)", o null se non ce n'è. `o.pr`/`o.cm` sono i
-     codici ISTAT dell'XML (provincia 3 cifre, comune 6: le prime 3 sono la
-     provincia); `data` porta le tabelle `province` ({cod: [nome, sigla, cod. regione]}),
-     `comuni` ({cod: nome}) e `regioni`. Un codice che manca resta "cod. N":
-     gli snapshot storici e i comuni accorpati non hanno sempre il nome. */
+  /* Dove si vende un'offerta: le regioni elencate (`o.r`), più le province
+     (`o.pr`), più i comuni (`o.cm`): un'unione, non una restrizione l'una
+     dell'altra. Per la regione scelta ritorna { state, pr, cm }:
+     'whole' = tutta la regione (nessuna zona, o la regione è elencata);
+     'part' = solo una parte (province `pr` e comuni `cm` dentro la regione);
+     'none' = da nessuna parte. Un codice che le tabelle non conoscono non
+     esclude mai: conta come "forse dentro" e resta in `pr`/`cm`. Un comune si
+     colloca con la sua provincia (le prime 3 cifre). */
+  function zoneAvailability(o, regione, data) {
+    const r = o.r || [], pr = o.pr || [], cm = o.cm || [];
+    if ((!r.length && !pr.length && !cm.length) || r.includes(regione)) return { state: 'whole', pr: [], cm: [] };
+    const pmap = (data && data.province) || {}, cmap = (data && data.comuni) || {};
+    const maybeIn = (p) => !p || p[2] === regione;
+    const prIn = pr.filter((c) => maybeIn(pmap[c])).sort();
+    const cmIn = cm.filter((c) => cmap[c] == null || maybeIn(pmap[c.slice(0, 3)])).sort();
+    return { state: prIn.length || cmIn.length ? 'part' : 'none', pr: prIn, cm: cmIn };
+  }
+
+  /* Avviso per un'offerta valida solo in una parte della regione scelta:
+     "in Campania solo provincia di Napoli (NA)", o null se è valida in tutta la
+     regione o in nessuna parte. */
+  function zonePartial(o, regione, data) {
+    const a = zoneAvailability(o, regione, data);
+    if (a.state !== 'part') return null;
+    const reg = (data && data.regioni) || {};
+    return `in ${reg[regione] || regione} ${zoneRestriction({ pr: a.pr, cm: a.cm }, { ...data, regioni: {} })}`;
+  }
+
+  /* Zona di un'offerta a parole: "solo provincia di Trento (TN, Trentino-Alto
+     Adige)", o null se non ce n'è. Con `o.r` non vuoto le zone si sommano alle
+     regioni: "più provincia di Verona (VR, Veneto), più comuni di ...".
+     `o.pr`/`o.cm` sono i codici ISTAT dell'XML (provincia 3 cifre, comune 6: le
+     prime 3 sono la provincia); `data` porta le tabelle `province`
+     ({cod: [nome, sigla, cod. regione]}), `comuni` ({cod: nome}) e `regioni`.
+     Un codice che manca resta "cod. N": gli snapshot storici e i comuni
+     accorpati non hanno sempre il nome. */
   const ZONE_MAX_LISTED = 5;
   function zoneRestriction(o, data) {
     const pr = (o.pr || []).slice().sort(), cm = (o.cm || []).slice().sort();
@@ -251,7 +281,7 @@
         return item(name, p ? p[1] : null, p && single ? reg[p[2]] : null);
       }));
     }
-    return 'solo ' + parts.join(' o ');
+    return o.r && o.r.length ? parts.map((x) => `più ${x}`).join(', ') : 'solo ' + parts.join(' o ');
   }
 
   /* Onere di recesso anticipato. `o.rc` è lo stato letto dall'XML del venditore:
@@ -278,5 +308,5 @@
   }
 
   return { exciseExemptionKwh, systemLuce, punIndex, costLuce, gasWithIva, psvIndex, regDeltaAnnual, costGas, dualRanking,
-           fixVarSignal, zoneRestriction, recessoBadge, recessoNote, SIGNAL_UP, SIGNAL_DOWN, PREMIUM_CAP };
+           fixVarSignal, zoneAvailability, zonePartial, zoneRestriction, recessoBadge, recessoNote, SIGNAL_UP, SIGNAL_DOWN, PREMIUM_CAP };
 });

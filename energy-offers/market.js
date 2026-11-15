@@ -491,11 +491,11 @@
     const byV = new Map();
     for (const r of rows) byV.set(r.o.v || '—', (byV.get(r.o.v || '—') || 0) + 1);
     const topV = [...byV.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
-    const regional = rows.filter((r) => r.o.r.length).length;
+    const regional = rows.filter((r) => r.o.r.length || (r.o.pr && r.o.pr.length) || (r.o.cm && r.o.cm.length)).length;
     facts.push({
       icon: '🏢', title: 'Chi vende',
       big: `${nf0.format(byV.size)} venditori`,
-      text: `I più presenti: ${topV.map(([v, c]) => `${v} (${c} offerte)`).join(', ')}. ${Math.round((100 * regional) / rows.length)}% delle offerte vale solo in alcune regioni.`,
+      text: `I più presenti: ${topV.map(([v, c]) => `${v} (${c} offerte)`).join(', ')}. ${Math.round((100 * regional) / rows.length)}% delle offerte vale solo in alcune zone (regioni, province o comuni).`,
     });
 
     const box = $('#facts');
