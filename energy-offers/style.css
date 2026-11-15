@@ -1,5 +1,14 @@
 /* Comparatore luce e gas — mobile first, poi due colonne da 960px. */
 
+/*
+ * Tema. Il tema scuro vale in due casi: «automatico» (nessun data-theme su <html>,
+ * decide il dispositivo con @media (prefers-color-scheme: dark)) e scelta esplicita
+ * (<html data-theme="dark">). Ogni blocco scuro ha quindi due scritture con le stesse
+ * dichiarazioni: sotto @media con :root:where(:not([data-theme="light"])) davanti al
+ * selettore, e fuori con :root[data-theme="dark"]. Qui le differenze di colore sono
+ * tutte variabili, così i blocchi sono uno solo e restano corti.
+ */
+
 :root {
   --bg: #f6f7fb;
   --bg-2: #eceef5;
@@ -26,8 +35,16 @@
   --c-accise: #e2557a;
   --c-iva: #9aa3b5;
   --c-rai: #3c4458;
+  --bad-text: #d14343;
+  --good-ink: #12a150;
+  --teal-text: #0b6b5f;
+  --dual-text: #5a3fd6;
+  --tm-mix: 90%;
+  --sheen: rgba(255, 255, 255, .22);
   color-scheme: light dark;
 }
+:root[data-theme="light"] { color-scheme: light; }
+:root[data-theme="dark"] { color-scheme: dark; }
 
 [data-kind="luce"] {
   --accent: #f2a900;
@@ -59,7 +76,7 @@
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:where(:not([data-theme="light"])) {
     --bg: #0f1115;
     --bg-2: #161922;
     --card: #181b24;
@@ -72,12 +89,42 @@
     --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px rgba(0, 0, 0, .25);
     --accent-ink: #ffd36b;
     --c-rai: #6b7590;
+    --bad-text: #ff8a8a;
+    --good-ink: #4cd38a;
+    --teal-text: #5fd6c7;
+    --dual-text: #b9a8ff;
+    --tm-mix: 88%;
+    --sheen: rgba(255, 255, 255, .08);
   }
-  [data-kind="luce"] { --accent-ink: #ffd36b; }
-  [data-kind="gas"] { --accent-ink: #9cc2ff; }
-  [data-kind="mercato"] { --accent-ink: #7be3c3; }
-  [data-kind="dual"] { --accent-ink: #c4b5ff; }
+  :root:where(:not([data-theme="light"])) [data-kind="luce"] { --accent-ink: #ffd36b; }
+  :root:where(:not([data-theme="light"])) [data-kind="gas"] { --accent-ink: #9cc2ff; }
+  :root:where(:not([data-theme="light"])) [data-kind="mercato"] { --accent-ink: #7be3c3; }
+  :root:where(:not([data-theme="light"])) [data-kind="dual"] { --accent-ink: #c4b5ff; }
 }
+:root[data-theme="dark"] {
+  --bg: #0f1115;
+  --bg-2: #161922;
+  --card: #181b24;
+  --text: #eef0f6;
+  --muted: #9aa1b2;
+  --muted-strong: #adb3c2;
+  --warn-text: #ffb44d;
+  --good-text: #4cd38a;
+  --line: #262a36;
+  --shadow: 0 1px 2px rgba(0, 0, 0, .3), 0 10px 30px rgba(0, 0, 0, .25);
+  --accent-ink: #ffd36b;
+  --c-rai: #6b7590;
+  --bad-text: #ff8a8a;
+  --good-ink: #4cd38a;
+  --teal-text: #5fd6c7;
+  --dual-text: #b9a8ff;
+  --tm-mix: 88%;
+  --sheen: rgba(255, 255, 255, .08);
+}
+:root[data-theme="dark"] [data-kind="luce"] { --accent-ink: #ffd36b; }
+:root[data-theme="dark"] [data-kind="gas"] { --accent-ink: #9cc2ff; }
+:root[data-theme="dark"] [data-kind="mercato"] { --accent-ink: #7be3c3; }
+:root[data-theme="dark"] [data-kind="dual"] { --accent-ink: #c4b5ff; }
 
 * { box-sizing: border-box; }
 html { -webkit-text-size-adjust: 100%; }
@@ -294,10 +341,9 @@ details.card > summary .eyebrow { flex: 1; }
   font-size: 11px; font-weight: 700; background: var(--bg-2); color: var(--muted); white-space: nowrap;
 }
 .badge.F { background: var(--accent-soft); color: var(--accent-ink); }
-.badge.V { background: rgba(43, 179, 163, .14); color: #0b6b5f; }
+.badge.V { background: rgba(43, 179, 163, .14); color: var(--teal-text); }
 .badge.warn { background: rgba(199, 119, 0, .13); color: var(--warn-text); }
-.badge.bad { background: rgba(209, 67, 67, .12); color: var(--bad); }
-@media (prefers-color-scheme: dark) { .badge.V { color: #5fd6c7; } .badge.warn { color: #ffb44d; } .badge.bad { color: #ff8a8a; } }
+.badge.bad { background: rgba(209, 67, 67, .12); color: var(--bad-text); }
 
 .empty { text-align: center; color: var(--muted); padding: 30px 10px; }
 .more {
@@ -450,9 +496,8 @@ body[data-kind="mercato"] .logo::after { content: "📈"; }
 .kpi span { display: block; font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
 .kpi b { display: block; font-size: 17px; font-weight: 800; letter-spacing: -.02em; font-variant-numeric: tabular-nums; }
 .kpi small { color: var(--muted); font-size: 12px; }
-.kpi.up b { color: var(--bad); }
-.kpi.down b { color: var(--good); }
-@media (prefers-color-scheme: dark) { .kpi.up b { color: #ff8a8a; } .kpi.down b { color: #4cd38a; } }
+.kpi.up b { color: var(--bad-text); }
+.kpi.down b { color: var(--good-ink); }
 .chart { position: relative; width: 100%; margin-top: 6px; touch-action: pan-y; }
 .svgchart { display: block; width: 100%; height: auto; overflow: visible; }
 .svgchart .grid { stroke: var(--line); stroke-width: 1; }
@@ -510,8 +555,7 @@ body[data-kind="dual"] .logo::after { content: "⚡"; }
 body[data-kind="dual"] .dual-view { display: block; }
 body[data-kind="dual"] #summary, body[data-kind="dual"] #ranking, body[data-kind="dual"] #more { display: none; }
 body[data-kind="dual"] .not-dual { display: none; }
-.badge.dual { background: rgba(124, 92, 255, .14); color: #5a3fd6; }
-@media (prefers-color-scheme: dark) { .badge.dual { color: #b9a8ff; } }
+.badge.dual { background: rgba(124, 92, 255, .14); color: var(--dual-text); }
 .dual-best { padding: 16px; margin-bottom: 12px; }
 .dual-best h2 { font-size: 13px; text-transform: uppercase; letter-spacing: .05em; color: var(--muted); margin: 0; }
 .dual-best .big { font-size: 34px; font-weight: 850; letter-spacing: -.03em; font-variant-numeric: tabular-nums; margin: 2px 0 2px; }
@@ -559,7 +603,7 @@ body.tm-on .tm-bar {
 /* riflesso che scorre lento sulla barra */
 body.tm-on .tm-bar::after {
   content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .22) 50%, transparent 70%);
+  background: linear-gradient(100deg, transparent 30%, var(--sheen) 50%, transparent 70%);
   transform: translateX(-100%); animation: tm-sheen 5.5s ease-in-out infinite;
 }
 .tm-orb { position: relative; width: 46px; height: 46px; flex: none; display: grid; place-items: center; color: #fff; }
@@ -594,7 +638,7 @@ body.tm-on .tm-bar::after {
 .tm-warn { color: var(--warn-text); font-weight: 700; }
 .tm-bar > * { position: relative; z-index: 1; }
 
-body.tm-on { background: color-mix(in srgb, var(--bg) 90%, var(--tm-a)); }
+body.tm-on { background: color-mix(in srgb, var(--bg) var(--tm-mix), var(--tm-a)); }
 body.tm-on .top { border-bottom: 0; box-shadow: 0 2px 0 0 color-mix(in srgb, var(--tm-b) 60%, transparent); }
 body.tm-on .top::after {
   content: ""; position: absolute; left: 0; right: 0; bottom: -2px; height: 2px;
@@ -622,10 +666,6 @@ body.tm-on .tm-only { display: inline; }
 @keyframes tm-flow { to { background-position: 200% 0; } }
 @keyframes tm-in { from { opacity: 0; transform: translateY(-6px) scale(.98); } }
 
-@media (prefers-color-scheme: dark) {
-  body.tm-on { background: color-mix(in srgb, var(--bg) 88%, var(--tm-a)); }
-  body.tm-on .tm-bar::after { background: linear-gradient(100deg, transparent 30%, rgba(255, 255, 255, .08) 50%, transparent 70%); }
-}
 /* spiegazione dei due modi: nella barra su desktop; su telefono una riga corta
    sotto l'interruttore e la versione lunga nel riepilogo */
 .tm-note-m, .tm-legend { display: none; }

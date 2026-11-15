@@ -5,6 +5,11 @@
  * sulla tavolozza dell'articolo. Sta sopra l'intestazione fissa e scorre via con
  * la pagina: l'intestazione fissa non diventa più alta. Su telefono la riga
  * scorre di lato se non ci sta.
+ *
+ * Il tema scuro vale in due casi, e ogni blocco scuro ha le due scritture: una
+ * sotto @media (prefers-color-scheme: dark), per «automatico» (la scelta in
+ * <html data-theme> manca o è «dark»), e una con :root[data-theme="dark"], per la
+ * scelta esplicita sul dispositivo chiaro. Devono dichiarare le stesse cose.
  */
 .site-nav {
   --nav-bg: #ffffff;
@@ -31,8 +36,26 @@
 .site-nav a:focus-visible { outline: 2px solid var(--nav-focus); outline-offset: -2px; }
 .site-nav a[hidden] { display: none; }
 
+/* pulsante del tema: stessa altezza minima, stesso hover e stesso fuoco dei link */
+.site-nav .theme-toggle {
+  flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  min-height: 40px; min-width: 40px; margin: 0 0 0 auto; padding: 0 10px; border: 0; border-radius: 10px;
+  background: transparent; color: var(--nav-soft); font: inherit; white-space: nowrap; cursor: pointer;
+}
+.site-nav .theme-toggle:hover { color: var(--nav-ink); background: var(--nav-hover); }
+.site-nav .theme-toggle:focus-visible { outline: 2px solid var(--nav-focus); outline-offset: -2px; }
+.site-nav .theme-toggle[hidden] { display: none; }
+.theme-icon { width: 18px; height: 18px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.theme-icon g { display: none; }
+.theme-toggle[data-state="auto"] .i-auto, .theme-toggle[data-state="light"] .i-light, .theme-toggle[data-state="dark"] .i-dark { display: inline; }
+.theme-icon .i-auto path { fill: currentColor; }
+/* su telefono solo l'icona: nome accessibile e title dicono lo stato; il testo torna dove c'è posto */
+.theme-text { display: none; }
+@media (min-width: 640px) { .theme-text { display: inline; } .site-nav .theme-toggle { padding: 0 12px; } }
+.theme-live { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
 @media (prefers-color-scheme: dark) {
-  .site-nav {
+  :root:where(:not([data-theme="light"])) .site-nav {
     --nav-bg: #181b24;
     --nav-line: #262a36;
     --nav-ink: #eef0f6;
@@ -42,10 +65,18 @@
     --nav-focus: #8fb4ff;
   }
 }
-/* le quattro voci stanno in una riga fino a 360 px; sotto, la riga scorre */
-@media (max-width: 420px) {
-  .site-nav { padding-left: max(4px, env(safe-area-inset-left)); padding-right: max(4px, env(safe-area-inset-right)); }
-  .site-nav a { padding: 0 8px; }
+:root[data-theme="dark"] .site-nav {
+  --nav-bg: #181b24;
+  --nav-line: #262a36;
+  --nav-ink: #eef0f6;
+  --nav-soft: #b4bac8;
+  --nav-hover: #20242f;
+  --nav-cur: #2b3040;
+  --nav-focus: #8fb4ff;
 }
-@media (max-width: 380px) { .site-nav { font-size: 13px; } .site-nav a { padding: 0 6px; } }
+/* le quattro voci e il pulsante del tema stanno in una riga da 385 px in su; sotto la riga scorre di lato */
+@media (max-width: 420px) {
+  .site-nav { gap: 0; font-size: 13px; padding-left: max(4px, env(safe-area-inset-left)); padding-right: max(4px, env(safe-area-inset-right)); }
+  .site-nav a { padding: 0 6px; }
+}
 @media (min-width: 960px) { .site-nav { padding: 6px 22px; } }

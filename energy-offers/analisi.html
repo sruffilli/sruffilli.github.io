@@ -4,15 +4,21 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="color-scheme" content="light dark">
+<script src="theme.js?v=20261115T205100"></script>
 <title>Fisso o variabile? Cosa insegnano 58 mesi di offerte luce e gas</title>
 <meta name="description" content="Analisi di tutte le offerte domestiche di luce e gas del mercato libero italiano, gennaio 2022 - ottobre 2026.">
 <style>
 :root{--bg:#fdfcfa;--ink:#1d1d1b;--soft:#3d3d3a;--muted:#6f6d68;--rule:#e4e1da;--grid:#ebe8e2;--axis:#a29f98;
 --box:#f4f1ea;--c1:#2a62a6;--c2:#d1761b;--c3:#2f8f6a;--c4:#b8463c;--reg:#b9b5ac;--gap:rgba(209,118,27,.16);
 --up:rgba(42,98,166,.08);--down:rgba(209,118,27,.09);--link:#2a62a6;--live:#23775a}
-@media (prefers-color-scheme:dark){:root{--bg:#161615;--ink:#e9e7e2;--soft:#cfccc5;--muted:#9c998f;--rule:#34332f;
+@media (prefers-color-scheme:dark){:root:where(:not([data-theme="light"])){--bg:#161615;--ink:#e9e7e2;--soft:#cfccc5;--muted:#9c998f;--rule:#34332f;
 --grid:#2b2a27;--axis:#5d5b55;--box:#211f1c;--c1:#74a9ec;--c2:#f0a052;--c3:#5cc49a;--c4:#ec7d70;--reg:#5f5c56;
 --gap:rgba(240,160,82,.20);--up:rgba(116,169,236,.12);--down:rgba(240,160,82,.12);--link:#8fbaf0;--live:#5cc49a}}
+:root[data-theme="dark"]{--bg:#161615;--ink:#e9e7e2;--soft:#cfccc5;--muted:#9c998f;--rule:#34332f;
+--grid:#2b2a27;--axis:#5d5b55;--box:#211f1c;--c1:#74a9ec;--c2:#f0a052;--c3:#5cc49a;--c4:#ec7d70;--reg:#5f5c56;
+--gap:rgba(240,160,82,.20);--up:rgba(116,169,236,.12);--down:rgba(240,160,82,.12);--link:#8fbaf0;--live:#5cc49a}
+:root[data-theme="light"]{color-scheme:light}
+:root[data-theme="dark"]{color-scheme:dark}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Charter,"Bitstream Charter","Iowan Old Style",
@@ -104,7 +110,7 @@ svg .b4{fill:var(--c4)}
 svg .ann.strong{fill:var(--ink);font-weight:600}
 svg .dt.c3{fill:var(--c3)}
 </style>
-<link rel="stylesheet" href="nav.css?v=20261115T194735">
+<link rel="stylesheet" href="nav.css?v=20261115T205100">
 </head>
 <body>
 <nav class="site-nav" aria-label="Sezioni del sito">
@@ -112,6 +118,15 @@ svg .dt.c3{fill:var(--c3)}
 <a href="simulatore.html" data-nav="simulatore">Simulatore</a>
 <a href="./#tm" data-nav="tm">Macchina del tempo</a>
 <a href="analisi.html" data-nav="analisi" aria-current="page">Analisi</a>
+<button type="button" class="theme-toggle" data-theme-toggle hidden>
+<svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+<g class="i-auto"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z"/></g>
+<g class="i-light"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g>
+<g class="i-dark"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></g>
+</svg>
+<span class="theme-text"></span>
+</button>
+<span class="theme-live" role="status"></span>
 </nav>
 <main>
 <header>
@@ -2232,9 +2247,9 @@ svg .dt.c3{fill:var(--c3)}
 <p class="note">Questo articolo descrive il mercato in generale e non è una consulenza personale. Prima di cambiare fornitore confronta le offerte ai tuoi consumi sul <a href="./">comparatore luce e gas</a>, che usa lo stesso modello di costo e con la macchina del tempo mostra le offerte di ogni mese dal 2022, oppure sul <a href="https://www.ilportaleofferte.it/">Portale Offerte di ARERA</a>. Dati: Portale Offerte, gennaio 2022 - ottobre 2026; parametri regolati ARERA; prezzi all'ingrosso PUN e PSV.</p>
 
 </main>
-<script src="engine.js?v=20261115T194735"></script>
-<script src="tm-link.js?v=20261115T194735"></script>
-<script src="analisi.js?v=20261115T194735"></script>
-<script src="nav.js?v=20261115T194735"></script>
+<script src="engine.js?v=20261115T205100"></script>
+<script src="tm-link.js?v=20261115T205100"></script>
+<script src="analisi.js?v=20261115T205100"></script>
+<script src="nav.js?v=20261115T205100"></script>
 </body>
 </html>

@@ -5,10 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0f1115" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
+  <script src="theme.js?v=20261115T205100"></script>
   <title>Simulatore bolletta luce e gas</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>">
-  <link rel="stylesheet" href="style.css?v=20261115T194735">
-  <link rel="stylesheet" href="nav.css?v=20261115T194735">
+  <link rel="stylesheet" href="style.css?v=20261115T205100">
+  <link rel="stylesheet" href="nav.css?v=20261115T205100">
 </head>
 <body data-kind="luce" class="sim-page">
   <nav class="site-nav" aria-label="Sezioni del sito">
@@ -16,6 +17,15 @@
     <a href="simulatore.html" data-nav="simulatore" aria-current="page">Simulatore</a>
     <a href="./#tm" data-nav="tm">Macchina del tempo</a>
     <a href="analisi.html" data-nav="analisi">Analisi</a>
+    <button type="button" class="theme-toggle" data-theme-toggle hidden>
+      <svg class="theme-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <g class="i-auto"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z"/></g>
+        <g class="i-light"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></g>
+        <g class="i-dark"><path d="M20 14.5A8 8 0 0 1 9.5 4a8 8 0 1 0 10.5 10.5z"/></g>
+      </svg>
+      <span class="theme-text"></span>
+    </button>
+    <span class="theme-live" role="status"></span>
   </nav>
   <header class="top">
     <div class="brand">
@@ -63,8 +73,8 @@
 
   <button type="button" class="sim-bar" id="simBar" aria-label="Vai al totale"></button>
 
-  <script src="engine.js?v=20261115T194735"></script>
-  <script src="sim.js?v=20261115T194735"></script>
-  <script src="nav.js?v=20261115T194735"></script>
+  <script src="engine.js?v=20261115T205100"></script>
+  <script src="sim.js?v=20261115T205100"></script>
+  <script src="nav.js?v=20261115T205100"></script>
 </body>
 </html>
