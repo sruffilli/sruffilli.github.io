@@ -2,6 +2,8 @@
 (function () {
   'use strict';
   const E = window.EnergyEngine;
+  const TL = window.EnergyTmLink;
+  const NAV = window.EnergyNav;
   const $ = (s) => document.querySelector(s);
   const STORE = 'energy-offers-v1';
   const PAGE = 40;
@@ -41,6 +43,8 @@
   // due set di parametri: params ("allora") e params_hindsight ("col senno di poi").
   const TM = { on: false, month: null, mode: 'then', index: null, cache: new Map(), showOdd: false };
   let shown = PAGE;
+  // Con prefers-reduced-motion gli scorrimenti da JS saltano invece di animarsi.
+  const scrollBehavior = () => (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
   let lastRows = [];
   const nodes = new Map();       // `${kind}-${id}` → <li>
   const detailCache = new Map(); // `${kind}-${shard}` → Promise<dict>
@@ -150,13 +154,16 @@
     if (o.r.length) b.push(`<span class="badge" title="Offerta con restrizione territoriale">📍 ${o.r.length > 10 ? 'quasi tutte' : o.r.length + (o.r.length === 1 ? ' regione' : ' regioni')}</span>`);
     // <PROVINCIA>/<COMUNE> restringono oltre la regione (o anche senza alcuna
     // <REGIONE>, il caso che il badge sopra non vedeva affatto): nessun
-    // selettore per provincia/comune qui, solo l'avviso: il comparatore non
-    // chiede mai provincia o comune dell'utente.
-    else if ((o.pr && o.pr.length) || (o.cm && o.cm.length)) b.push(`<span class="badge" title="Offerta ristretta a provincia/comune specifici, non filtrabile qui">📍 zona ristretta</span>`);
+    // selettore per provincia/comune, solo l'avviso con i nomi.
+    else {
+      const zone = E.zoneRestriction(o, DATA);
+      if (zone) b.push(`<span class="badge" title="${esc(`Offerta ristretta: ${zone}. Il comparatore non chiede provincia o comune: verifica la scheda.`)}">📍 zona ristretta</span>`);
+    }
     const fix = c.fissoVenditore;
     const susp = DATA[kind].params.suspicious_fix_annual;
     if (fix > 0 && fix < susp) b.push(`<span class="badge warn" title="Quota fissa sospetta: a volte è un errore di unità (€/mese scritto come €/anno)">⚠ quota fissa</span>`);
-    if (o.t === 'F' && o.d > 0) b.push(`<span class="badge" title="Penale di recesso non pubblicata nei dati ARERA">❓ recesso</span>`);
+    const rb = E.recessoBadge(o);
+    if (rb) b.push(`<span class="badge${rb.cls ? ' ' + rb.cls : ''}" title="${esc(rb.title)}">${esc(rb.text)}</span>`);
     return b.join('');
   }
 
@@ -208,7 +215,7 @@
         `<span class="rank">${i + 1}</span>` +
         `<span class="name" title="${esc(r.o.n)}">${esc(r.o.n)}</span>` +
         `<span class="price"><b>${eur(r.total)}</b>${TM.on ? tmAltLine(r, kind) : `<span>${eur(r.total / 12)}/mese</span>`}` +
-        `<em>${i === 0 ? 'la più economica' : '+' + eur(delta)}</em></span>` +
+        `<em>${i === 0 ? 'la più economica' : '+' + eur(delta) + (TM.on ? ' dalla prima' : '')}</em></span>` +
         `<span class="meta">${esc(r.o.v || '—')} ${r.odd ? `<span class="badge bad" title="Il prezzo dell'energia è sotto metà del prezzo all'ingrosso: quasi sempre è una sola componente pubblicata come prezzo. Verifica la scheda del venditore.">⚠ prezzo implausibile</span>` : ''}${badges(r.o, r.c, kind)}</span>` +
         `<span class="bar"><i style="width:${(12 + 88 * (r.total - best) / span).toFixed(1)}%"></i></span>`;
       el.setAttribute('aria-label', `${i + 1}°, ${r.o.n}, ${eur(r.total)} all'anno`);
@@ -243,13 +250,15 @@
     more.textContent = `Mostra altre ${Math.min(PAGE, rows.length - shown)} (di ${nf0.format(rows.length)})`;
   }
 
-  // Riga secondaria della macchina del tempo: il prezzo nell'altro modo e il delta poi − allora.
+  // Riga secondaria della macchina del tempo: il prezzo nell'altro modo e, fra
+  // parentesi, la differenza poi − allora (sempre con quel segno).
   function tmAltLine(r, kind) {
     if (r.alt == null) return `<span class="tm-alt">col senno di poi: non ancora</span>`;
     const poi = tmPoi(kind);
     const then = poi ? r.alt : r.total, after = poi ? r.total : r.alt, d = after - then;
     const cls = d > 0.5 ? 'up' : d < -0.5 ? 'down' : '';
-    return `<span class="tm-alt ${cls}">${poi ? 'allora ' + eur(then) : 'poi ' + eur(after)} · ${d >= 0 ? '+' : '−'}${eur(Math.abs(d))}</span>`;
+    const dTxt = `${d >= 0 ? '+' : '−'}${eur(Math.abs(d))}`;
+    return `<span class="tm-alt ${cls}">${poi ? `allora ${eur(then)} (poi ${dTxt})` : `<span class="tm-alt-w">col senno di </span>poi ${eur(after)} (${dTxt})`}</span>`;
   }
 
   // Nella scheda: l'altro prezzo e il delta, sempre "poi − allora".
@@ -320,8 +329,10 @@
         + (s.premium > E.PREMIUM_CAP ? `, cioè il ${Math.round(s.premium * 100)}% in più della variabile in classifica: nel 2022 fissare con un premio così è costato caro.` : '.');
     }
     box.className = 'fv-signal ' + s.regime + ' ' + (s.regime === 'calm' ? '' : s.choice);
-    const where = state.regione ? `in ${DATA.regioni[state.regione] || state.regione}` : 'in tutta Italia';
-    box.innerHTML = `<b>${esc(head)}</b><span>${body} Offerte attivabili ${esc(where)}, al consumo scelto. <a href="analisi.html">Perché? L'analisi di 58 mesi di offerte</a></span>`;
+    const scope = state.regione
+      ? `Il segnale è calcolato sulle offerte attivabili in ${esc(DATA.regioni[state.regione] || state.regione)} (escluse quelle limitate a una provincia o a un comune), con il profilo inserito sopra.`
+      : 'Il segnale è calcolato solo sulle offerte valide in tutta Italia, con il profilo inserito sopra; scegliendo una regione si aggiungono quelle valide solo lì.';
+    box.innerHTML = `<b>${esc(head)}</b><span>${body} ${scope} <a href="analisi.html">Perché? L'analisi di 58 mesi di offerte</a></span>`;
     box.hidden = false;
   }
 
@@ -344,12 +355,11 @@
       const where = top.r.length === 1 ? (DATA.regioni[top.r[0]] || top.r[0]) : `${top.r.length} regioni`;
       nudge.innerHTML = `La prima è attivabile solo in ${esc(where)}. <button type="button" id="nudgeBtn">Scegli dove abiti</button> per vedere solo le offerte valide per te.`;
       nudge.hidden = false;
-      $('#nudgeBtn').onclick = () => { const s = $('#regione'); s.scrollIntoView({ behavior: 'smooth', block: 'center' }); setTimeout(() => s.focus(), 350); };
-    } else if ((top.pr && top.pr.length) || (top.cm && top.cm.length)) {
+      $('#nudgeBtn').onclick = () => { const s = $('#regione'); s.scrollIntoView({ behavior: scrollBehavior(), block: 'center' }); setTimeout(() => s.focus(), 350); };
+    } else if (E.zoneRestriction(top, DATA)) {
       // Stesso avviso della regione, ma senza bottone: qui non c'è un
-      // selettore provincia/comune da aprire, solo l'avviso che la prima
-      // potrebbe non essere attivabile dove abiti.
-      nudge.innerHTML = `La prima è limitata a una provincia/comune specifici (non filtrabile qui): verifica la scheda prima di attivarla.`;
+      // selettore provincia/comune da aprire.
+      nudge.innerHTML = `La prima è ristretta: ${esc(E.zoneRestriction(top, DATA))}. Qui non si sceglie provincia o comune: verifica la scheda prima di attivarla.`;
       nudge.hidden = false;
     } else nudge.hidden = true;
     st.title = `Migliore: ${nf3(totals[0] / unit)} €/${state.kind === 'luce' ? 'kWh' : 'Smc'} tutto compreso`;
@@ -460,10 +470,9 @@
     // riassunto del pannello impostazioni
     const typeTxt = { all: 'tutte', F: 'solo fisse', V: 'solo variabili' }[state.type];
     if (TM.on) {
-      const lbl = TM.mode === 'poi' ? 'prezzi col senno di poi' : 'prezzi di allora';
-      const typeTxt0 = { all: 'tutte', F: 'solo fisse', V: 'solo variabili' }[state.type];
-      $('#settingsTxt').textContent = (state.kind === 'gas' ? [lbl, typeTxt0]
-        : [`${String(state.kw).replace('.', ',')} kW`, state.residente ? 'residente' : 'non residente', lbl, typeTxt0]).join(' · ');
+      const lbl = TL.settingsLabel(tmPoi(state.kind === 'gas' ? 'gas' : 'luce'));
+      $('#settingsTxt').textContent = (state.kind === 'gas' ? [lbl, typeTxt]
+        : [`${String(state.kw).replace('.', ',')} kW`, state.residente ? 'residente' : 'non residente', lbl, typeTxt]).join(' · ');
     }
     const parts = state.kind === 'dual'
       ? [`${String(state.kw).replace('.', ',')} kW`, state.residente ? 'residente' : 'non residente', `PUN ${{ '12m': '12 mesi', last: 'ultimo mese', custom: nf3(state.punCustom) }[state.punScen]}`, `PSV ${{ '12m': '12 mesi', last: 'ultimo mese', custom: nf3(state.psvCustom) }[state.psvScen]}`, typeTxt]
@@ -509,7 +518,7 @@
 
   function bind() {
     for (const t of document.querySelectorAll('.tabs button')) {
-      t.onclick = () => { if (state.kind !== t.dataset.kind) { $('#ranking').innerHTML = ''; update({ kind: t.dataset.kind }); window.scrollTo({ top: 0, behavior: 'smooth' }); } };
+      t.onclick = () => { if (state.kind !== t.dataset.kind) { $('#ranking').innerHTML = ''; update({ kind: t.dataset.kind }); window.scrollTo({ top: 0, behavior: scrollBehavior() }); } };
     }
     $('#kwh').addEventListener('input', (e) => update({ kwh: +e.target.value }));
     $('#kwhNum').addEventListener('change', (e) => update({ kwh: clamp(Math.round(+e.target.value || 0), 100, 20000) }));
@@ -781,9 +790,11 @@
       const alt = row.total + (12 * 12 - c.fissoVenditore) * (kind === 'luce' ? 1.10 : 1.22);
       notes.push(`La quota fissa dichiarata è di ${eur2(c.fissoVenditore)} all'anno: molto bassa. A volte è un errore di unità (€/mese scritto come €/anno). Se fosse 12 €/mese, il totale sarebbe circa ${eur(alt)}. Controlla le condizioni del venditore.`);
     }
-    if (o.t === 'F' && o.d > 0) notes.push(`Prezzo fisso per ${o.d} mesi. I dati ARERA non dicono se c'è una penale di uscita anticipata: cercala nella scheda sintetica, sezione "Modalità e oneri per il recesso".`);
+    const recNote = E.recessoNote(o, d.recesso);
+    if (recNote) notes.push(recNote);
     if (state.regione && o.r.length && !o.r.includes(state.regione)) notes.push('Non attivabile nella regione scelta.');
-    if ((o.pr && o.pr.length) || (o.cm && o.cm.length)) notes.push('Offerta ristretta a una provincia/comune specifici (vedi "Dove" sotto): nessun filtro qui, verifica che il tuo comune sia incluso prima di attivarla.');
+    const zoneNote = E.zoneRestriction(o, DATA);
+    if (zoneNote) notes.push(`Offerta ristretta: ${zoneNote}. Il comparatore non chiede provincia o comune: verifica di essere incluso prima di attivarla.`);
     if (notes.length) out.push(notes.map((n) => `<p class="note warn">${esc(n)}</p>`).join(''));
     if (o.so === 0) {
       const other = kind === 'luce' ? 'gas' : 'luce';
@@ -803,15 +814,22 @@
       out.push(`<section class="d-sec"><h3>Sconti e bonus <small>(non inclusi nel totale)</small></h3>${d.sconti.map((s) =>
         `<p class="desc"><b>${esc(s.n || 'Sconto')}</b>${s.prezzi && s.prezzi.length ? ' · ' + s.prezzi.map((p) => `${esc(p.p)} ${esc(p.um)}`).join(', ') : ''}<br>${esc(s.desc || '')}</p>`).join('')}</section>`);
     }
-    if (d.condizioni && d.condizioni.length) {
-      out.push(`<section class="d-sec"><h3>Condizioni contrattuali</h3>${d.condizioni.map((x) =>
+    // Il testo del venditore sull'onere di recesso sta in una sezione sua: non si ripete fra le condizioni.
+    const recTesti = (d.recesso && d.recesso.testi) || [];
+    const recShown = new Set(recTesti.map((t) => t.testo));
+    if (recTesti.length) {
+      out.push(`<section class="d-sec"><h3>Onere di recesso anticipato <small>(testo del venditore)</small></h3>${recTesti.map((t) =>
+        `<p class="desc"><b>${esc(t.campo)}</b>${t.testo ? `<br>${esc(t.testo)}` : ''}</p>`).join('')}</section>`);
+    }
+    const conds = (d.condizioni || []).filter((x) => !recShown.has(x.desc));
+    if (conds.length) {
+      out.push(`<section class="d-sec"><h3>Condizioni contrattuali</h3>${conds.map((x) =>
         `<p class="desc"><b>${esc(x.tipo)}${x.lim ? ' · limitante' : ''}</b><br>${esc(x.desc || '')}</p>`).join('')}</section>`);
     }
-    let regs = o.r.length ? o.r.map((r) => DATA.regioni[r] || r).join(', ') : 'tutta Italia';
-    // <PROVINCIA>/<COMUNE> (cod. ISTAT, nessuna tabella nomi qui) si sommano
-    // alla regione: si mostrano i codici grezzi.
-    if (o.pr && o.pr.length) regs += ` · solo provincia ${o.pr.join(', ')}`;
-    if (o.cm && o.cm.length) regs += ` · solo comune ${o.cm.join(', ')}`;
+    // Regioni, poi provincia/comune; "tutta Italia" solo senza nessuna restrizione.
+    const zone = E.zoneRestriction(o, DATA);
+    const regs = [o.r.length ? o.r.map((r) => DATA.regioni[r] || r).join(', ') : null, zone]
+      .filter(Boolean).join(' · ') || 'tutta Italia';
     const lim = [];
     if (o.cmin > 0 || o.cmax > 0) lim.push(`consumo ${o.cmin ? 'da ' + nf0.format(o.cmin) : ''}${o.cmax ? ' fino a ' + nf0.format(o.cmax) : ''} ${kind === 'luce' ? 'kWh' : 'Smc'}/anno`);
     if (o.pmin > 0 || o.pmax > 0) lim.push(`potenza ${o.pmin ? 'da ' + o.pmin : ''}${o.pmax ? ' fino a ' + o.pmax : ''} kW`);
@@ -865,6 +883,7 @@
 
   function syncTimeMachine() {
     document.body.classList.toggle('tm-on', TM.on);
+    NAV.setCurrent(TM.on ? 'tm' : 'offerte');
     if (!TM.on || !TM.index) return;
     const months = TM.index.months, i = months.findIndex((x) => x.m === TM.month);
     const meta = DATA.time_machine;
@@ -881,13 +900,23 @@
     ], tmPoi(k) ? 'poi' : 'then', (v) => { if (v === 'poi' && !H) return; TM.mode = v; update({}); });
     const poiBtn = $('#tmMode').querySelector('[data-v="poi"]');
     if (!H) poiBtn.setAttribute('aria-disabled', 'true');
-    const parts = [`<b>Allora</b>: la classifica di quel giorno, con l'indice medio dei 12 mesi prima (${esc(winLabel(B.params.window))}) e gli oneri di allora.`];
+    const parts = [`<b>Allora</b>: la classifica di quel giorno, con l'indice medio dei 12 mesi prima (${esc(winLabel(B.params.window))}, ${esc(ix(B.params))}) e gli oneri di allora.`];
     if (H) {
-      parts.push(`<b>Col senno di poi</b>: quanto sarebbe costata davvero, con l'indice effettivo dei mesi di fornitura (${esc(winLabel(H.window))}) e i loro oneri e IVA.`);
+      parts.push(`<b>Col senno di poi</b>: quanto sarebbe costata davvero, con l'indice effettivo dei mesi di fornitura (${esc(winLabel(H.window))}, ${esc(ix(H))}) e i loro oneri e IVA.`);
       if (H.months < 12) parts.push(`<span class="tm-warn">Parziale: solo ${H.months} mesi su 12 sono già chiusi.</span>`);
     } else parts.push('Col senno di poi non è ancora calcolabile: nessun mese di fornitura è chiuso.');
-    $('#tmNote').innerHTML = parts.join(' ');
-    $('#tmNoteM').innerHTML = parts.join(' ');   // su telefono la spiegazione sta nel riepilogo
+    $('#tmNote').innerHTML = parts.join(' ') + ' <a href="analisi.html#come-abbiamo-fatto">Come si legge</a>';
+    $('#tmNoteM').innerHTML = parts.join(' ');   // su telefono la spiegazione lunga sta nel riepilogo
+    syncAddress();
+  }
+
+  // L'indirizzo descrive sempre lo stato mostrato: mese, fornitura e modo effettivo
+  // (senza senno di poi disponibile il modo è "allora").
+  function syncAddress() {
+    if (TM.on && TM.month) {
+      const h = TL.build(TM.month, state.kind, tmPoi(state.kind === 'gas' ? 'gas' : 'luce') ? 'poi' : 'then');
+      if (h !== location.hash) history.replaceState(history.state, '', h);
+    } else if (TL.isTmHash(location.hash)) history.replaceState(history.state, '', location.pathname + location.search);
   }
 
   function footerTM() {
@@ -916,23 +945,45 @@
     return TM.cache.get(m);
   }
 
-  function enterTM(m) {
+  // Una sola richiesta conta: se ne parte un'altra (o si esce) mentre lo snapshot
+  // si scarica, la risposta in ritardo viene ignorata.
+  let tmRequest = 0;
+
+  // want: { k, v } opzionali, fornitura e modo da un link.
+  function enterTM(m, want) {
+    const req = ++tmRequest;
     $('#dataInfo').textContent = `Carico le offerte di ${monthName(m)}…`;
     return loadSnapshot(m).then((d) => {
+      if (req !== tmRequest) return;
       TM.on = true; TM.month = m;
-      if (state.kind === 'mercato') state.kind = 'luce';
+      if (want && want.v) TM.mode = want.v;
+      const kind = (want && want.k) || (state.kind === 'mercato' ? 'luce' : state.kind);
       setData(d);
-      history.replaceState(history.state, '', '#tm=' + m);
-      update({});
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }).catch((e) => { $('#dataInfo').textContent = `Non riesco a caricare ${monthName(m)} (${e.message}).`; });
+      update({ kind });
+      window.scrollTo({ top: 0, behavior: scrollBehavior() });
+    }).catch((e) => {
+      if (req !== tmRequest) return;
+      $('#dataInfo').textContent = `Non riesco a caricare ${monthName(m)} (${e.message}).`;
+      syncAddress();
+    });
   }
 
   function exitTM() {
+    tmRequest++;
     TM.on = false; TM.month = null;
     setData(LIVE);
-    history.replaceState(history.state, '', location.pathname + location.search);
+    syncAddress();
     update({});
+  }
+
+  // Un hash cambiato a mano (o un link interno) porta la pagina nello stato che descrive.
+  function applyTmLink(link) {
+    if (TM.on && link.m === TM.month) {
+      if (link.v) TM.mode = link.v;
+      if (link.k && link.k !== state.kind) { $('#ranking').innerHTML = ''; update({ kind: link.k }); } else update({});
+      return;
+    }
+    enterTM(link.m, link);
   }
 
   function initTimeMachine(ix) {
@@ -947,13 +998,26 @@
     $('#tmPrev').onclick = () => step(-1);
     $('#tmNext').onclick = () => step(1);
     $('#tmExit').onclick = exitTM;
-    // di partenza: il mese più recente con il senno di poi completo
+    // di partenza (#tm, la voce della barra): il mese più recente con il senno di poi completo
     const start = (ix.months.filter((x) => x.hl === 12 && x.hg === 12).pop() || ix.months[ix.months.length - 1]).m;
-    const btn = $('#tmBtn');
-    btn.hidden = false;
-    btn.onclick = () => enterTM(start);
-    const m = (location.hash.match(/^#tm=(\d{4}-\d{2})$/) || [])[1];
-    if (m && ix.months.some((x) => x.m === m)) enterTM(m);
+    const months = ix.months.map((x) => x.m);
+    // Nella barra di navigazione: "Offerte" esce dalla macchina del tempo senza
+    // ricaricare la pagina; la voce della macchina del tempo, già dentro, non cambia mese.
+    document.querySelector('.site-nav a[data-nav="offerte"]').addEventListener('click', (e) => {
+      if (!TM.on) return;
+      e.preventDefault();
+      exitTM();
+      window.scrollTo({ top: 0 });
+    });
+    document.querySelector('.site-nav a[data-nav="tm"]').addEventListener('click', (e) => { if (TM.on) e.preventDefault(); });
+    const fromHash = () => {
+      const link = TL.parse(location.hash, months, start);
+      if (link) applyTmLink(link);
+      else if (TM.on && !TL.isTmHash(location.hash)) exitTM();
+      else syncAddress();   // tm= fuori schema: si scarta e l'indirizzo torna a dire il vero
+    };
+    window.addEventListener('hashchange', fromHash);
+    fromHash();
   }
 
   window.EnergyApp = {
@@ -971,9 +1035,15 @@
       footer();
       update({});
       if (window.EnergyMarket) window.EnergyMarket.ready();
-      // Macchina del tempo: c'è solo se è stato pubblicato l'indice degli snapshot.
-      fetch('history/index.json', { cache: 'no-cache' })
-        .then((r) => (r.ok ? r.json() : null)).then(initTimeMachine).catch(() => {});
+      // Macchina del tempo: c'è solo se è stato pubblicato l'indice degli snapshot
+      // (nav.js lo scarica e, se manca, toglie la voce dalla barra). Un link #tm
+      // senza indice resta sulle offerte di oggi e lo dice.
+      NAV.history.then((ix) => {
+        if (ix) { initTimeMachine(ix); return; }
+        if (!TL.isTmHash(location.hash)) return;
+        history.replaceState(history.state, '', location.pathname + location.search);
+        $('#tmMissing').hidden = false;
+      });
     })
     .catch((e) => {
       $('#dataInfo').textContent = 'Non riesco a caricare le offerte.';

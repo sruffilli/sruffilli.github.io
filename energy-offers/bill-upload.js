@@ -196,7 +196,7 @@
       clearPanel();
       status('Fatto: ho precompilato il profilo con i dati della bolletta. Controllali e correggi quello che serve.');
       pick.focus({ preventScroll: true });   // il bottone che aveva il focus non c'è più
-      win.scrollTo({ top: 0, behavior: 'smooth' });
+      win.scrollTo({ top: 0, behavior: win.matchMedia && win.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
     });
     const no = button('Annulla', null, () => { clearPanel(); status(''); pick.focus(); });
     const sync = () => { ok.disabled = !boxes.some((b) => b.checked); };

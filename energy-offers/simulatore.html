@@ -7,9 +7,16 @@
   <meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
   <title>Simulatore bolletta luce e gas</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧮</text></svg>">
-  <link rel="stylesheet" href="style.css?v=20261115T063057">
+  <link rel="stylesheet" href="style.css?v=20261115T194735">
+  <link rel="stylesheet" href="nav.css?v=20261115T194735">
 </head>
 <body data-kind="luce" class="sim-page">
+  <nav class="site-nav" aria-label="Sezioni del sito">
+    <a href="./" data-nav="offerte">Offerte</a>
+    <a href="simulatore.html" data-nav="simulatore" aria-current="page">Simulatore</a>
+    <a href="./#tm" data-nav="tm">Macchina del tempo</a>
+    <a href="analisi.html" data-nav="analisi">Analisi</a>
+  </nav>
   <header class="top">
     <div class="brand">
       <span class="logo" aria-hidden="true"></span>
@@ -17,9 +24,6 @@
         <h1>Simulatore bolletta</h1>
         <p class="sub" id="dataInfo">Caricamento…</p>
       </div>
-      <a class="an-btn" href="index.html" title="Torna alla classifica delle offerte">
-        <span class="an-ico" aria-hidden="true">←</span><span class="an-btn-txt">Classifica</span>
-      </a>
     </div>
     <nav class="tabs two" role="tablist" aria-label="Fornitura">
       <button role="tab" aria-selected="true" data-kind="luce"><span aria-hidden="true">⚡</span> Luce</button>
@@ -59,7 +63,8 @@
 
   <button type="button" class="sim-bar" id="simBar" aria-label="Vai al totale"></button>
 
-  <script src="engine.js?v=20261115T063057"></script>
-  <script src="sim.js?v=20261115T063057"></script>
+  <script src="engine.js?v=20261115T194735"></script>
+  <script src="sim.js?v=20261115T194735"></script>
+  <script src="nav.js?v=20261115T194735"></script>
 </body>
 </html>

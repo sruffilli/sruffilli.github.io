@@ -9,10 +9,10 @@
 <style>
 :root{--bg:#fdfcfa;--ink:#1d1d1b;--soft:#3d3d3a;--muted:#6f6d68;--rule:#e4e1da;--grid:#ebe8e2;--axis:#a29f98;
 --box:#f4f1ea;--c1:#2a62a6;--c2:#d1761b;--c3:#2f8f6a;--c4:#b8463c;--reg:#b9b5ac;--gap:rgba(209,118,27,.16);
---up:rgba(42,98,166,.08);--down:rgba(209,118,27,.09);--link:#2a62a6}
+--up:rgba(42,98,166,.08);--down:rgba(209,118,27,.09);--link:#2a62a6;--live:#23775a}
 @media (prefers-color-scheme:dark){:root{--bg:#161615;--ink:#e9e7e2;--soft:#cfccc5;--muted:#9c998f;--rule:#34332f;
 --grid:#2b2a27;--axis:#5d5b55;--box:#211f1c;--c1:#74a9ec;--c2:#f0a052;--c3:#5cc49a;--c4:#ec7d70;--reg:#5f5c56;
---gap:rgba(240,160,82,.20);--up:rgba(116,169,236,.12);--down:rgba(240,160,82,.12);--link:#8fbaf0}}
+--gap:rgba(240,160,82,.20);--up:rgba(116,169,236,.12);--down:rgba(240,160,82,.12);--link:#8fbaf0;--live:#5cc49a}}
 *{box-sizing:border-box}
 html{-webkit-text-size-adjust:100%}
 body{margin:0;background:var(--bg);color:var(--ink);font-family:Charter,"Bitstream Charter","Iowan Old Style",
@@ -80,8 +80,8 @@ th,td{text-align:left;padding:8px 8px;border-bottom:1px solid var(--rule);vertic
 th{color:var(--muted);font-weight:600}
 td.num{white-space:nowrap}
 .note{font-size:16px;color:var(--muted);border-top:1px solid var(--rule);padding-top:18px;margin-top:44px}
-.live{display:inline-block;margin-left:6px;font-size:12px;font-weight:600;color:var(--c3);
-border:1px solid var(--c3);border-radius:99px;padding:0 8px;vertical-align:2px;white-space:nowrap}
+.live{display:inline-block;margin-left:6px;font-size:12px;font-weight:600;color:var(--live);
+border:1px solid var(--live);border-radius:99px;padding:0 8px;vertical-align:2px;white-space:nowrap}
 .wbody{min-height:40px}
 .wctl,.wtext,.wnote,.wcard-head{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
 .wctl{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;font-size:15px;margin:6px 0 8px}
@@ -99,12 +99,20 @@ font:inherit;cursor:pointer}
 .wnote{font-size:14px;line-height:1.5;color:var(--muted);margin:6px 0 0}
 .wcard{margin:4px 0 20px}
 .wcard-head{font-size:16px;margin:0 0 2px;color:var(--ink)}
+.wlink{font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;font-weight:600;margin:8px 0 0}
 svg .b4{fill:var(--c4)}
 svg .ann.strong{fill:var(--ink);font-weight:600}
 svg .dt.c3{fill:var(--c3)}
 </style>
+<link rel="stylesheet" href="nav.css?v=20261115T194735">
 </head>
 <body>
+<nav class="site-nav" aria-label="Sezioni del sito">
+<a href="./" data-nav="offerte">Offerte</a>
+<a href="simulatore.html" data-nav="simulatore">Simulatore</a>
+<a href="./#tm" data-nav="tm">Macchina del tempo</a>
+<a href="analisi.html" data-nav="analisi" aria-current="page">Analisi</a>
+</nav>
 <main>
 <header>
 <p class="kicker">Energia di casa · analisi dei dati</p>
@@ -118,10 +126,11 @@ svg .dt.c3{fill:var(--c3)}
 <div class="answer">
 <p>Confrontare le offerte vale circa 200 euro l'anno sulla luce e 300 sul gas, rispetto a un'offerta nella media. Basta entrare tra le prime dieci.</p>
 <p>L'unico errore che costa caro è la scelta tra fisso e variabile. Si decide guardando il prezzo all'ingrosso dell'ultimo mese, perché su questo la classifica del portale sbaglia.</p>
-<p>Oggi quel segnale indica il fisso, da firmare lo stesso giorno in cui confronti le offerte.</p>
+<p>Al 4 novembre 2026 quel segnale indicava il fisso, da firmare lo stesso giorno in cui confronti le offerte.</p>
+<p id="segnale-oggi" hidden></p>
 </div>
 
-<h2>Come abbiamo fatto l'analisi</h2>
+<h2 id="come-abbiamo-fatto">Come abbiamo fatto l'analisi</h2>
 
 <p>Il Portale Offerte di ARERA, l'autorità che regola l'energia, elenca ogni offerta del mercato libero per le famiglie. Abbiamo conservato la fotografia del primo giorno di ogni mese, da gennaio 2022 a ottobre 2026: 103.279 offerte-mese tra luce e gas. Le offerte di luce erano circa 480 nel 2022 e sono circa 1.800 nel 2026.</p>
 
@@ -644,7 +653,7 @@ svg .dt.c3{fill:var(--c3)}
 <figure class="widget" id="w-mese">
 <div class="fig-title">Fisso o variabile in un mese a scelta <span class="live">interattivo, dati aggiornati</span></div>
 <div class="legend"><span class="lg"><span class="sw c1"></span>allora, come la vedevi il giorno della firma</span><span class="lg"><span class="sw c2"></span>col senno di poi, nei 12 mesi dopo</span></div>
-<div class="wbody"><p class="wnote">Questo grafico interattivo legge le offerte del comparatore. Lo trovi nella <a href="https://tools.ruffilli.it/energy-offers/analisi.html">versione pubblicata dell'articolo</a>.</p></div>
+<div class="wbody"><p class="wnote">Questo grafico interattivo legge le offerte del comparatore. Lo trovi nella <a href="analisi.html">versione pubblicata dell'articolo</a>.</p></div>
 <figcaption>Cosa guardare: quale delle due barre arancioni è più corta. Offerte del primo giorno del mese scelto, utente tipo, offerte nazionali. Per i mesi recenti il senno di poi è parziale.</figcaption>
 </figure>
 
@@ -893,7 +902,7 @@ svg .dt.c3{fill:var(--c3)}
 <figure class="widget" id="w-cercare">
 <div class="fig-title">Quanto paghi in più della migliore offerta, ai tuoi consumi <span class="live">interattivo, dati aggiornati</span></div>
 <div class="legend"><span class="lg"><span class="sw c3"></span>10ª offerta</span><span class="lg"><span class="sw c1"></span>offerta mediana</span><span class="lg"><span class="sw c2"></span>una su quattro costa più di così</span><span class="lg"><span class="sw c4"></span>una su dieci costa più di così</span></div>
-<div class="wbody"><p class="wnote">Questo grafico interattivo legge le offerte del comparatore. Lo trovi nella <a href="https://tools.ruffilli.it/energy-offers/analisi.html">versione pubblicata dell'articolo</a>.</p></div>
+<div class="wbody"><p class="wnote">Questo grafico interattivo legge le offerte del comparatore. Lo trovi nella <a href="analisi.html">versione pubblicata dell'articolo</a>.</p></div>
 <figcaption>Cosa guardare: come cambiano le barre spostando il consumo. Offerte nazionali di oggi, vendibili da sole, al prezzo all'ingrosso medio dei 12 mesi come nella classifica del portale.</figcaption>
 </figure>
 
@@ -2162,7 +2171,7 @@ svg .dt.c3{fill:var(--c3)}
 <figure class="widget" id="w-pareggio">
 <div class="fig-title">Quota fissa bassa o prezzo basso? Dipende da quanto consumi <span class="live">interattivo, dati aggiornati</span></div>
 <div class="legend"><span class="lg"><span class="sw c3 line"></span>migliore offerta con quota fissa fino a 3 € al mese</span><span class="lg"><span class="sw c1 line"></span>migliore offerta con quota fissa più alta</span></div>
-<div class="wbody"><p class="wnote">Questo grafico interattivo legge le offerte del comparatore. Lo trovi nella <a href="https://tools.ruffilli.it/energy-offers/analisi.html">versione pubblicata dell'articolo</a>.</p></div>
+<div class="wbody"><p class="wnote">Questo grafico interattivo legge le offerte del comparatore. Lo trovi nella <a href="analisi.html">versione pubblicata dell'articolo</a>.</p></div>
 <figcaption>Cosa guardare: il punto in cui le due linee si incrociano. A sinistra conviene la quota bassa, a destra il prezzo basso. Offerte nazionali di oggi, al prezzo all'ingrosso medio dei 12 mesi.</figcaption>
 </figure>
 
@@ -2176,16 +2185,16 @@ svg .dt.c3{fill:var(--c3)}
 <li>Una lettera di rinnovo o di modifica del prezzo è l'avviso per cercare di nuovo. Hai almeno tre mesi.</li>
 </ol>
 
-<h2>Cosa tenere d'occhio adesso</h2>
+<h2 id="adesso">Cosa tenere d'occhio adesso</h2>
 
 <p>A novembre 2026 entrambi i segnali indicano il fisso. Il PUN di ottobre, 0,231 euro al kWh, vale 1,57 volte la media dei 12 mesi prima. Il PSV, 0,945 euro allo Smc, vale 1,72 volte la sua. Le migliori fisse non hanno ancora seguito: il miglior fisso nazionale della luce, circa 0,115 euro al kWh, vale il 45% del PUN di ottobre con le perdite di rete.</p>
 
-<p>Il grafico seguente rifà il conto sulle offerte del comparatore, aggiornate ogni settimana. Se lo leggi più avanti, può dire una cosa diversa da questo paragrafo.</p>
+<p>Il grafico seguente rifà il conto sulle offerte del comparatore, aggiornate ogni giorno. Se lo leggi più avanti, può dire una cosa diversa da questo paragrafo.</p>
 
 <figure class="widget" id="w-oggi">
 <div class="fig-title">Il segnale di oggi, calcolato sulle offerte del comparatore <span class="live">interattivo, dati aggiornati</span></div>
 <div class="legend"><span class="lg"><span class="sw c3"></span>fissa migliore</span><span class="lg"><span class="sw c1"></span>variabile, come in classifica</span><span class="lg"><span class="sw c2"></span>variabile al prezzo dell&#x27;ultimo mese</span><span class="lg"><span class="sw up"></span>zona del fisso</span><span class="lg"><span class="sw down"></span>zona del variabile</span></div>
-<div class="wbody"><p class="wnote">Questo grafico interattivo legge le offerte del comparatore. Lo trovi nella <a href="https://tools.ruffilli.it/energy-offers/analisi.html">versione pubblicata dell'articolo</a>.</p></div>
+<div class="wbody"><p class="wnote">Questo grafico interattivo legge le offerte del comparatore. Lo trovi nella <a href="analisi.html">versione pubblicata dell'articolo</a>.</p></div>
 <figcaption>Cosa guardare: il punto sulla barra del segnale e la distanza tra le due variabili. Se il punto è nella zona del fisso e la fissa costa meno della variabile al prezzo dell'ultimo mese, la regola dei due controlli indica il fisso.</figcaption>
 </figure>
 
@@ -2218,12 +2227,14 @@ svg .dt.c3{fill:var(--c3)}
 
 <h2>In sintesi</h2>
 
-<p>Il mercato libero premia chi controlla una volta l'anno e punisce poco chi sbaglia di qualche posizione. La scelta che pesa è tra fisso e variabile, e per farla serve un controllo in più della classifica: il prezzo all'ingrosso dell'ultimo mese. Oggi quel controllo indica il fisso.</p>
+<p>Il mercato libero premia chi controlla una volta l'anno e punisce poco chi sbaglia di qualche posizione. La scelta che pesa è tra fisso e variabile, e per farla serve un controllo in più della classifica: il prezzo all'ingrosso dell'ultimo mese. Al 4 novembre 2026 quel controllo indicava il fisso.</p>
 
 <p class="note">Questo articolo descrive il mercato in generale e non è una consulenza personale. Prima di cambiare fornitore confronta le offerte ai tuoi consumi sul <a href="./">comparatore luce e gas</a>, che usa lo stesso modello di costo e con la macchina del tempo mostra le offerte di ogni mese dal 2022, oppure sul <a href="https://www.ilportaleofferte.it/">Portale Offerte di ARERA</a>. Dati: Portale Offerte, gennaio 2022 - ottobre 2026; parametri regolati ARERA; prezzi all'ingrosso PUN e PSV.</p>
 
 </main>
-<script src="engine.js?v=20261115T063057"></script>
-<script src="analisi.js?v=20261115T063057"></script>
+<script src="engine.js?v=20261115T194735"></script>
+<script src="tm-link.js?v=20261115T194735"></script>
+<script src="analisi.js?v=20261115T194735"></script>
+<script src="nav.js?v=20261115T194735"></script>
 </body>
 </html>

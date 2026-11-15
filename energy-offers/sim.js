@@ -263,8 +263,40 @@
     return out;
   }
 
+  /* ---------------- presentazione (pura, provata in node) ---------------- */
+
+  // Leve di ogni riquadro, per contare le modifiche mostrate nel titolo. Un gruppo
+  // (array) è un gesto solo: scegliere "A scelta" e scrivere il valore contano uno.
+  const BOX_KEYS = {
+    luce: {
+      regolate: ['cd', 'tf', 'qp', 'ov', 'nr', 'db', 'la'], imposte: ['iva', 'ac', 'rai'],
+      offerta: ['t', 'm', 'p', 'fx', 'fk', 'net'], mercato: [['ix', 'pun']], profilo: ['kwh', 'kw', 'r', 'f1', 'f2'],
+    },
+    gas: {
+      regolate: ['rf', 'rv'], imposte: ['il', 'ih', 'th'], offerta: ['t', 'p', 'fx', 'sb'],
+      mercato: [['ix', 'psv']], profilo: ['smc'],
+    },
+  };
+  const editCount = (kind, box, cur, base) =>
+    BOX_KEYS[kind][box].filter((g) => [].concat(g).some((k) => !same(cur[k], base[k]))).length;
+
+  // Riquadri aperti all'inizio: arrivando da un'offerta solo "L'offerta" (il profilo
+  // è già quello del comparatore), altrimenti profilo, offerta e mercato.
+  const initialBoxes = (fromOffer) => (fromOffer ? ['offerta'] : ['profilo', 'offerta', 'mercato']);
+
+  // Geometria del grafico di sensibilità: sul telefono un disegno da 380 unità, così
+  // le etichette restano leggibili invece di essere rimpicciolite da un disegno da 640.
+  function chartLayout(narrow) {
+    return narrow
+      ? { W: 380, H: 220, ml: 58, mr: 20, mt: 12, mb: 30, xTicks: [0, 0.5, 1], narrow: true }
+      : { W: 640, H: 220, ml: 54, mr: 14, mt: 12, mb: 30, xTicks: [0, 0.25, 0.5, 0.75, 1], narrow: false };
+  }
+
+  // Le due curve (leve attuali e punto di partenza) si sovrappongono?
+  const curvesCoincide = (a, b) => a.every((p, i) => Math.abs(p[1] - b[i][1]) < 0.005);
+
   const core = { SCHEMA, AXES, defaults, parseHash, buildHash, offerHash, evalLuce, evalGas, evalKind,
-                 sweep, convertType, fmtVal };
+                 sweep, convertType, fmtVal, editCount, initialBoxes, chartLayout, curvesCoincide };
   if (typeof document !== 'undefined') core.mount = mount;
   return core;
 
@@ -289,7 +321,10 @@
     let kind = 'luce';
     let axis = { luce: 'pun', gas: 'psv' };
     const S = {};          // kind → { base, cur, n, v, d }
-    const openBoxes = new Set(['profilo', 'offerta', 'mercato']);
+    const openBoxes = new Set(initialBoxes(false));
+    let showFasce = false;   // in monoraria le fasce stanno dietro un pulsante
+    const scrollBehavior = () => (window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth');
+    const narrowMq = window.matchMedia('(max-width: 599px)');
     let prof = {};
     try {
       const st = JSON.parse(localStorage.getItem(STORE) || '{}');
@@ -389,18 +424,20 @@
         const kwChips = [1.5, 3, 4.5, 6, 10].map((k) =>
           `<button type="button" class="chip" data-kw="${k}" aria-pressed="${s.kw === k}">${String(k).replace('.', ',')} kW</button>`).join('');
         const f3 = Math.max(0, 100 - s.f1 - s.f2);
+        const fasceHidden = s.m === 'mono' && !showFasce;
         html += box('profilo', 'Il tuo profilo', lever('kwh') +
           `<div class="row-between sim-gap"><span class="mini-label">Potenza impegnata</span>
             <label class="switch"><input type="checkbox" id="simRes"${s.r ? ' checked' : ''}><span class="track" aria-hidden="true"></span><span>Residente</span></label></div>
            <div class="chips">${kwChips}</div>
-           <div class="sim-fasce${s.m === 'mono' ? ' off' : ''}">
+           <div class="sim-fasce">
              <p class="mini-label">Fasce orarie <b>${s.f1} / ${s.f2} / ${f3}</b></p>
              ${s.m === 'mono' ? '<p class="hint">Contano solo per le offerte bi e multiorarie.</p>' : ''}
+             ${fasceHidden ? '<button type="button" class="btn" id="simFasceShow">Modifica le fasce</button>' : `
              <div class="fasce-bar" aria-hidden="true"><span class="f1" style="flex-basis:${s.f1}%"></span><span class="f2" style="flex-basis:${s.f2}%"></span><span class="f3" style="flex-basis:${f3}%"></span></div>
              <label class="mini-label" for="simF1">F1 · lun-ven 8-19 <b>${s.f1}%</b></label>
              <input id="simF1" class="slider small" type="range" min="0" max="100" step="1" value="${s.f1}" data-f="f1">
              <label class="mini-label" for="simF2">F2 · lun-ven 7-8 e 19-23, sabato <b>${s.f2}%</b></label>
-             <input id="simF2" class="slider small" type="range" min="0" max="100" step="1" value="${s.f2}" data-f="f2">
+             <input id="simF2" class="slider small" type="range" min="0" max="100" step="1" value="${s.f2}" data-f="f2">`}
            </div>`);
         const prices = [0, 1, 2].slice(0, nP(s.m)).map((i) => lever('p' + i)).join('');
         html += box('offerta', "L'offerta", `<p class="hint">Le voci che decide il venditore: qui si fa la differenza fra un'offerta e l'altra.</p>` +
@@ -456,15 +493,8 @@
       for (const sl of document.querySelectorAll('#simControls .slider[data-f]')) setPct(sl);
       const cs = document.querySelector('[data-seg="ix"] [data-v="custom"] small');
       if (cs) cs.textContent = nfd(kind === 'luce' ? s.pun : s.psv, 3);
-      const sums = {
-        regolate: kind === 'luce' ? ['cd', 'tf', 'qp', 'ov', 'nr', 'db', 'la'] : ['rf', 'rv'],
-        imposte: kind === 'luce' ? ['iva', 'ac', 'rai'] : ['il', 'ih', 'th'],
-        offerta: kind === 'luce' ? ['t', 'm', 'p', 'fx', 'fk', 'net'] : ['t', 'p', 'fx', 'sb'],
-        mercato: kind === 'luce' ? ['ix', 'pun'] : ['ix', 'psv'],
-        profilo: kind === 'luce' ? ['kwh', 'kw', 'r', 'f1', 'f2'] : ['smc'],
-      };
-      for (const [id, keys] of Object.entries(sums)) {
-        const n = keys.filter((k) => !same(s[k], S[kind].base[k])).length;
+      for (const id of Object.keys(BOX_KEYS[kind])) {
+        const n = editCount(kind, id, s, S[kind].base);
         const el = document.querySelector(`[data-sum="${id}"]`);
         if (el) el.textContent = n ? `${n} ${n === 1 ? 'modifica' : 'modifiche'}` : '';
         const bx = document.querySelector(`[data-box="${id}"]`);
@@ -557,7 +587,9 @@
         return `<tr><td><span class="dot" style="--c:${x.c}"></span>${esc(x.lab)}<small>${x.f}</small>${x.note ? `<small>${esc(x.note)}</small>` : ''}</td>
           <td class="dl">${Math.abs(dd) >= 0.5 ? `<span class="chg ${dd > 0 ? 'up' : 'down'}">${sgn(dd, eur)}</span>` : ''}</td><td>${eur2(x.v)}</td></tr>`;
       }).join('') + `<tr class="tot"><td>Totale annuo</td><td class="dl">${Math.abs(d) >= 0.5 ? `<span class="chg ${d > 0 ? 'up' : 'down'}">${sgn(d, eur)}</span>` : ''}</td><td>${eur2(total)}</td></tr>`;
-      $('#simBar').innerHTML = `<span><b>${eur(total)}</b>/anno</span><span class="${Math.abs(d) < 0.5 ? '' : d > 0 ? 'up' : 'down'}">${Math.abs(d) < 0.5 ? 'come la partenza' : sgn(d, eur)}</span>`;
+      const offerName = st.n || 'Offerta personalizzata';
+      $('#simBar').innerHTML = `<span class="sim-bar-n">${esc(offerName)}</span><span><b>${eur(total)}</b>/anno</span><span class="${Math.abs(d) < 0.5 ? '' : d > 0 ? 'up' : 'down'}">${Math.abs(d) < 0.5 ? 'come la partenza' : sgn(d, eur)}</span>`;
+      $('#simBar').setAttribute('aria-label', `${offerName}, ${eur(total)} all'anno. Vai al totale`);
       renderChart(r, base);
       syncLevers(document.activeElement);
       clearTimeout(liveTimer);
@@ -573,8 +605,9 @@
     function renderChart(r, baseTotal) {
       const st = S[kind], P = DATA[kind].params, ax = axis[kind];
       const cur = sweep(kind, st.cur, P, ax, 41), bas = sweep(kind, st.base, P, ax, 41);
-      const W = 640, H = 220, ml = 54, mr = 14, mt = 12, mb = 30;
+      const { W, H, ml, mr, mt, mb, xTicks, narrow } = chartLayout(narrowMq.matches);
       const [x0, x1] = AXES[kind][ax];
+      const overlap = curvesCoincide(cur, bas);
       const ys = cur.concat(bas).map((p) => p[1]);
       let y0 = Math.min(...ys), y1 = Math.max(...ys);
       if (y1 - y0 < 20) { const m = (y0 + y1) / 2; y0 = m - 10; y1 = m + 10; }
@@ -586,12 +619,12 @@
       const xNow = isIdx ? (kind === 'luce' ? r.idx.mono : r.idx) : (kind === 'luce' ? st.cur.kwh : st.cur.smc);
       const inside = xNow >= x0 && xNow <= x1;
       const fx = (x) => (isIdx ? nfd(x, 2) : nf0.format(x));
-      const ticksX = [0, 0.25, 0.5, 0.75, 1].map((t) => x0 + (x1 - x0) * t);
+      const ticksX = xTicks.map((t) => x0 + (x1 - x0) * t);
       const ticksY = [0, 0.5, 1].map((t) => y0 + (y1 - y0) * t);
-      const svg = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Totale annuo al variare di ${isIdx ? (kind === 'luce' ? 'PUN' : 'PSV') : 'consumo'}">
+      const svg = `<svg${narrow ? ' class="narrow"' : ''} viewBox="0 0 ${W} ${H}" role="img" aria-label="Totale annuo al variare di ${isIdx ? (kind === 'luce' ? 'PUN' : 'PSV') : 'consumo'}">
         ${ticksY.map((y) => `<line class="gl" x1="${ml}" x2="${W - mr}" y1="${Y(y)}" y2="${Y(y)}"/><text class="ty" x="${ml - 6}" y="${Y(y) + 4}">${nf0.format(Math.round(y))} €</text>`).join('')}
         ${ticksX.map((x) => `<text class="tx" x="${X(x)}" y="${H - 8}">${fx(x)}</text>`).join('')}
-        <path class="base" d="${path(bas)}"/><path class="cur" d="${path(cur)}"/>
+        ${overlap ? '' : `<path class="base" d="${path(bas)}"/>`}<path class="cur" d="${path(cur)}"/>
         ${inside ? `<line class="now" x1="${X(xNow)}" x2="${X(xNow)}" y1="${mt}" y2="${H - mb}"/><circle class="pt" cx="${X(xNow)}" cy="${Y(r.c.total)}" r="5.5"/>` : ''}
       </svg>`;
       // pendenza attorno al punto corrente, per la frase sotto
@@ -602,7 +635,7 @@
       let cap;
       if (isIdx) {
         const ix = kind === 'luce' ? 'PUN' : 'PSV', u = kind === 'luce' ? 'kWh' : 'Smc';
-        cap = st.cur.t === 'F' ? `Prezzo fisso: il ${ix} non cambia il totale. La linea tratteggiata è il punto di partenza.`
+        cap = st.cur.t === 'F' ? `Prezzo fisso: il ${ix} non cambia il totale.${overlap ? '' : ' La linea tratteggiata è il punto di partenza.'}`
           : `Ogni centesimo di ${ix} in più (0,01 €/${u}) costa <b>${eur2(slope)}</b> all'anno.`;
       } else {
         const u = kind === 'luce' ? 'kWh' : 'Smc';
@@ -611,7 +644,7 @@
           ? ` Tra ${ex[0]} e ${ex[1]} kWh la curva è più ripida: l'esenzione dalle accise dei residenti si riduce fino a sparire.` : '');
       }
       $('#simChart').innerHTML = svg;
-      $('#simChartCap').innerHTML = cap + ` <span class="leg"><i class="lc"></i> ora <i class="lb"></i> partenza</span>`;
+      $('#simChartCap').innerHTML = cap + ` <span class="leg"><i class="lc"></i> ora${overlap ? '' : ' <i class="lb"></i> partenza'}</span>`;
     }
 
     /* ----- eventi ----- */
@@ -679,6 +712,7 @@
           renderControls(); recompute();
           return;
         }
+        if (e.target.closest('#simFasceShow')) { showFasce = true; renderControls(); $('#simF1').focus(); return; }
         const kwb = e.target.closest('[data-kw]');
         if (kwb) { S[kind].cur.kw = +kwb.dataset.kw; renderControls(); recompute(); return; }
         const b = e.target.closest('[data-seg] button');
@@ -729,7 +763,9 @@
         new IntersectionObserver((es) => { document.body.classList.toggle('sim-bar-on', !es[0].isIntersecting); })
           .observe($('#simTotal'));
       }
-      $('#simBar').onclick = () => $('#simTotal').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      // il disegno cambia larghezza passando da telefono a schermo largo (anche ruotando)
+      narrowMq.addEventListener('change', () => { if (DATA) recompute(); });
+      $('#simBar').onclick = () => $('#simTotal').scrollIntoView({ behavior: scrollBehavior(), block: 'center' });
     }
 
     function renderAxis() {
@@ -783,6 +819,8 @@
           const x = parseHash(h, params(), prof);
           kind = x.kind;
           S[kind] = { base: x.base, cur: x.cur, n: x.n, v: x.v, d: x.d };
+          openBoxes.clear();
+          for (const id of initialBoxes(!!x.n)) openBoxes.add(id);
         }
         ensure(kind);
         footer();

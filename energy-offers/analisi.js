@@ -12,18 +12,25 @@
  * o i grafici vivi stonano con quelli fissi.
  *
  * Senza i dati accanto (pagina aperta da sola) ogni widget mostra un rimando
- * alla versione pubblicata, e il resto dell'articolo resta leggibile.
+ * relativo alla pagina pubblicata accanto al comparatore, e il resto
+ * dell'articolo resta leggibile.
+ *
+ * Con i dati scrive anche i rimandi al comparatore: il segnale di oggi sotto la
+ * risposta in apertura (#segnale-oggi), "Vedi la classifica di oggi" sotto
+ * #w-oggi e "Apri <mese> nella macchina del tempo" sotto #w-mese (link
+ * #tm=… di tm-link.js).
  *
  * In node esporta le funzioni di calcolo per i test.
  */
 (function (root, factory) {
-  const api = factory(root.EnergyEngine || (typeof require === 'function' ? require('./engine.js') : null));
+  const load = (name, file) => root[name] || (typeof require === 'function' ? require(file) : null);
+  const api = factory(load('EnergyEngine', './engine.js'), load('EnergyTmLink', './tm-link.js'));
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.EnergyArticle = api;
-})(typeof self !== 'undefined' ? self : this, function (E) {
+})(typeof self !== 'undefined' ? self : this, function (E, TL) {
   'use strict';
 
-  const PUBLISHED = 'https://tools.ruffilli.it/energy-offers/analisi.html';
+  const PUBLISHED = 'analisi.html';
   const DESKTOP_W = 680, PHONE_W = 380;
   const MESI = ['gen', 'feb', 'mar', 'apr', 'mag', 'giu', 'lug', 'ago', 'set', 'ott', 'nov', 'dic'];
   const MESI_LUNGHI = ['gennaio', 'febbraio', 'marzo', 'aprile', 'maggio', 'giugno', 'luglio', 'agosto',
@@ -133,7 +140,8 @@
   }
 
   // Barre orizzontali nello stile di "Quanto si perde con quattro modi di scegliere":
-  // rows = [{label, bars: [{v, cls, txt}]}].
+  // rows = [{label, short?, bars: [{v, cls, txt}]}]; short è l'etichetta per il
+  // telefono, dove a sinistra restano 150 unità.
   function hbars(W, rows, xmax, xticks, label, opts) {
     opts = opts || {};
     const phone = W < 500;
@@ -150,7 +158,7 @@
     }
     rows.forEach((row, i) => {
       const yc = p.top + 10 + i * rowh;
-      p.textPx(ml - 8, yc + 15, row.label, 'tick strong', 'end', fs);
+      p.textPx(ml - 8, yc + 15, phone && row.short ? row.short : row.label, 'tick strong', 'end', fs);
       row.bars.forEach((b, j) => {
         const y = yc + j * 17, x0 = p.X(0), v = Math.max(0, Math.min(b.v, xmax));
         p.out.push(`<rect class="${b.cls}" x="${f1(x0)}" y="${f1(y)}" width="${f1(Math.max(p.X(v) - x0, 0.8))}" height="14"/>`);
@@ -240,6 +248,22 @@
     return Object.assign({ ratio, f, v12, vl, lastMonth: isoMonth(kind === 'luce' ? P.pun_last.month : P.psv_last.month) },
       E.fixVarSignal(ratio, f.total, v12.total, vl.total));
   }
+
+  // Il segnale di oggi a parole, per la riga sotto la risposta in apertura.
+  // sig: { luce, gas } da todaySignal (null se manca); day: la data delle offerte.
+  // Stessa lettura del titolo di #w-oggi: regime calmo, altrimenti la scelta.
+  function todayLine(sig, day) {
+    const say = (s) => (!s ? null : s.regime === 'calm' ? 'dice che fisso e variabile si equivalgono'
+      : s.choice === 'F' ? 'indica il fisso' : 'indica il variabile');
+    const l = say(sig.luce), g = say(sig.gas);
+    if (!l && !g) return null;
+    if (l && g && l === g) return `Oggi, ${day}, il segnale ${l} sia per la luce sia per il gas.`;
+    if (l && g) return `Oggi, ${day}, per la luce il segnale ${l} e per il gas ${g}.`;
+    return `Oggi, ${day}, per ${l ? 'la luce' : 'il gas'} il segnale ${l || g}.`;
+  }
+
+  // Link relativo che apre un mese nella macchina del tempo del comparatore.
+  const monthLink = (m, kind, poi) => (TL ? './' + TL.build(m, kind, poi ? 'poi' : 'then') : null);
 
   // Widget 3: migliore fissa e variabile di uno snapshot storico, allora e col senno di poi.
   function monthOutcome(snapshot, kind) {
@@ -377,8 +401,9 @@
   function widgetToday(D) {
     const el = document.getElementById('w-oggi');
     if (!el) return;
+    const sig = { luce: todaySignal(D.luce, 'luce'), gas: todaySignal(D.gas, 'gas') };
     const cards = ['luce', 'gas'].map((kind) => {
-      const s = todaySignal(D[kind], kind);
+      const s = sig[kind];
       if (!s) return '';
       const idx = kind === 'luce' ? 'PUN' : 'PSV', cls = kind === 'luce' ? 'c1' : 'c2';
       const head = s.regime === 'calm' ? 'mercato calmo, fisso e variabile si equivalgono'
@@ -394,13 +419,28 @@
         <div class="chart chart-m">${gaugeChart(s.ratio, idx, cls, PHONE_W)}${hbars(PHONE_W, rows, xmax, ticksTo(xmax, 2), 'Costo annuo')}</div>
         <p class="wtext">Il ${idx} di ${monthName(s.lastMonth)} vale ${it(s.ratio, 2)} volte la media dei 12 mesi su cui il portale calcola la classifica. A quel prezzo la variabile migliore costerebbe ${it(s.vl.total)} € l'anno invece di ${it(s.v12.total)} €. La fissa migliore, ${esc(s.f.o.n)}, costa ${it(s.f.total)} €${s.premium > E.PREMIUM_CAP ? `, il ${Math.round(s.premium * 100)}% sopra la variabile in classifica` : ''}.</p></div>`;
     }).join('');
-    el.querySelector('.wbody').innerHTML = cards + `<p class="wnote">Offerte nazionali di ${esc(dayOf(D))}, utente tipo (${it(STD.kwh)} kWh, ${it(STD.smc)} Smc). Si aggiorna a ogni pubblicazione del comparatore.</p>`;
+    el.querySelector('.wbody').innerHTML = cards + `<p class="wnote">Offerte nazionali di ${esc(dayOf(D))}, utente tipo (${it(STD.kwh)} kWh, ${it(STD.smc)} Smc). Si aggiorna a ogni pubblicazione del comparatore.</p>` +
+      '<p class="wlink"><a href="./">Vedi la classifica di oggi</a></p>';
+    const line = document.getElementById('segnale-oggi'), txt = todayLine(sig, dayOf(D));
+    if (line && txt) {
+      line.innerHTML = `${esc(txt)} <a href="#adesso">Il conto aggiornato</a>`;
+      line.hidden = false;
+    }
   }
 
   const dayOf = (D) => {
     const d = new Date(D.generated_at);
     return isNaN(d) ? D.generated_at : d.toLocaleDateString('it-IT', { day: 'numeric', month: 'long', year: 'numeric' });
   };
+
+  // Righe del grafico "quanto paghi in più della migliore": g = shoppingGaps(...).
+  function shoppingRows(g) {
+    const b = g.best.total;
+    return [['10ª offerta', null, g.tenth, 'b3'], ['Offerta mediana', null, g.median, 'b1'],
+      ['Una su quattro costa più di', '1 su 4 costa più di', g.p75, 'b2'],
+      ['Una su dieci costa più di', '1 su 10 costa più di', g.p90, 'b4']]
+      .map(([label, short, v, cls]) => ({ label, short, bars: [{ v: v - b, cls, txt: `+${it(v - b)} €` }] }));
+  }
 
   function widgetShopping(D) {
     const el = document.getElementById('w-cercare');
@@ -419,9 +459,7 @@
       const g = shoppingGaps(D[st.kind], st.kind, st[st.kind]);
       if (!g.best) return;
       const b = g.best.total;
-      const rows = [['10ª offerta', g.tenth, 'b3'], ['Offerta mediana', g.median, 'b1'],
-        ['Una su quattro costa più di', g.p75, 'b2'], ['Una su dieci costa più di', g.p90, 'b4']]
-        .map(([label, v, cls]) => ({ label, bars: [{ v: v - b, cls, txt: `+${it(v - b)} €` }] }));
+      const rows = shoppingRows(g);
       const xmax = niceMax((g.p90 - b) * 1.15, 4);
       both(el, (W) => hbars(W, rows, xmax, ticksTo(xmax, W < 500 ? 2 : 4), "Euro l'anno in più della migliore offerta"));
       el.querySelector('.wtext').textContent = `A ${it(st[st.kind])} ${luce ? 'kWh' : 'Smc'} l'anno la migliore offerta nazionale di oggi, ${g.best.o.n} (${g.best.o.v || 'venditore non indicato'}), costa ${it(b)} € l'anno tutto compreso, su ${it(g.n)} offerte. Fermarsi all'offerta mediana costa ${it(g.median - b)} € in più.`;
@@ -440,7 +478,7 @@
         const st = { kind: 'luce', m: months.includes('2023-01') ? '2023-01' : months[0] };
         el.querySelector('.wbody').innerHTML = `<div class="wctl"><div class="wseg"></div>
           <span class="wnav"><button type="button" data-d="-1" aria-label="Mese precedente">‹</button><select aria-label="Mese di firma"></select><button type="button" data-d="1" aria-label="Mese successivo">›</button></span></div>
-          <div class="chart chart-d"></div><div class="chart chart-m"></div><p class="wtext"></p>`;
+          <div class="chart chart-d"></div><div class="chart chart-m"></div><p class="wtext"></p><p class="wlink" hidden><a></a></p>`;
         const sel = el.querySelector('select');
         sel.innerHTML = months.map((m) => `<option value="${m}">${monthName(m)}</option>`).join('');
         el.querySelector('.wnav').onclick = (e) => {
@@ -475,6 +513,12 @@
               txt += o.months < 12 ? `, ma il conto è provvisorio: solo ${o.months} mesi su 12 sono già chiusi.` : '.';
             }
             el.querySelector('.wtext').textContent = txt;
+            const href = monthLink(st.m, st.kind, !!o.poi), link = el.querySelector('.wlink');
+            link.hidden = !href;
+            if (href) {
+              link.firstChild.href = href;
+              link.firstChild.textContent = `Apri ${monthName(st.m)} nella macchina del tempo`;
+            }
           }).catch(() => { el.querySelector('.wtext').textContent = `Non riesco a caricare ${monthName(st.m)}.`; });
         };
         draw();
@@ -543,6 +587,6 @@
     else start();
   }
 
-  return { it, rankOffers, shoppingGaps, todaySignal, monthOutcome, breakEvenCurve, closedSeries, wholesaleChart,
-           Panel, LOW_FEE, STD };
+  return { it, hbars, shoppingRows, rankOffers, shoppingGaps, todaySignal, todayLine, monthLink, monthOutcome, breakEvenCurve,
+           closedSeries, wholesaleChart, Panel, LOW_FEE, STD, PUBLISHED };
 });

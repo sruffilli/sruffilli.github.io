@@ -208,6 +208,75 @@
     return { regime, choice, premium, bias: bestVLast - bestV12 };
   }
 
+  /* Restrizione a provincia/comune di un'offerta, a parole: "solo provincia di
+     Trento (TN, Trentino-Alto Adige)", o null se non ce n'è. `o.pr`/`o.cm` sono i
+     codici ISTAT dell'XML (provincia 3 cifre, comune 6: le prime 3 sono la
+     provincia); `data` porta le tabelle `province` ({cod: [nome, sigla, cod. regione]}),
+     `comuni` ({cod: nome}) e `regioni`. Un codice che manca resta "cod. N":
+     gli snapshot storici e i comuni accorpati non hanno sempre il nome. */
+  const ZONE_MAX_LISTED = 5;
+  function zoneRestriction(o, data) {
+    const pr = (o.pr || []).slice().sort(), cm = (o.cm || []).slice().sort();
+    if (!pr.length && !cm.length) return null;
+    const pmap = (data && data.province) || {}, cmap = (data && data.comuni) || {}, reg = (data && data.regioni) || {};
+    const item = (label, sigla, regione) => {
+      const extra = [sigla, regione].filter(Boolean).join(', ');
+      return extra ? `${label} (${extra})` : label;
+    };
+    const listed = (items) => (items.length <= ZONE_MAX_LISTED
+      ? items.join(', ') : `${items.slice(0, ZONE_MAX_LISTED).join(', ')} e altri ${items.length - ZONE_MAX_LISTED}`);
+    const part = (codes, one, many, label) => {
+      const single = codes.length === 1;
+      let known = true;
+      const items = codes.map((code) => {
+        const t = label(code, single);
+        if (t == null) { known = false; return `cod. ${code}`; }
+        return t;
+      });
+      const head = single ? one : many;
+      return known ? `${head} di ${listed(items)}` : `${head}: ${listed(items)}`;
+    };
+    const parts = [];
+    if (pr.length) {
+      parts.push(part(pr, 'provincia', 'province', (code, single) => {
+        const p = pmap[code];
+        return p ? item(p[0], p[1], single ? reg[p[2]] : null) : null;
+      }));
+    }
+    if (cm.length) {
+      parts.push(part(cm, 'comune', 'comuni', (code, single) => {
+        const name = cmap[code];
+        if (name == null) return null;
+        const p = pmap[code.slice(0, 3)];
+        return item(name, p ? p[1] : null, p && single ? reg[p[2]] : null);
+      }));
+    }
+    return 'solo ' + parts.join(' o ');
+  }
+
+  /* Onere di recesso anticipato. `o.rc` è lo stato letto dall'XML del venditore:
+     'd' = dichiara un onere, 'i' = nessuna dichiarazione nei dati (ogni offerta
+     fissa, qualunque sia la durata), assente = variabile senza dichiarazione.
+     Non c'è uno stato "nessun onere": i dati possono accendere l'avviso, mai
+     spegnerlo (la stessa offerta può avere "senza oneri" in un campo e un onere
+     in un altro, oppure nessun testo). `rec` è `detail.recesso` ({testi, solo_etichetta}),
+     assente se la scheda non è archiviata (snapshot storici). */
+  const RECESSO_WHERE = 'scheda sintetica del venditore, sezione "Modalità e oneri per il recesso"';
+  function recessoBadge(o) {
+    if (o.rc === 'd') return { cls: 'warn', text: '⚠ recesso', title: 'Il venditore dichiara un onere se si esce prima della scadenza. Apri la scheda per il suo testo.' };
+    if (o.rc === 'i') return { cls: '', text: '❓ recesso', title: 'I dati non dicono se c\'è un onere per l\'uscita anticipata. Non trovarlo nei dati non vuol dire che non ci sia.' };
+    return null;
+  }
+  function recessoNote(o, rec) {
+    if (o.rc === 'd') {
+      if (rec && rec.solo_etichetta) return `Il venditore dichiara un onere di recesso anticipato ma non ne pubblica l'importo. Leggilo nella ${RECESSO_WHERE}.`;
+      const hasText = !!(rec && rec.testi && rec.testi.length);
+      return `Il venditore dichiara un onere di recesso anticipato${hasText ? ': il suo testo è qui sotto' : ''}. Per l'importo esatto leggi la ${RECESSO_WHERE}.`;
+    }
+    if (o.rc === 'i') return `I dati non dicono se c'è un onere di recesso anticipato. Non averlo trovato non vuol dire che non ci sia: leggi la ${RECESSO_WHERE}.`;
+    return null;
+  }
+
   return { exciseExemptionKwh, systemLuce, punIndex, costLuce, gasWithIva, psvIndex, regDeltaAnnual, costGas, dualRanking,
-           fixVarSignal, SIGNAL_UP, SIGNAL_DOWN, PREMIUM_CAP };
+           fixVarSignal, zoneRestriction, recessoBadge, recessoNote, SIGNAL_UP, SIGNAL_DOWN, PREMIUM_CAP };
 });
